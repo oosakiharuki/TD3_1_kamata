@@ -16,6 +16,10 @@ void GameScene::Initialize() {
 	camera_.Initialize();
 	player_ = new Player();
 	player_->Init(&camera_);
+
+	modelGround_ = new Ground();
+	modelGround_->Init(&camera_);
+
 }
 
 void GameScene::Update() { player_->Update(); }
@@ -31,6 +35,7 @@ void GameScene::Draw() {
 	// モデル
 	Model::PreDraw(commandList);
 	player_->Draw();
+	modelGround_->Draw();
 
 	Model::PostDraw();
 

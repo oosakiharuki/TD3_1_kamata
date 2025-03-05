@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Player.h"
+#include "Ground.h"
 
 using namespace KamataEngine;
 
@@ -33,5 +34,6 @@ private:
 
 	Player* player_ = nullptr;
 	Model* modelPlayer_ = nullptr;
+	Ground* modelGround_ = nullptr;
 
 };
