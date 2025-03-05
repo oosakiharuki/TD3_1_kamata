@@ -10,63 +10,70 @@ void Player::Init(Camera* camera) {
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
 	PlayerModel_ = Model::CreateFromOBJ("cube", true);
-	// 初期位置をワールドトランスフォームに反映
 	worldTransform_.translation_ = position;
 }
 
-// Groundオブジェクトを設定するメソッドの実装
-void Player::SetGround(Ground* ground) { ground_ = ground; }
+void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_ = obstacles; }
+
+void Player::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
 
 void Player::Update() {
-	// ▼ 1) 入力によるプレイヤーの水平移動
+	// 入力による移動
 	float moveSpeed = 0.5f;
 	if (Input::GetInstance()->PushKey(DIK_W)) {
-		position.z += moveSpeed; // 前進
+		position.z += moveSpeed;
 	}
 	if (Input::GetInstance()->PushKey(DIK_S)) {
-		position.z -= moveSpeed; // 後退
+		position.z -= moveSpeed;
 	}
 	if (Input::GetInstance()->PushKey(DIK_A)) {
-		position.x -= moveSpeed; // 左
+		position.x -= moveSpeed;
 	}
 	if (Input::GetInstance()->PushKey(DIK_D)) {
-		position.x += moveSpeed; // 右
+		position.x += moveSpeed;
 	}
 
-	// ▼ 2) ジャンプ処理
+	// ジャンプ処理
 	if (Input::GetInstance()->PushKey(DIK_SPACE) && onGround_) {
 		velocityY_ = 0.3f;
 		onGround_ = false;
 	}
 
-	// ▼ 3) 重力処理
+	// 重力処理
 	float gravity = 0.01f;
 	velocityY_ -= gravity;
 	position.y += velocityY_;
 
-	// ▼ 4) 地面との当たり判定
-	if (ground_ != nullptr) {
-		float groundHeight = ground_->GetHeightAt(position);
-		if (position.y < groundHeight) {
-			position.y = groundHeight;
-			velocityY_ = 0.0f;
-			onGround_ = true;
-		}
-	} else {
-		// ground_が未設定の場合は従来通り平面（y=0）での判定
-		if (position.y < 0.0f) {
-			position.y = 0.0f;
-			velocityY_ = 0.0f;
-			onGround_ = true;
-		}
-	}
+	// プレイヤーのAABB作成（例：幅1.0, 高さ2.0, 奥行1.0）
+	float halfW = 0.5f, halfH = 1.0f, halfD = 0.5f;
+	AABB playerAABB;
+	playerAABB.min = {position.x - halfW, position.y - halfH, position.z - halfD};
+	playerAABB.max = {position.x + halfW, position.y + halfH, position.z + halfD};
 
-	// ▼ 5) プレイヤーのワールドトランスフォーム更新
+	// 反復的衝突解決（すり抜け防止のため、最大10回まで解決を試みる）
+	const int maxIterations = 10;
+	int iterations = 0;
+	bool collisionOccurred = false;
+	do {
+		collisionOccurred = false;
+		for (auto& obstacleAABB : obstacleList_) {
+			if (IsCollisionAABB(playerAABB, obstacleAABB)) {
+				ResolveAABBCollision(playerAABB, obstacleAABB, velocityY_, onGround_);
+				collisionOccurred = true;
+			}
+		}
+		iterations++;
+	} while (collisionOccurred && iterations < maxIterations);
+
+	// 衝突解決後のAABB中心をプレイヤー座標に反映
+	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
+	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
+	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
+
 	worldTransform_.translation_ = position;
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
 
-	// ▼ 6) カメラの追従処理
 	cameraController_.Update(camera_, position);
 }
 
