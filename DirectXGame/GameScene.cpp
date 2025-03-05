@@ -20,11 +20,15 @@ void GameScene::Initialize() {
 	audio_ = Audio::GetInstance();
 
 	player_ = new Player();
+	Ground_ = new Ground();
 
 	// 3Dモデルの生成
 	modelPlayer_ = KamataEngine::Model::CreateFromOBJ("cube", true);
 	camera_.Initialize();
 	player_->Init(modelPlayer_, &camera_, playerPos);
+
+	modelGround_ = Model::CreateFromOBJ("ground", true);
+	Ground_->Init(&camera_, modelGround_);
 
 	// Camera
 	railCamera_ = new RailCamera();
@@ -55,6 +59,7 @@ void GameScene::Draw() {
 	KamataEngine::Model::PreDraw(commandList);
 
 	player_->Draw();
+	Ground_->Draw();
 
 	KamataEngine::Model::PostDraw();
 	Sprite::PreDraw(commandList);

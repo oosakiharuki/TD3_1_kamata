@@ -14,7 +14,7 @@ void RailCamera::Update() {
 	KamataEngine::Input* input = KamataEngine::Input::GetInstance();
 
 	// カメラの移動速度
-	const float kCameraSpeed = -1.0f;      // 常に進む速度
+	const float kCameraSpeed = 0.0f;      // 常に進む速度
 	                                       //	const float kRotSpeed = 0.02f;         // 回転速度
 	const float kRotAcceleration = 0.001f; // 回転加速度
 	const float kRotFriction = 0.95f;      // 回転摩擦係数

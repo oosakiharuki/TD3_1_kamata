@@ -3,6 +3,7 @@
 #include "KamataEngine.h"
 #include "Player.h"
 #include "RailCamera.h"
+#include "Ground.h"
 #include <sstream>
 using namespace KamataEngine;
 
@@ -52,4 +53,8 @@ private:
 	KamataEngine::Sprite* title13_ = nullptr;
 
 	Vector3 playerPos = {0, 0, 30};
+
+	Ground* Ground_ = nullptr;
+	Model* modelGround_ = nullptr;
+
 };

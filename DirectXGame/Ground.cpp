@@ -1,12 +1,13 @@
 #include "Ground.h"
 
-void Ground::Init(Camera* camera) {
+void Ground::Init(Camera* camera, Model* model) {
 	camera_ = camera;
 	worldTransform.Initialize();
-	// "ground" という名前のOBJファイルを読み込みます。
-	groundModel_ = Model::CreateFromOBJ("ground", true);
+	model_ = model;
+	//groundModel_ = Model::CreateFromOBJ("ground", true);
 }
 
-void Ground::Update() { worldTransform.TransferMatrix(); }
+void Ground::Update() {}
 
-void Ground::Draw() { groundModel_->Draw(worldTransform, *camera_); }
+void Ground::Draw() { model_->Draw(worldTransform, *camera_); }
+
