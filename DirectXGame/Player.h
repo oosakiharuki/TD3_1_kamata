@@ -8,6 +8,8 @@ using namespace KamataEngine;
 
 class Player {
 public:
+	Player();
+	~Player();
 	void Init(Camera* camera);
 	void Update();
 	void Draw();

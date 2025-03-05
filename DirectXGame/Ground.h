@@ -1,9 +1,11 @@
 #pragma once
-#include"KamataEngine.h"
+#include "KamataEngine.h"
 using namespace KamataEngine;
 
 class Ground {
 public:
+	Ground();
+	~Ground();
 	// 初期化処理。引数としてカメラのポインタを受け取ります。
 	void Init(Camera* camera);
 

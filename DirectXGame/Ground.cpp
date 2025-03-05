@@ -1,5 +1,11 @@
 #include "Ground.h"
 
+Ground::Ground() {}
+
+Ground::~Ground() {
+
+	delete groundModel_; }
+
 void Ground::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform.Initialize();

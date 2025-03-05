@@ -5,6 +5,7 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	delete player_;
 	delete modelPlayer_;
+	delete modelGround_;
 }
 
 void GameScene::Initialize() {
