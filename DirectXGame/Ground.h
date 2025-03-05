@@ -6,14 +6,14 @@ class Ground {
 public:
 	Ground();
 	~Ground();
-	// 初期化処理。引数としてカメラのポインタを受け取ります。
+	// 初期化処理
 	void Init(Camera* camera);
-
-	// 更新処理。ワールドトランスフォームの更新を行います。
+	// 更新処理
 	void Update();
-
-	// 描画処理。読み込んだモデルを描画します。
+	// 描画処理
 	void Draw();
+	// 指定座標における地面の高さを返すメソッド
+	float GetHeightAt(const Vector3& pos);
 
 private:
 	WorldTransform worldTransform;

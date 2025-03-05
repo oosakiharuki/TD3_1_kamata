@@ -7,15 +7,15 @@ Player::~Player() { delete PlayerModel_; }
 
 void Player::Init(Camera* camera) {
 	camera_ = camera;
-
-	// ワールドトランスフォーム初期化
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
 	PlayerModel_ = Model::CreateFromOBJ("cube", true);
-
-	// プレイヤー初期位置（ワールド座標）を反映
+	// 初期位置をワールドトランスフォームに反映
 	worldTransform_.translation_ = position;
 }
+
+// Groundオブジェクトを設定するメソッドの実装
+void Player::SetGround(Ground* ground) { ground_ = ground; }
 
 void Player::Update() {
 	// ▼ 1) 入力によるプレイヤーの水平移動
@@ -39,24 +39,34 @@ void Player::Update() {
 		onGround_ = false;
 	}
 
-	// ▼ 3) 重力処理と地面判定
+	// ▼ 3) 重力処理
 	float gravity = 0.01f;
 	velocityY_ -= gravity;
 	position.y += velocityY_;
 
-	if (position.y < 0.0f) {
-		position.y = 0.0f;
-		velocityY_ = 0.0f;
-		onGround_ = true;
+	// ▼ 4) 地面との当たり判定
+	if (ground_ != nullptr) {
+		float groundHeight = ground_->GetHeightAt(position);
+		if (position.y < groundHeight) {
+			position.y = groundHeight;
+			velocityY_ = 0.0f;
+			onGround_ = true;
+		}
+	} else {
+		// ground_が未設定の場合は従来通り平面（y=0）での判定
+		if (position.y < 0.0f) {
+			position.y = 0.0f;
+			velocityY_ = 0.0f;
+			onGround_ = true;
+		}
 	}
 
-	// ▼ 4) プレイヤーのワールドトランスフォーム更新
-	// 現在のプレイヤー位置をそのまま反映（代入により座標が累積しないように）
+	// ▼ 5) プレイヤーのワールドトランスフォーム更新
 	worldTransform_.translation_ = position;
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
 
-	// ▼ 5) カメラコントローラを用いてカメラを追従させる
+	// ▼ 6) カメラの追従処理
 	cameraController_.Update(camera_, position);
 }
 
