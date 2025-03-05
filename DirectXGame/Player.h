@@ -7,11 +7,20 @@
 
 using namespace KamataEngine;
 
+enum class PlayerState {
+	Normal,
+	Bom,
+	Ghost
+};
+
 class Player {
 public:
 	void Init(Model* model,Camera* viewProjection);
 	void Update();
 	void Draw();
+
+	void SetState(PlayerState newState);  // 状態変更メソッド
+	PlayerState GetState() const { return state_; }
 
 private:
 	WorldTransform worldTransform;
@@ -21,6 +30,8 @@ private:
 	Vector3 position;
 	Vector3 velocity;
 	bool IsJump = false;
+
+	PlayerState state_ = PlayerState::Normal; // 初期状態はNormal
 
 	XINPUT_STATE state, preState;
 	const float speed = 0.2f;

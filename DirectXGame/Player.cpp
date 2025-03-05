@@ -81,4 +81,7 @@ void Player::Draw() {
 	model_->Draw(worldTransform,*viewProjection_);
 }
 
-
+// Player.cpp
+void Player::SetState(PlayerState newState) {
+	state_ = newState;
+}
