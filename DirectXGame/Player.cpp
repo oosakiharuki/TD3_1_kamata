@@ -3,9 +3,7 @@
 
 Player::Player() {}
 
-Player::~Player() {
-
-	delete PlayerModel_; }
+Player::~Player() { delete PlayerModel_; }
 
 void Player::Init(Camera* camera) {
 	camera_ = camera;
@@ -16,35 +14,35 @@ void Player::Init(Camera* camera) {
 	PlayerModel_ = Model::CreateFromOBJ("cube", true);
 
 	// プレイヤー初期位置（ワールド座標）
-	position = {0, 0, 0};
+	worldTransform_.translation_ = position;
 }
 
 void Player::Update() {
-	// ▼ 1) WASD 入力によるプレイヤーの水平移動
-	float moveSpeed = 0.2f;
+	// ▼ 1) 入力によるプレイヤーの水平移動
+	float moveSpeed = 0.5f;
 	if (Input::GetInstance()->PushKey(DIK_W)) {
-		position.z += moveSpeed;
+		position.z += moveSpeed; // 前進
 	}
 	if (Input::GetInstance()->PushKey(DIK_S)) {
-		position.z -= moveSpeed;
+		position.z -= moveSpeed; // 後退
 	}
 	if (Input::GetInstance()->PushKey(DIK_A)) {
-		position.x -= moveSpeed;
+		position.x -= moveSpeed; // 左
 	}
 	if (Input::GetInstance()->PushKey(DIK_D)) {
-		position.x += moveSpeed;
+		position.x += moveSpeed; // 右
 	}
 
-	// ▼ 2) スペースキーによるジャンプ（簡易実装）
+	// ▼ 2) ジャンプ処理
 	if (Input::GetInstance()->PushKey(DIK_SPACE) && onGround_) {
-		velocityY_ = 0.3f; // ジャンプ力（必要に応じて調整）
+		velocityY_ = 0.3f;
 		onGround_ = false;
 	}
 
-	// ▼ 3) 重力処理と地面判定（地面：Y=0 と仮定）
+	// ▼ 3) 重力処理と地面判定
 	float gravity = 0.01f;
-	velocityY_ -= gravity;    // 下向きに加速
-	position.y += velocityY_; // Y座標更新
+	velocityY_ -= gravity;
+	position.y += velocityY_;
 
 	if (position.y < 0.0f) {
 		position.y = 0.0f;
@@ -52,23 +50,24 @@ void Player::Update() {
 		onGround_ = true;
 	}
 
-	// ▼ 4) プレイヤーのワールドトランスフォームに反映
+	// ▼ 4) プレイヤーのワールドトランスフォーム更新
+	// 現在のプレイヤー位置をそのまま反映する（加算ではなく代入）
 	worldTransform_.translation_ = position;
 	worldTransform_.TransferMatrix();
+	worldTransform_.UpdateMatrix();
 
-	// ▼ 5) カメラ追従設定
-	// プレイヤーを常に画面中央に表示するため、カメラの位置はプレイヤーの座標に対して一定のオフセットを与えます
+	// ▼ 5) カメラは「プレイヤー座標 + オフセット」の位置に置いて追従
 	camera_->translation_.x = position.x;
-	camera_->translation_.y = position.y + 10.0f; // Y軸は少し高めに配置
-	camera_->translation_.z = position.z - 20.0f; // Z軸はプレイヤーから離す
+	camera_->translation_.y = position.y + 20.0f;
+	camera_->translation_.z = position.z - 20.0f;
 
-	// カメラの向き設定（上から見下ろす角度）
-	float pitchDeg = 20.0f; // 必要に応じて変更可能
+	// 上から見下ろす角度（ピッチ）を設定
+	float pitchDeg = 45.0f;
 	camera_->rotation_.x = pitchDeg * (3.14159265f / 180.0f);
 	camera_->rotation_.y = 0.0f;
 	camera_->rotation_.z = 0.0f;
 
-	// カメラ行列を更新＆転送
+	// カメラ行列の更新と転送
 	camera_->UpdateViewMatrix();
 	camera_->TransferMatrix();
 }
