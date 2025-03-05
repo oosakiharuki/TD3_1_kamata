@@ -27,3 +27,5 @@ Matrix4x4 MakeRotateZMatrix(float angle);
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
 Vector3 Normalize(const Vector3& v);
+
+Matrix4x4 Inverse(const Matrix4x4& m);

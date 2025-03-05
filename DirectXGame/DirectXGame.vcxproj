@@ -111,6 +111,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mymath.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="RailCamera.cpp" />
+    <ClCompile Include="WorldTransformEx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -192,6 +194,7 @@
     <ClInclude Include="Ground.h" />
     <ClInclude Include="Mymath.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="RailCamera.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
