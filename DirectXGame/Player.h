@@ -8,14 +8,17 @@ using namespace KamataEngine;
 
 class Player {
 public:
-	void Init(Model* model,Camera* viewProjection);
+
+
+	void Init(Camera* camera);
+
 	void Update();
 	void Draw();
 
 private:
 	WorldTransform worldTranform;
-	Camera* viewProjection_ = nullptr;
-	Model* model_ = nullptr;
+	Camera* camera_ = nullptr;
+	Model* PlayerModel_ = nullptr;
 
 	Vector3 position;
 };

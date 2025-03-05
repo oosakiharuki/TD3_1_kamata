@@ -28,7 +28,7 @@ private:
 	Model* model_ = nullptr;
 
 	WorldTransform worldTransform_;
-	Camera viewProjection_;
+	Camera camera_;
 	//uint32_t texture = 0;
 
 	Player* player_ = nullptr;

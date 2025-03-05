@@ -1,19 +1,13 @@
 #include "Player.h"
 
-void Player::Init(Model* model, Camera* viewProjection) { 
+void Player::Init(Camera* camera) {
 
-	model_ = model;
-	viewProjection_ = viewProjection;
+	camera_ = camera;
 
 	worldTranform.Initialize();
+	PlayerModel_=Model::CreateFromOBJ("cube", true);
 }
 
-void Player::Update() { 
-	worldTranform.TransferMatrix();
-}
+void Player::Update() { worldTranform.TransferMatrix(); }
 
-void Player::Draw() { 
-	model_->Draw(worldTranform,*viewProjection_);
-}
-
-
+void Player::Draw() {PlayerModel_->Draw(worldTranform, *camera_); }
