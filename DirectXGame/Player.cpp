@@ -11,7 +11,7 @@ void Player::Init(Camera* camera) {
 	camera_ = camera;
 
 	// ワールドトランスフォーム初期化
-	worldTranform.Initialize();
+	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
 	PlayerModel_ = Model::CreateFromOBJ("cube", true);
 
@@ -53,8 +53,8 @@ void Player::Update() {
 	}
 
 	// ▼ 4) プレイヤーのワールドトランスフォームに反映
-	worldTranform.translation_ = position;
-	worldTranform.TransferMatrix();
+	worldTransform_.translation_ = position;
+	worldTransform_.TransferMatrix();
 
 	// ▼ 5) カメラ追従設定
 	// プレイヤーを常に画面中央に表示するため、カメラの位置はプレイヤーの座標に対して一定のオフセットを与えます
@@ -73,4 +73,4 @@ void Player::Update() {
 	camera_->TransferMatrix();
 }
 
-void Player::Draw() { PlayerModel_->Draw(worldTranform, *camera_); }
+void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }

@@ -15,7 +15,7 @@ public:
 	void Draw();
 
 private:
-	WorldTransform worldTranform;
+	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
 	Model* PlayerModel_ = nullptr;
 
