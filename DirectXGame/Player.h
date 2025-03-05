@@ -2,6 +2,7 @@
 #include "3d/Camera.h"
 #include "3d/Model.h"
 #include "3d/WorldTransform.h"
+#include "CameraController.h"
 #include "math/Vector3.h"
 
 using namespace KamataEngine;
@@ -26,4 +27,6 @@ private:
 	bool onGround_ = true;   // 地面に着地しているか
 	float velocityY_ = 0.0f; // 上下方向の速度
 
+	// カメラの追従処理を担当するクラス
+	CameraController cameraController_;
 };

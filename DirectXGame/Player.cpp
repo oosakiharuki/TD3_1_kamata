@@ -13,7 +13,7 @@ void Player::Init(Camera* camera) {
 	// "cube" モデルを読み込み
 	PlayerModel_ = Model::CreateFromOBJ("cube", true);
 
-	// プレイヤー初期位置（ワールド座標）
+	// プレイヤー初期位置（ワールド座標）を反映
 	worldTransform_.translation_ = position;
 }
 
@@ -51,25 +51,13 @@ void Player::Update() {
 	}
 
 	// ▼ 4) プレイヤーのワールドトランスフォーム更新
-	// 現在のプレイヤー位置をそのまま反映する（加算ではなく代入）
+	// 現在のプレイヤー位置をそのまま反映（代入により座標が累積しないように）
 	worldTransform_.translation_ = position;
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
 
-	// ▼ 5) カメラは「プレイヤー座標 + オフセット」の位置に置いて追従
-	camera_->translation_.x = position.x;
-	camera_->translation_.y = position.y + 20.0f;
-	camera_->translation_.z = position.z - 20.0f;
-
-	// 上から見下ろす角度（ピッチ）を設定
-	float pitchDeg = 45.0f;
-	camera_->rotation_.x = pitchDeg * (3.14159265f / 180.0f);
-	camera_->rotation_.y = 0.0f;
-	camera_->rotation_.z = 0.0f;
-
-	// カメラ行列の更新と転送
-	camera_->UpdateViewMatrix();
-	camera_->TransferMatrix();
+	// ▼ 5) カメラコントローラを用いてカメラを追従させる
+	cameraController_.Update(camera_, position);
 }
 
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
