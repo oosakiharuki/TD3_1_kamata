@@ -1,6 +1,7 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Player.h"
+#include "Test.h"
 
 using namespace KamataEngine;
 
@@ -20,6 +21,8 @@ public:
 	void Update();
 
 	void Draw();
+	
+	void Collision();
 
 private:
 	DirectXCommon* dxCommon_ = nullptr;
@@ -34,4 +37,8 @@ private:
 	Player* player_ = nullptr;
 	Model* modelPlayer_ = nullptr;
 
+	Test* test = nullptr;
+	Model* modelT = nullptr;
+
+	bool EnemyContral = false;
 };

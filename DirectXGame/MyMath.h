@@ -3,12 +3,12 @@
 #include "math/Vector3.h"
 #include <cmath>
 
-//struct AABB {
-//	Vector3 min;
-//	Vector3 max;
-//};
-
 using namespace KamataEngine;
+
+struct AABB {
+	Vector3 min;
+	Vector3 max;
+};
 
 namespace MyMath {
 
@@ -48,5 +48,7 @@ namespace MyMath {
 	Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip, float farClip);
 
 	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
+
+	AABB CreateAABB(const Vector3& translate,const Vector3& size);
 
 } // namespace MyMath
