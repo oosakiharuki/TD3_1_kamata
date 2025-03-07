@@ -28,28 +28,16 @@ void GameScene::Initialize() {
 	std::vector<AABB> obstacles4;
 
 	// 例：壁のAABB（仮の座標・サイズ）
-	AABB wall;
-	wall.min = {0.0f, 0.0f, 0.0f};
-	wall.max = {0.0f, 0.0f, 0.0f};
-	obstacles1.push_back(wall);
+	AddObstacle(obstacles1, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
 
 	// 例：床のAABB
-	AABB floor;
-	floor.min = {-200.0f, -5.5f, -200.0f};
-	floor.max = {200.0f, 0.0f, 200.0f};
-	obstacles2.push_back(floor);
+	AddObstacle(obstacles2, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f});
 
 	// 新しい足場AABB
-	AABB newPlatform;
-	newPlatform.min = {-10.0f, -0.5f, -10.0f}; // 新しい足場の位置とサイズを設定
-	newPlatform.max = {20.0f, 3.0f, 20.0f}; // 新しい足場の位置とサイズを設定
-	obstacles3.push_back(newPlatform);
+	AddObstacle(obstacles3, {-10.0f, -0.5f, -10.0f}, {20.0f, 3.0f, 20.0f});
 
-		// 新しい足場のAABB
-	AABB newPlatform2;
-	newPlatform2.min = {18.0f, -0.5f, -10.0f}; // 新しい足場の位置とサイズを設定
-	newPlatform2.max = {37.5f, 6.0f, 20.0f};    // 新しい足場の位置とサイズを設定
-	obstacles4.push_back(newPlatform2);
+	// 新しい足場のAABB
+	AddObstacle(obstacles4, {18.0f, -0.5f, -10.0f}, {37.5f, 6.0f, 20.0f});
 
 	// 障害物リストを Player にセット
 	player_->SetObstacleList(obstacles1);
@@ -82,4 +70,11 @@ void GameScene::Draw() {
 	// UI描画
 	Sprite::PreDraw(commandList);
 	Sprite::PostDraw();
+}
+
+void GameScene::AddObstacle(std::vector<AABB>& obstacles, const Vector3& min, const Vector3& max) {
+	AABB obstacle;
+	obstacle.min = min;
+	obstacle.max = max;
+	obstacles.push_back(obstacle);
 }

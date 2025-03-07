@@ -15,6 +15,9 @@ public:
 	void Draw();
 
 private:
+
+	void AddObstacle(std::vector<AABB>& obstacles, const Vector3& min, const Vector3& max);
+
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
