@@ -1,11 +1,11 @@
 #include "AABB.h"
 
-AABB::AABB() : min_(Vector3(0, 0, 0)), max_(Vector3(0, 0, 0)) {}
-
-AABB::AABB(const Vector3& min, const Vector3& max) : min_(min), max_(max) {}
-
-bool AABB::CheckCollision(const AABB& other) const {
-    return (min_.x <= other.max_.x && max_.x >= other.min_.x) &&
-        (min_.y <= other.max_.y && max_.y >= other.min_.y) &&
-        (min_.z <= other.max_.z && max_.z >= other.min_.z);
+// AABBの衝突判定
+bool IsCollisionAABB(const AABB& a, const AABB& b) {
+	if ((a.min.x <= b.max.x && a.max.x >= b.min.x) && // x軸
+		(a.min.y <= b.max.y && a.max.y >= b.min.y) && // y軸
+		(a.min.z <= b.max.z && a.max.z >= b.min.z)) { // z軸
+		return true;
+	}
+	return false;
 }

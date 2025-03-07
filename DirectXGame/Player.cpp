@@ -1,18 +1,18 @@
 #include "Player.h"
 
-void Player::Init(Model* model, Camera* viewProjection) { 
-
+void Player::Init(Model* model, Camera* viewProjection, Vector3& pos) {
 	model_ = model;
 	viewProjection_ = viewProjection;
 
 	worldTransform.Initialize();
+	worldTransform.translation_ = pos;
 }
 
-void Player::Update() { 
+void Player::Update() {
 	float x = 0, z = 0;
 
 	Input::GetInstance()->GetJoystickState(0, state);
-	Input::GetInstance()->GetJoystickStatePrevious(0,preState);
+	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
 
 	if (Input::GetInstance()->GetJoystickState(0, state)) {
 		// 左スティックの入力
@@ -31,13 +31,15 @@ void Player::Update() {
 
 	if (IsJump) {
 		//のりうつるときの処理
-		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && 
+		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) &&
 			!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
 			velocity.y -= 1.2f;
-		} else {
+		}
+		else {
 			velocity.y -= 0.1f;
 		}
-	} else {
+	}
+	else {
 		velocity.y = 0.0f;
 	}
 
@@ -45,7 +47,7 @@ void Player::Update() {
 		!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !IsJump) {
 		IsJump = true;
 		velocity.y = 1.5f;
-	} 
+	}
 
 
 	if (worldTransform.translation_.y < 0.0f) {
@@ -60,7 +62,7 @@ void Player::Update() {
 	worldTransform.translation_.z += z * speed;
 
 	if (Input::GetInstance()->PushKey(DIK_A)) {
-		worldTransform.translation_.x -= 0.1f; 
+		worldTransform.translation_.x -= 0.1f;
 	}
 	if (Input::GetInstance()->PushKey(DIK_D)) {
 		worldTransform.translation_.x += 0.1f;
@@ -77,11 +79,6 @@ void Player::Update() {
 	worldTransform.UpdateMatrix();
 }
 
-void Player::Draw() { 
-	model_->Draw(worldTransform,*viewProjection_);
-}
-
-// Player.cpp
-void Player::SetState(PlayerState newState) {
-	state_ = newState;
+void Player::Draw() {
+	model_->Draw(worldTransform, *viewProjection_);
 }

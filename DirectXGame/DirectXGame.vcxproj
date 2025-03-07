@@ -107,7 +107,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
-    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Block.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MyMath.cpp" />
@@ -191,7 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
-    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Block.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="Player.h" />

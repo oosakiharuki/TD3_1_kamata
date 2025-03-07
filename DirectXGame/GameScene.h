@@ -1,27 +1,40 @@
 #pragma once
 #include "KamataEngine.h"
 #include "Player.h"
-#include "GameObject.h"
-#include <vector>
+#include "Block.h"
+
+using namespace KamataEngine;
 
 class GameScene {
-public:
-    GameScene();
-    ~GameScene();
 
-    void Initialize();
-    void Update();
-    void Draw();
+public:
+	// ゲームシーン
+
+	// コンストラクタ
+	GameScene();
+
+	// デストラクタ
+	~GameScene();
+
+	void Initialize();
+
+	void Update();
+
+	void Draw();
 
 private:
-    void CheckCollisions(); // AABB衝突チェック
+	DirectXCommon* dxCommon_ = nullptr;
+	Input* input_ = nullptr;
+	Audio* audio_ = nullptr;
+	Model* model_ = nullptr;
 
-    DirectXCommon* dxCommon_ = nullptr;
-    Input* input_ = nullptr;
-    Audio* audio_ = nullptr;
-    WorldTransform worldTransform_;
-    Camera viewProjection_;
+	WorldTransform worldTransform_;
+	Camera viewProjection_;
+	//uint32_t texture = 0;
 
-    Player* player_ = nullptr;
-    std::vector<GameObject*> gameObjects_; // 複数のオブジェクト管理
+	Player* player_ = nullptr;
+	Model* modelPlayer_ = nullptr;
+
+	Block* block_ = nullptr;
+	Model* modelBlock_ = nullptr;
 };
