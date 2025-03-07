@@ -40,13 +40,9 @@ private:
 	// 障害物リスト
 	std::vector<AABB> obstacleList_;
 
-	WorldTransform worldTransform;
 	Camera* viewProjection_ = nullptr;
-	Model* model_ = nullptr;
 
-	Vector3 position;
 	Vector3 velocity;
-	bool IsJump = false;
 
 	XINPUT_STATE state, preState;
 	const float speed = 0.2f;

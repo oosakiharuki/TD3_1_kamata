@@ -32,8 +32,6 @@ public:
 	WorldTransform() = default;
 	~WorldTransform() = default;
 
-	void UpdateMatrix();
-
 	/// <summary>
 	/// 初期化
 	/// </summary>

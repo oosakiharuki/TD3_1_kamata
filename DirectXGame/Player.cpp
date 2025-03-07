@@ -63,57 +63,26 @@ void Player::Update() {
 		}
 	}
 
-	if (IsJump) {
-		//のりうつるときの処理
-		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && 
-			!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-			velocity.y -= 1.2f;
-		} else {
-			velocity.y -= 0.1f;
-		}
-	} else {
-		velocity.y = 0.0f;
-	}
+	//if (IsJump) {
+	//	//のりうつるときの処理
+	//	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && 
+	//		!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+	//		velocity.y -= 1.2f;
+	//	} else {
+	//		velocity.y -= 0.1f;
+	//	}
+	//} else {
+	//	velocity.y = 0.0f;
+	//}
 
 	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) &&
-		!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !IsJump) {
-		IsJump = true;
-		velocity.y = 1.5f;
+		!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && onGround_) {
+		velocityY_ = 0.3f;
+		onGround_ = false;
 	} 
 
-
-	if (worldTransform.translation_.y < 0.0f) {
-		worldTransform.translation_.y = 0.0f;
-		IsJump = false;
-	}
-
-	worldTransform.translation_.y += velocity.y;
-
-
-	worldTransform.translation_.x += x * speed;
-	worldTransform.translation_.z += z * speed;
-
-	if (Input::GetInstance()->PushKey(DIK_A)) {
-		worldTransform.translation_.x -= 0.1f; 
-	}
-	if (Input::GetInstance()->PushKey(DIK_D)) {
-		worldTransform.translation_.x += 0.1f;
-	}
-
-	if (Input::GetInstance()->PushKey(DIK_S)) {
-		worldTransform.translation_.z -= 0.1f;
-	}
-	if (Input::GetInstance()->PushKey(DIK_W)) {
-		worldTransform.translation_.z += 0.1f;
-	}
-
-
-	worldTransform.UpdateMatrix();
-}
-
-void Player::Draw() { 
-	model_->Draw(worldTransform,*viewProjection_);
-}
+	position.x += x * speed;
+	position.z += z * speed;
 
 
 	// 重力処理
@@ -153,5 +122,10 @@ void Player::Draw() {
 
 	cameraController_.Update(camera_, position);
 }
+
+//void Player::Draw() { 
+//	model_->Draw(worldTransform,*viewProjection_);
+//}
+//
 
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
