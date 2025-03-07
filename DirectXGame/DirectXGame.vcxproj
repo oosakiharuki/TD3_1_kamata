@@ -112,9 +112,15 @@
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="Ground.cpp" />
     <ClCompile Include="main.cpp" />
+
     <ClCompile Include="Mymath.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="WorldTransform.cpp" />
+
+    <ClCompile Include="MyMath.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="WorldTransformEx.cpp" />
+
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -196,8 +202,12 @@
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="GameScene.h" />
+
     <ClInclude Include="Ground.h" />
     <ClInclude Include="Mymath.h" />
+
+    <ClInclude Include="MyMath.h" />
+
     <ClInclude Include="Player.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>

@@ -1,12 +1,16 @@
 #pragma once
 #include "3d/Camera.h"
 #include "3d/Model.h"
+
 #include "3d/WorldTransform.h"
 #include "AABB.h"
 #include "CameraController.h"
 #include "Collision.h"
 #include "math/Vector3.h"
 #include <vector>
+
+#include "input/input.h"
+
 
 using namespace KamataEngine;
 
@@ -24,6 +28,7 @@ public:
 	void AddObstacle(const AABB& obstacle);
 
 private:
+
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
 	Model* PlayerModel_ = nullptr;
@@ -34,4 +39,16 @@ private:
 
 	// 障害物リスト
 	std::vector<AABB> obstacleList_;
+
+	WorldTransform worldTransform;
+	Camera* viewProjection_ = nullptr;
+	Model* model_ = nullptr;
+
+	Vector3 position;
+	Vector3 velocity;
+	bool IsJump = false;
+
+	XINPUT_STATE state, preState;
+	const float speed = 0.2f;
 };
+
