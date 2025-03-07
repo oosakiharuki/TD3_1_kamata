@@ -27,6 +27,7 @@ private:
 	WorldTransform worldTransform;
 	Camera* camera_ = nullptr;
 	Model* groundModel_ = nullptr;
+	Model* groundScaffoldModel_ = nullptr;
 	Vector3 position;
 
 	// OBJファイルから抽出した三角形メッシュのリスト

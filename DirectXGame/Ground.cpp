@@ -7,20 +7,28 @@ using namespace KamataEngine::MathUtility;
 
 Ground::Ground() {}
 
-Ground::~Ground() { delete groundModel_; }
+Ground::~Ground() {
+	delete groundModel_;
+	delete groundScaffoldModel_; // GroundScaffoldのモデルを解放
+}
 
 void Ground::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform.Initialize();
 	// "ground" という名前でOBJファイルからモデルを読み込み
 	groundModel_ = Model::CreateFromOBJ("ground", true);
+	// "groundScaffold" という名前でOBJファイルからモデルを読み込み
+	groundScaffoldModel_ = Model::CreateFromOBJ("GroundScaffold2", true);
 	// OBJファイルから三角形メッシュを読み込む（ファイル名は"ground.obj"と仮定）
 	LoadTrianglesFromOBJ("ground.obj");
 }
 
 void Ground::Update() { worldTransform.TransferMatrix(); }
 
-void Ground::Draw() { groundModel_->Draw(worldTransform, *camera_); }
+void Ground::Draw() {
+	groundModel_->Draw(worldTransform, *camera_);
+	groundScaffoldModel_->Draw(worldTransform, *camera_); // GroundScaffoldを描画
+}
 
 void Ground::LoadTrianglesFromOBJ(const std::string& filename) {
 	std::ifstream file(filename);
@@ -50,44 +58,12 @@ void Ground::LoadTrianglesFromOBJ(const std::string& filename) {
 	file.close();
 }
 
-// レイと三角形の交差判定（Möller-Trumboreアルゴリズム）
-static bool IntersectRayTriangle(const Vector3& rayOrigin, const Vector3& rayDir, const Triangle& tri, float& t) {
-	const float epsilon = 0.000001f;
-	Vector3 edge1 = tri.v1 - tri.v0;
-	Vector3 edge2 = tri.v2 - tri.v0;
-	Vector3 h = rayDir.cross(edge2);
-	float a = edge1.dot(h);
-	if (fabs(a) < epsilon)
-		return false;
-	float f = 1.0f / a;
-	Vector3 s = rayOrigin - tri.v0;
-	float u = f * s.dot(h);
-	if (u < 0.0f || u > 1.0f)
-		return false;
-	Vector3 q = s.cross(edge1);
-	float v = f * rayDir.dot(q);
-	if (v < 0.0f || u + v > 1.0f)
-		return false;
-	t = f * edge2.dot(q);
-	return (t > epsilon);
-}
-
 float Ground::GetHeightAt(const Vector3& pos) {
 	// 足元から下方向へレイキャスト（方向は(0, -1, 0)）
 	Vector3 rayOrigin = pos;
 	Vector3 rayDir = {0, -1, 0};
 	float closestT = FLT_MAX;
 	bool hit = false;
-
-	for (const auto& tri : triangles) {
-		float t;
-		if (IntersectRayTriangle(rayOrigin, rayDir, tri, t)) {
-			if (t < closestT) {
-				closestT = t;
-				hit = true;
-			}
-		}
-	}
 
 	if (hit) {
 		// 交差点の座標から Y 値を返す

@@ -13,7 +13,9 @@ void Player::Init(Camera* camera) {
 	worldTransform_.translation_ = position;
 }
 
-void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_ = obstacles; }
+
+void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
+
 
 void Player::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
 

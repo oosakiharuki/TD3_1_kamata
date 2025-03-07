@@ -1,7 +1,7 @@
 #include "CameraController.h"
 #include <KamataEngine.h>
 
-CameraController::CameraController() : offset_{0.0f, 20.0f, -20.0f}, pitchDeg_(45.0f) {}
+CameraController::CameraController() : offset_{0.0f, 3.0f, -20.0f}, pitchDeg_(360.0f) {}
 
 CameraController::~CameraController() {}
 

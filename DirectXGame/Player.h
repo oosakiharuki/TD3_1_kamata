@@ -27,7 +27,7 @@ private:
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
 	Model* PlayerModel_ = nullptr;
-	Vector3 position = {0, 0, 0};
+	Vector3 position = {0, 0, -10};
 	bool onGround_ = true;
 	float velocityY_ = 0.0f;
 	CameraController cameraController_;
