@@ -44,7 +44,6 @@ private:
 	Camera* viewProjection_ = nullptr;
 	Model* model_ = nullptr;
 
-	Vector3 position;
 	Vector3 velocity;
 	bool IsJump = false;
 

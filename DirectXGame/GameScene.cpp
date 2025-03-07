@@ -22,35 +22,20 @@ void GameScene::Initialize() {
 	player_->Init(&camera_);
 
 	// 障害物リストの作成例
-	std::vector<AABB> obstacles1;
-	std::vector<AABB> obstacles2;
-	std::vector<AABB> obstacles3;
-	std::vector<AABB> obstacles4;
-
-	// 例：壁のAABB（仮の座標・サイズ）
-	AddObstacle(obstacles1, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
-
-	// 例：床のAABB
-	AddObstacle(obstacles2, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f});
-
-	// 新しい足場AABB
-	AddObstacle(obstacles3, {-10.0f, -0.5f, -10.0f}, {20.0f, 3.0f, 20.0f});
-
-	// 新しい足場のAABB
-	AddObstacle(obstacles4, {18.0f, -0.5f, -10.0f}, {37.5f, 6.0f, 20.0f});
+	AddObstacle(allObstacles_, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});            // 例：壁のAABB
+	AddObstacle(allObstacles_, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f}); // 例：床のAABB
+	AddObstacle(allObstacles_, {-10.0f, -0.5f, -10.0f}, {20.0f, 3.0f, 20.0f});     // 新しい足場AABB
+	AddObstacle(allObstacles_, {18.0f, -0.5f, -10.0f}, {37.5f, 6.0f, 20.0f});      // 新しい足場のAABB
 
 	// 障害物リストを Player にセット
-	player_->SetObstacleList(obstacles1);
-	player_->SetObstacleList(obstacles2);
-	player_->SetObstacleList(obstacles3);
-	player_->SetObstacleList(obstacles4);
+	for (const auto& obstacles : allObstacles_) {
+		player_->SetObstacleList(obstacles);
+	}
 
 	// Ground の生成・初期化
 	modelGround_ = new Ground();
 	modelGround_->Init(&camera_);
 }
-
-
 
 void GameScene::Update() { player_->Update(); }
 
@@ -72,9 +57,12 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 }
 
-void GameScene::AddObstacle(std::vector<AABB>& obstacles, const Vector3& min, const Vector3& max) {
+void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max) {
 	AABB obstacle;
 	obstacle.min = min;
 	obstacle.max = max;
-	obstacles.push_back(obstacle);
+	if (allObstacles.empty() || allObstacles.back().size() >= 100) { // 100個の障害物を追加
+		allObstacles.emplace_back();
+	}
+	allObstacles.back().push_back(obstacle);
 }
