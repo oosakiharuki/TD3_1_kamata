@@ -83,18 +83,6 @@ void Player::Update() {
 		} else {
 			onGround = false;
 		}
-
-
-		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) &&
-			!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround) {
-			EnemyContral = false;
-			controler = Controler::player;
-
-		} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround) {
-			velocity.y = 0.0f;
-			EnemyContral = false;
-			controler = Controler::player;
-		}
  
 		break;
 	default:
@@ -113,13 +101,24 @@ void Player::Update() {
 		onGround = false;
 		velocity.y = 1.2f;
 	}
+	
+	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) &&
+		!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround) {
+		velocity.y = 0.0f;
+		EnemyContral = false;
+		controler = Controler::player;
 
+	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround) {
+		velocity.y = 0.0f;
+		EnemyContral = false;
+		controler = Controler::player;
+	}
 
 
 
 	worldTransform.translation_.y += velocity.y;
 	worldTransform.translation_.y = std::clamp(worldTransform.translation_.y, yuka, 1000.0f);
-
+	
 
 
 	aabb = CreateAABB(worldTransform.translation_,size);

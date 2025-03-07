@@ -70,17 +70,23 @@ void GameScene::Draw() {
 void GameScene::Collision() {
 
 	if ((player_->GetAABB().max.x >= test->GetAABB().min.x && player_->GetAABB().min.x <= test->GetAABB().max.x) &&
-	    (player_->GetAABB().max.y >= test->GetAABB().min.y && player_->GetAABB().min.y <= test->GetAABB().max.y) &&
+	    (player_->GetAABB().max.y >= test->GetAABB().min.y && player_->GetAABB().min.y - 1.0f <= test->GetAABB().max.y) &&
 	    (player_->GetAABB().max.z >= test->GetAABB().min.z && player_->GetAABB().min.z <= test->GetAABB().max.z)) {
-		player_->IsOnEnemy(true);
-		player_->GetHead(2);
+		
 
-		if (player_->GetIsTransfar()) {	
-			test->ContralPlayer();
-			player_->SetEnemyContral(true);
+		//頭の上か
+		if (player_->GetAABB().min.y >= test->GetAABB().max.y - 1.5f) {
+
+			player_->IsOnEnemy(true);
+			player_->GetHead(test->GetWorldTranslate().y + 2);
+
+			if (player_->GetIsTransfar()) {
+				test->ContralPlayer();
+				player_->SetEnemyContral(true);
+			}
 		}
-
-	} else {
+	} 
+	else {
 		player_->IsOnEnemy(false);
 		if (!player_->GetEnemyContral()) {
 			player_->GetHead(0); // 地面のy座標

@@ -19,6 +19,8 @@ public:
 	void ReMove(const Vector3& position);
 	bool GetPlayerCtrl() { return isPlayer; }
 
+	Vector3 GetWorldTranslate() { return worldTransform.translation_; }
+
 private:
 	WorldTransform worldTransform;
 	Camera* viewProjection_ = nullptr;

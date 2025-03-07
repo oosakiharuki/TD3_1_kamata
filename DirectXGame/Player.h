@@ -13,6 +13,8 @@ enum class Controler {
 	enemyTransfar
 };
 
+
+
 class Player {
 public:
 	void Init(Model* model,Camera* viewProjection);
@@ -21,7 +23,9 @@ public:
 	AABB GetAABB() { return aabb; }
 	void IsOnEnemy(bool set) { onEnemy = set; }
 	bool GetIsTransfar() { return isTransfar; }
-	void GetHead(float a) {	yuka = a;}
+
+	void GetHead(float a) { yuka = a; }
+
 	const WorldTransform* GetWorld() { return &worldTransform; }
 	
 	bool GetEnemyContral() { return EnemyContral; }
