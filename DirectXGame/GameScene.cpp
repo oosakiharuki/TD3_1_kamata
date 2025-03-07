@@ -6,7 +6,15 @@ GameScene::GameScene() {}
 
 GameScene::~GameScene() {
 	delete player_;
+
+	delete modelPlayer_;
+
+	delete test;
+	delete modelT;
+
+
 	delete modelGround_;
+
 }
 
 void GameScene::Initialize() {
@@ -39,6 +47,12 @@ void GameScene::Initialize() {
 	floor.max = {200.0f, 0.0f, 200.0f};
 	obstacles2.push_back(floor);
 
+
+	modelT = Model::Create();
+	test = new Test();
+	test->Init(modelT, &camera_);
+
+
 	// 新しい足場AABB
 	AABB newPlatform;
 	newPlatform.min = {-10.0f, -0.5f, -10.0f}; // 新しい足場の位置とサイズを設定
@@ -62,9 +76,20 @@ void GameScene::Initialize() {
 	modelGround_->Init(&camera_);
 }
 
+void GameScene::Update() { 
+	player_->Update();
+	test->Update();
 
+	Collision();
+	
+	ImGui::Begin("camera");
+	ImGui::DragFloat3("cameraTranslate", &camera_.translation_.x,0.1f);
+	ImGui::DragFloat3("cameraRotate", &camera_.rotation_.x,0.1f);
+	ImGui::End();
 
-void GameScene::Update() { player_->Update(); }
+	camera_.UpdateMatrix();
+}
+
 
 void GameScene::Draw() {
 	ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
@@ -76,10 +101,32 @@ void GameScene::Draw() {
 	// モデル描画
 	Model::PreDraw(commandList);
 	player_->Draw();
+
+	test->Draw();
+
+
 	modelGround_->Draw();
+
 	Model::PostDraw();
 
 	// UI描画
 	Sprite::PreDraw(commandList);
 	Sprite::PostDraw();
+}
+
+void GameScene::Collision() {
+
+	player_->GetEnemyHead(test->GetAABB());
+
+	if (player_->GetIsTransfar() && IsCollisionAABB(player_->GetAABB(),test->GetAABB())) {
+		test->ContralPlayer();
+		player_->SetEnemyContral(true);
+	}
+
+	if (player_->GetEnemyContral()) {
+		test->SetParent(player_->GetWorld());
+	} else {		
+		test->ReMove(player_->GetWorld()->translation_);
+	}
+
 }

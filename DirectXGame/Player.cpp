@@ -1,5 +1,11 @@
 #include "Player.h"
+
+#include "imgui.h"
+#include <iostream>
+#include <algorithm>
+
 #include <KamataEngine.h>
+
 
 Player::Player() {}
 
@@ -36,12 +42,6 @@ void Player::Update() {
 		position.x += moveSpeed;
 	}
 
-	// ジャンプ処理
-	if (Input::GetInstance()->PushKey(DIK_SPACE) && onGround_) {
-		velocityY_ = 0.3f;
-		onGround_ = false;
-	}
-
 
 	float x = 0, z = 0;
 
@@ -61,6 +61,39 @@ void Player::Update() {
 		if (abs(z) < deadZone) {
 			z = 0.0f;
 		}
+		position.x += x * speed;
+		position.z += z * speed;
+
+	}
+
+	switch (controler) {
+	case Controler::player:
+
+		if (!onGround_) {
+			// のりうつるときの処理
+			if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && 
+				!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !EnemyContral) {
+				velocityY_ -= 1.2f;
+				isTransfar = true;
+			} else if (Input::GetInstance()->TriggerKey(DIK_SPACE) && !EnemyContral) {
+				velocityY_  -= 1.2f;
+				isTransfar = true;
+			}
+		} else {
+			isTransfar = false;
+		}
+		break;
+	case Controler::enemyTransfar:
+
+		//if (onEnemy || position.y <= 2.0f) {
+		//	onGround_ = true;
+		//} else {
+		//	onGround_ = false;
+		//}
+ 
+		break;
+	default:
+		break;
 	}
 
 	//if (IsJump) {
@@ -80,10 +113,33 @@ void Player::Update() {
 		velocityY_ = 0.3f;
 		onGround_ = false;
 	} 
+	// ジャンプ処理
+	else if (Input::GetInstance()->TriggerKey(DIK_SPACE) && onGround_) {
+		velocityY_ = 0.3f;
+		onGround_ = false;
+	}
 
 	position.x += x * speed;
 	position.z += z * speed;
+		
+	
+	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) &&
+		!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_) {
+		velocityY_ = 0.0f;
+		EnemyContral = false;
+		controler = Controler::player;
 
+	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_) {
+		velocityY_ = 0.0f;
+		EnemyContral = false;
+		controler = Controler::player;
+	}
+
+
+
+	//position.y += velocity.y;
+	//position.y = std::clamp(position.y, yuka, 1000.0f);
+	
 
 	// 重力処理
 	float gravity = 0.01f;
@@ -92,7 +148,7 @@ void Player::Update() {
 
 	// プレイヤーのAABB作成（例：幅1.0, 高さ2.0, 奥行1.0）
 	float halfW = 0.5f, halfH = 1.0f, halfD = 0.5f;
-	AABB playerAABB;
+	//AABB playerAABB;
 	playerAABB.min = {position.x - halfW, position.y - halfH, position.z - halfD};
 	playerAABB.max = {position.x + halfW, position.y + halfH, position.z + halfD};
 
@@ -111,10 +167,21 @@ void Player::Update() {
 		iterations++;
 	} while (collisionOccurred && iterations < maxIterations);
 
+	if (IsCollisionAABB(playerAABB, enemyAABB)) {
+		ResolveAABBCollision(playerAABB, enemyAABB, velocityY_, onGround_);
+	}
+
 	// 衝突解決後のAABB中心をプレイヤー座標に反映
 	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
+
+	ImGui::Begin("test");
+	ImGui::DragFloat3("translate", &position.x);
+	ImGui::DragFloat3("aabbMax", &playerAABB.max.x);
+	ImGui::DragFloat3("aabbMin", &playerAABB.min.x);
+	ImGui::End();
+
 
 	worldTransform_.translation_ = position;
 	worldTransform_.TransferMatrix();

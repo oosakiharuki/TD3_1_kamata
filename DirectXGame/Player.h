@@ -1,8 +1,11 @@
 #pragma once
+
+#include "3d/WorldTransform.h"
+#include "Mymath.h"
+
 #include "3d/Camera.h"
 #include "3d/Model.h"
 
-#include "3d/WorldTransform.h"
 #include "AABB.h"
 #include "CameraController.h"
 #include "Collision.h"
@@ -14,6 +17,11 @@
 
 using namespace KamataEngine;
 
+enum class Controler {
+	player,
+	enemyTransfar
+};
+
 class Player {
 public:
 	Player();
@@ -22,6 +30,21 @@ public:
 	void Init(Camera* camera);
 	void Update();
 	void Draw();
+	AABB GetAABB() { return playerAABB; }
+	void IsOnEnemy(bool set) { onEnemy = set; }
+	bool GetIsTransfar() { return isTransfar; }
+
+	void GetEnemyHead(AABB aabb) { enemyAABB = aabb; }
+
+	const WorldTransform* GetWorld() { return &worldTransform_; }
+	
+	bool GetEnemyContral() { return EnemyContral; }
+	void SetEnemyContral(bool anser) { 
+		isTransfar = false;
+		velocity.y = 0.0f;
+		EnemyContral = anser;
+		controler = Controler::enemyTransfar;
+	}
 
 	// 障害物リスト（AABB）の設定／追加
 	void SetObstacleList(const std::vector<AABB>& obstacles);
@@ -43,7 +66,20 @@ private:
 	Camera* viewProjection_ = nullptr;
 
 	Vector3 velocity;
+	bool onEnemy;
+	bool isTransfar = false;//のりうつる体制
+
 
 	XINPUT_STATE state, preState;
 	const float speed = 0.2f;
+
+	//AABB aabb;
+	AABB playerAABB;
+	Vector3 size = {2, 2, 2};
+
+	AABB enemyAABB;
+
+	bool EnemyContral = false;
+
+	Controler controler = Controler::player;
 };
