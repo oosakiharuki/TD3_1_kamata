@@ -128,3 +128,12 @@ Vector3 Normalize(const Vector3& v) {
 
 	return result;
 }
+
+AABB CreateAABB(const Vector3& translate, const Vector3& size) {
+	AABB aabb;   
+
+	aabb.max = {translate.x + size.x / 2, translate.y + size.y / 2, translate.z + size.z / 2};	
+	aabb.min = {translate.x - size.x / 2, translate.y - size.y / 2, translate.z - size.z / 2};
+
+	return aabb;
+}
