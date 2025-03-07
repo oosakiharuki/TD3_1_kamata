@@ -1,52 +1,29 @@
 #pragma once
-#include "math/Matrix4x4.h"
-#include "math/Vector3.h"
-#include <cmath>
-
-//struct AABB {
-//	Vector3 min;
-//	Vector3 max;
-//};
+#include"KamataEngine.h"
 
 using namespace KamataEngine;
 
-namespace MyMath {
+// アフィン変換行列の作成
+Matrix4x4 MakeAffineMatrix(const Vector3& scale_, const Vector3& rotation_, const Vector3& translation_);
 
-	Vector3 operator+(const Vector3& v1, const Vector3& v2);
-	Vector3 operator-(const Vector3& v1, const Vector3& v2);
-	Vector3 operator*(const Vector3& v1, const Vector3& v2);
-	Vector3 operator/(const Vector3& v1, const Vector3& v2);
+// 行列の掛け算
+Matrix4x4 MatrixMultiply(Matrix4x4& m1, Matrix4x4& m2);
 
-	Vector3 operator*(const Vector3& v, const float f);
-	Vector3 operator*(const float f, const Vector3& v);
+Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 
-	Vector3& operator+=(Vector3& v1, const Vector3& v2);
-	Vector3& operator-=(Vector3& v1, const Vector3& v2);
-	Vector3& operator*=(Vector3& v1, const Vector3& v2);
-	Vector3& operator/=(Vector3& v1, const Vector3& v2);
+// 平行移動行列
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 
-	Matrix4x4 MakeIdentity4x4();
-	Matrix4x4 MakeScaleMatrix(Vector3 scale);
-	Matrix4x4 MakeRotateXMatrix(float radian);
-	Matrix4x4 MakeRotateYMatrix(float radian);
-	Matrix4x4 MakeRotateZMatrix(float radian);
-	Matrix4x4 MakeTranslateMatrix(Vector3 translate);
+// X軸回転行列
+Matrix4x4 MakeRotateXMatrix(float angle);
 
-	Vector3 Normalize(const Vector3& v);
+// Y軸回転行列
+Matrix4x4 MakeRotateYMatrix(float angle);
 
-	#pragma region Affine
+// Z軸回転行列
+Matrix4x4 MakeRotateZMatrix(float angle);
 
-	Matrix4x4 Multiply(Matrix4x4 m1, Matrix4x4 m2);
+// 座標変換
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
-	Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
-	#pragma endregion
-
-	#pragma region 逆数
-	Matrix4x4 Inverse(const Matrix4x4& m);
-	#pragma endregion
-
-	Matrix4x4 MakePerspectiveFovMatrix(float forY, float aspectRatio, float nearClip, float farClip);
-
-	Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
-
-} // namespace MyMath
+Vector3 Normalize(const Vector3& v);
