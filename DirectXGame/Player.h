@@ -9,7 +9,7 @@ using namespace KamataEngine;
 
 class Player {
 public:
-	void Init(Model* model, Camera* viewProjection, Vector3& pos);
+	void Init(Model* model, Camera* viewProjection, Vector3& position);
 	void Update();
 	void Draw();
 
