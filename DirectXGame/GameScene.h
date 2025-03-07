@@ -2,6 +2,7 @@
 #include "Ground.h"
 #include "KamataEngine.h"
 #include "Player.h"
+#include "Test.h"
 
 using namespace KamataEngine;
 
@@ -13,6 +14,8 @@ public:
 	void Initialize();
 	void Update();
 	void Draw();
+	
+	void Collision();
 
 private:
 	DirectXCommon* dxCommon_ = nullptr;
@@ -22,5 +25,14 @@ private:
 	Camera camera_;
 
 	Player* player_ = nullptr;
+
+	Model* modelPlayer_ = nullptr;
+
+	Test* test = nullptr;
+	Model* modelT = nullptr;
+
+	bool EnemyContral = false;
+
 	Ground* modelGround_ = nullptr;
 };
+

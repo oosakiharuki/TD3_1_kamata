@@ -1,4 +1,8 @@
 #pragma once
+
+#include "3d/WorldTransform.h"
+#include "MyMath.h"
+
 #include "3d/Camera.h"
 #include "3d/Model.h"
 
@@ -13,6 +17,14 @@
 
 
 using namespace KamataEngine;
+using namespace MyMath;
+
+enum class Controler {
+	player,
+	enemyTransfar
+};
+
+
 
 class Player {
 public:
@@ -22,6 +34,21 @@ public:
 	void Init(Camera* camera);
 	void Update();
 	void Draw();
+	AABB GetAABB() { return aabb; }
+	void IsOnEnemy(bool set) { onEnemy = set; }
+	bool GetIsTransfar() { return isTransfar; }
+
+	void GetHead(float a) { yuka = a; }
+
+	const WorldTransform* GetWorld() { return &worldTransform; }
+	
+	bool GetEnemyContral() { return EnemyContral; }
+	void SetEnemyContral(bool anser) { 
+		isTransfar = false;
+		velocity.y = 0.0f;
+		EnemyContral = anser;
+		controler = Controler::enemyTransfar;
+	}
 
 	// 障害物リスト（AABB）の設定／追加
 	void SetObstacleList(const std::vector<AABB>& obstacles);
@@ -46,8 +73,21 @@ private:
 
 	Vector3 position;
 	Vector3 velocity;
-	bool IsJump = false;
+	bool onGround;
+	bool onEnemy;
+	bool isTransfar = false;//のりうつる体制
+
 
 	XINPUT_STATE state, preState;
 	const float speed = 0.2f;
+
+	AABB aabb;
+	Vector3 size = {2, 2, 2};
+
+	float yuka = 0.0f;
+
+	bool EnemyContral = false;
+
+	Controler controler = Controler::player;
 };
+
