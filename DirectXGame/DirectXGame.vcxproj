@@ -106,11 +106,15 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="Collision.cpp" />
     <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="Ground.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MyMath.cpp" />
+    <ClCompile Include="Mymath.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="WorldTransformEx.cpp" />
+    <ClCompile Include="WorldTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resources\shaders\TerrainPS.hlsl">
@@ -188,9 +192,14 @@
     <None Include="Resources\shaders\Sprite.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AABB.h" />
+    <ClInclude Include="CameraController.h" />
+    <ClInclude Include="Collision.h" />
     <ClInclude Include="GameScene.h" />
-    <ClInclude Include="MyMath.h" />
+    <ClInclude Include="Ground.h" />
+    <ClInclude Include="Mymath.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
