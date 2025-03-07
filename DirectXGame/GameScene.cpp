@@ -27,6 +27,9 @@ void GameScene::Initialize() {
 	AddObstacle(allObstacles_, {-10.0f, -0.5f, -10.0f}, {20.0f, 3.0f, 20.0f});     // 新しい足場AABB
 	AddObstacle(allObstacles_, {18.0f, -0.5f, -10.0f}, {37.5f, 6.0f, 20.0f});      // 新しい足場のAABB
 
+
+	AddObstacle(allObstacles_, {6.2f, -0.5f, -42.0f}, {19.5f, 3.5f, -27.0f});  
+
 	// 障害物リストを Player にセット
 	for (const auto& obstacles : allObstacles_) {
 		player_->SetObstacleList(obstacles);
