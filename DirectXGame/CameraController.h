@@ -1,6 +1,7 @@
 #pragma once
-#include"KamataEngine.h"
+#include "KamataEngine.h"
 using namespace KamataEngine;
+
 class CameraController {
 public:
 	CameraController();
@@ -18,4 +19,5 @@ public:
 private:
 	Vector3 offset_; // プレイヤーからのオフセット
 	float pitchDeg_; // カメラのピッチ角度（度）
+	float yawDeg_;   // カメラのヨー角度（度）
 };
