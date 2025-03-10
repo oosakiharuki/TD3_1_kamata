@@ -8,16 +8,15 @@
 #include "Collision.h"
 #include "math/Vector3.h"
 #include <vector>
-#include "Enemy.h"
 #include "input/input.h"
 
 
 using namespace KamataEngine;
 
-class Player {
+class Enemy {
 public:
-	Player();
-	~Player();
+	Enemy();
+	~Enemy();
 
 	void Init(Camera* camera);
 	void Update();
@@ -27,27 +26,25 @@ public:
 	void SetObstacleList(const std::vector<AABB>& obstacles);
 	void AddObstacle(const AABB& obstacle);
 
-		// Enemyのリストを設定するメソッドを追加
-	void SetEnemyList(const std::vector<Enemy*>& enemies);
+	// AABBを取得するメソッドを追加
+	AABB GetAABB() const;
 
-	// Enemyのリストを追加
-	std::vector<Enemy*> enemyList_;
+	// 位置を設定するメソッドを追加
+	void SetPosition(const Vector3& position);
+
 
 private:
-
-	WorldTransform worldTransform_;
+	WorldTransform worldTransform_; // Fix the error by ensuring the type is defined
 	Camera* camera_ = nullptr;
 	Model* PlayerModel_ = nullptr;
-	Vector3 position = {0, 0, -10};
+	Vector3 position = {0, 0, -20};
 	bool onGround_ = true;
 	float velocityY_ = 0.0f;
-	CameraController cameraController_;
 
 	// 障害物リスト
 	std::vector<AABB> obstacleList_;
 
 	WorldTransform worldTransform;
-	Camera* viewProjection_ = nullptr;
 	Model* model_ = nullptr;
 
 	Vector3 velocity;

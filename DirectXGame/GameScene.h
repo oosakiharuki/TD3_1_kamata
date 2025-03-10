@@ -1,37 +1,31 @@
 #pragma once
+#include "Ground.h"
 #include "KamataEngine.h"
 #include "Player.h"
+#include "Enemy.h"
 
 using namespace KamataEngine;
 
 class GameScene {
-
 public:
-	// ゲームシーン
-
-	// コンストラクタ
 	GameScene();
-
-	// デストラクタ
 	~GameScene();
-
 	void Initialize();
-
 	void Update();
-
 	void Draw();
 
 private:
+	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
+
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
-	Model* model_ = nullptr;
-
 	WorldTransform worldTransform_;
-	Camera viewProjection_;
-	//uint32_t texture = 0;
-
+	Camera camera_;
 	Player* player_ = nullptr;
-	Model* modelPlayer_ = nullptr;
+	Ground* modelGround_ = nullptr;
 
+	// Enemyのリストを追加
+	std::vector<Enemy*> enemyList_;
+	std::vector<std::vector<AABB>> allObstacles_;
 };
