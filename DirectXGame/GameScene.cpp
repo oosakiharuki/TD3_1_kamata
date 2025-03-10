@@ -32,6 +32,7 @@ void GameScene::Initialize() {
 void GameScene::Update() { 
 	player_->Update(); 
 	player_->DrawUI(); // Playerの状態を表示
+	player_->CheckCollision(block_); // 衝突判定を実行
 }
 
 void GameScene::Draw() {

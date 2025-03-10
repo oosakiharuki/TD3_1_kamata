@@ -21,7 +21,10 @@ public:
     void Init(Model* model, Camera* viewProjection, Vector3& position, Block* block);
     void Update();
     void Draw();
+
     void DrawUI(); // UI描画用の関数を追加
+
+    void CheckCollision(Block* block); // 衝突判定を追加
 
 private:
     WorldTransform worldTransform;

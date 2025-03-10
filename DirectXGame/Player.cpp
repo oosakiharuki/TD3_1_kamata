@@ -79,21 +79,6 @@ void Player::Update() {
     worldTransform.translation_.x += x * speed;
     worldTransform.translation_.z += z * speed;
 
-    // 衝突判定：ブロックとの衝突をチェック
-    AABB playerAABB;
-    playerAABB.min = worldTransform.translation_ - Vector3(1.0f, 1.0f, 1.0f);
-    playerAABB.max = worldTransform.translation_ + Vector3(1.0f, 1.0f, 1.0f);
-
-    AABB blockAABB;
-    blockAABB.min = block_->GetWorldTransform().translation_ - Vector3(1.0f, 1.0f, 1.0f);
-    blockAABB.max = block_->GetWorldTransform().translation_ + Vector3(1.0f, 1.0f, 1.0f);
-
-    if (IsCollisionAABB(playerAABB, blockAABB)) {
-        // 衝突した場合、移動を停止
-        if (x != 0) worldTransform.translation_.x -= x * speed;  // X軸で衝突した場合は移動を元に戻す
-        if (z != 0) worldTransform.translation_.z -= z * speed;  // Z軸で衝突した場合は移動を元に戻す
-    }
-
     // X, Y, Z位置の更新
     worldTransform.UpdateMatrix();
 }
@@ -109,4 +94,32 @@ void Player::DrawUI() {
     ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
 
     ImGui::End();
+}
+
+void Player::CheckCollision(Block* block) {
+    if (!block->IsActive()) return; // ブロックが無効なら判定しない
+
+    AABB playerAABB = {
+        worldTransform.translation_ - Vector3(0.5f, 0.5f, 0.5f),
+        worldTransform.translation_ + Vector3(0.5f, 0.5f, 0.5f)
+    };
+
+    AABB blockAABB = block->GetAABB();
+
+    if (IsCollisionAABB(playerAABB, blockAABB)) {
+        switch (currentState) {
+        case State::Normal:
+            // 衝突すると動けない
+            worldTransform.translation_.x -= velocity.x;
+            worldTransform.translation_.z -= velocity.z;
+            break;
+        case State::Bomb:
+            // 衝突するとブロックを消す
+            block->SetActive(false);
+            break;
+        case State::Ghost:
+            // すり抜ける（何もしない）
+            break;
+        }
+    }
 }
