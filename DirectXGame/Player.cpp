@@ -70,6 +70,27 @@ void Player::Update() {
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
 
+    // Enemyとの衝突判定
+	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
+		AABB enemyAABB = (*it)->GetAABB();
+		if (IsCollisionAABB(playerAABB, enemyAABB)) {
+			// 衝突時の処理（例：リストから削除）
+			it = enemyList_.erase(it);
+		} else {
+			++it;
+		}
+	}
+
+	/*/
+	// Enemyとの衝突判定
+	for (const auto& enemy : enemyList_) {
+		AABB enemyAABB = enemy->GetAABB();
+		if (IsCollisionAABB(playerAABB, enemyAABB)) {
+			// 衝突時の処理をここに記述
+		}
+	}
+	/*/
+
 	worldTransform_.translation_ = position;
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
@@ -77,4 +98,7 @@ void Player::Update() {
 	cameraController_.Update(camera_, position);
 }
 
+
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
+
+void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }

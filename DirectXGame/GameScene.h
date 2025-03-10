@@ -2,6 +2,7 @@
 #include "Ground.h"
 #include "KamataEngine.h"
 #include "Player.h"
+#include "Enemy.h"
 
 using namespace KamataEngine;
 
@@ -23,5 +24,8 @@ private:
 	Camera camera_;
 	Player* player_ = nullptr;
 	Ground* modelGround_ = nullptr;
-	std::vector<std::vector<AABB>> allObstacles_; // すべての障害物リストを保持する
+
+	// Enemyのリストを追加
+	std::vector<Enemy*> enemyList_;
+	std::vector<std::vector<AABB>> allObstacles_;
 };
