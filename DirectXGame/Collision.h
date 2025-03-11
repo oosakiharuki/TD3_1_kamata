@@ -43,7 +43,7 @@ inline void ResolveAABBCollision(AABB& playerAABB, const AABB& obstacleAABB, flo
 			velocityY = 0.0f;
 			onGround = true;
 		}
-	} else {
+	} else if (overlap.z < overlap.x && overlap.z < overlap.y) {
 		float playerCenterZ = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
 		float obstacleCenterZ = (obstacleAABB.min.z + obstacleAABB.max.z) * 0.5f;
 		float push = (playerCenterZ < obstacleCenterZ) ? -overlap.z : overlap.z;

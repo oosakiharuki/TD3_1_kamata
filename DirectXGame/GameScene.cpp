@@ -21,8 +21,9 @@ void GameScene::Initialize() {
 	camera_.Initialize();
 
 	// Player の生成と初期化
+	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
 	player_ = new Player();
-	player_->Init(&camera_);
+	player_->Init(&camera_,textureHandle);
 
 	// 障害物リストの作成例
 	AddObstacle(allObstacles_, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});            // 例：壁のAABB

@@ -28,6 +28,13 @@ public:
 
 	// AABBを取得するメソッドを追加
 	AABB GetAABB() const;
+	
+	void SetParent(const WorldTransform* parent) { worldTransform_.parent_ = parent; }
+	void ContralPlayer();
+	void ReMove(const Vector3& position_);
+	bool GetPlayerCtrl() { return isPlayer; }
+
+	const Vector3& GetWorldTranslate() { return worldTransform_.translation_; }
 
 	// 位置を設定するメソッドを追加
 	void SetPosition(const Vector3& position);
@@ -44,12 +51,24 @@ private:
 	// 障害物リスト
 	std::vector<AABB> obstacleList_;
 
-	WorldTransform worldTransform;
+	//WorldTransform worldTransform;
 	Model* model_ = nullptr;
 
 	Vector3 velocity;
-	bool IsJump = false;
+	//bool IsJump = false;
 
 	XINPUT_STATE state, preState;
 	const float speed = 0.2f;
+
+	// 移動
+	bool Normal = true;
+	float timer = 0.0f;
+	const float corveTime = 1.0f;
+
+	// スタン
+	bool isStan = false;
+	float timerS = 0.0f;
+	const float stanTime = 3.0f;
+
+	bool isPlayer = false;
 };

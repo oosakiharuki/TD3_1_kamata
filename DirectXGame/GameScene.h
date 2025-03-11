@@ -28,4 +28,6 @@ private:
 	// Enemyのリストを追加
 	std::vector<Enemy*> enemyList_;
 	std::vector<std::vector<AABB>> allObstacles_;
+
+	uint32_t textureHandle = 0;
 };
