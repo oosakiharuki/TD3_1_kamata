@@ -23,7 +23,7 @@ void GameScene::Initialize() {
 	// Player の生成と初期化
 	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
 	player_ = new Player();
-	player_->Init(&camera_,textureHandle);
+	player_->Init(&camera_, textureHandle);
 
 	// 障害物リストの作成例
 	AddObstacle(allObstacles_, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});            // 例：壁のAABB
@@ -31,9 +31,9 @@ void GameScene::Initialize() {
 	AddObstacle(allObstacles_, {-10.0f, -0.5f, -10.0f}, {20.0f, 3.0f, 20.0f});     // 新しい足場AABB白
 	AddObstacle(allObstacles_, {18.0f, -0.5f, -10.0f}, {37.5f, 6.0f, 20.0f});      // 新しい足場のAABB白
 
-	AddObstacle(allObstacles_, {6.2f, -0.5f, -41.0f}, {19.5f, 3.5f, -27.3f});  //宇宙模様の床
+	AddObstacle(allObstacles_, {6.2f, -0.5f, -41.0f}, {19.5f, 3.5f, -27.3f}); // 宇宙模様の床
 
-    // Enemyの生成と初期化
+	// Enemyの生成と初期化
 	for (int i = 0; i < 5; ++i) { // 例として5体のEnemyを生成
 		Enemy* enemy = new Enemy();
 		enemy->Init(&camera_);
@@ -45,14 +45,18 @@ void GameScene::Initialize() {
 	}
 
 	// 各Enemyの初期位置を設定
-	if (enemyList_.size() > 0) enemyList_[0]->SetPosition({-20.0f, 0.0f, -10.0f});
-	if (enemyList_.size() > 1) enemyList_[1]->SetPosition({-10.0f, 0.0f, -10.0f});
-	if (enemyList_.size() > 2) enemyList_[2]->SetPosition({20.0f, 0.0f, -20.0f});
-	if (enemyList_.size() > 3) enemyList_[3]->SetPosition({-40.0f, 0.0f, -10.0f});
-	if (enemyList_.size() > 4) enemyList_[4]->SetPosition({50.0f, 0.0f, -20.0f});
+	if (enemyList_.size() > 0)
+		enemyList_[0]->SetPosition({-20.0f, 0.0f, -10.0f});
+	if (enemyList_.size() > 1)
+		enemyList_[1]->SetPosition({-10.0f, 0.0f, -10.0f});
+	if (enemyList_.size() > 2)
+		enemyList_[2]->SetPosition({20.0f, 0.0f, -20.0f});
+	if (enemyList_.size() > 3)
+		enemyList_[3]->SetPosition({-40.0f, 0.0f, -10.0f});
+	if (enemyList_.size() > 4)
+		enemyList_[4]->SetPosition({50.0f, 0.0f, -20.0f});
 
 	player_->SetEnemyList(enemyList_);
-
 
 	// 障害物リストを Player にセット
 	for (const auto& obstacles : allObstacles_) {
@@ -64,7 +68,7 @@ void GameScene::Initialize() {
 	modelGround_->Init(&camera_);
 }
 
-void GameScene::Update() { 
+void GameScene::Update() {
 	player_->Update();
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
 		(*it)->Update();
@@ -72,10 +76,14 @@ void GameScene::Update() {
 			delete *it;
 			it = enemyList_.erase(it);
 		} else {
+			// 衝突判定
+			if ((*it)->CheckCollisionWithPlayer()) {
+				// 衝突時の処理（移動を停止）
+				(*it)->SetVelocity(Vector3(0, 0, 0));
+			}
 			++it;
 		}
 	}
-
 }
 
 void GameScene::Draw() {

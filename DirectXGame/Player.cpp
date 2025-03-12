@@ -149,10 +149,10 @@ void Player::Update() {
 		enemyAABB = (*it)->GetAABB();
 
 		if (IsCollisionAABB(playerAABB, enemyAABB) && !EnemyContral) {
-			// 衝突時の処理（例：リストから削除）
+			// 衝突時の処理
 			// it = enemyList_.erase(it);			
 			ResolveAABBCollision(playerAABB, enemyAABB, velocityY_, onGround_);
-	
+
 			// 頭からしか入れなくする
 			if (isTransfar &&(playerAABB.min.y >= enemyAABB.max.y)) {
 				(*it)->ContralPlayer();
@@ -174,15 +174,6 @@ void Player::Update() {
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
 
-	/*/
-	// Enemyとの衝突判定
-	for (const auto& enemy : enemyList_) {
-		AABB enemyAABB = enemy->GetAABB();
-		if (IsCollisionAABB(playerAABB, enemyAABB)) {
-			// 衝突時の処理をここに記述
-		}
-	}
-	/*/
 
 	if (onEnemy) {
 		position.y += 2.0f; // 敵の上に乗るようにする

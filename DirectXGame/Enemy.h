@@ -45,6 +45,14 @@ public:
 
 	Vector3 GetWorldPosition();
 
+	void Enemystop(const Vector3 stop) { velocity_ = stop; }
+
+    void SetVelocity(const Vector3& velocity1) { velocity_ = velocity1; }
+
+	// Playerとの衝突を検出するメソッドを追加
+	bool CheckCollisionWithPlayer();
+
+
 private:
 	WorldTransform worldTransform_; // Fix the error by ensuring the type is defined
 	Camera* camera_ = nullptr;
@@ -77,6 +85,8 @@ private:
 	const float stanTime = 3.0f;
 
 	bool isPlayer = false;
+
+	bool MoveNot = false;
 
 	Player* player_ = nullptr;
 };

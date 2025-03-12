@@ -32,7 +32,7 @@ void Enemy::Update() {
 	// 入力による移動
 	// float moveSpeed = 0.0f;
 
-	const float moveSpeed_ = 0.02f;
+	// const float moveSpeed_ = 0.02f;
 	const float deltaTime = 1.0f / 60.0f;
 
 	if (isStan) {
@@ -78,55 +78,31 @@ void Enemy::Update() {
 		position.y = (enemyAABB.min.y + enemyAABB.max.y) * 0.5f;
 		position.z = (enemyAABB.min.z + enemyAABB.max.z) * 0.5f;
 
-		/// 敵の移動、攻撃　ここから
-
-		if (!isStan) {
-			timer += deltaTime;
-
-			if (timer > corveTime && collisionOccurred) {
-				if (Normal) {
-					Normal = false;
-				} else {
-					Normal = true;
-				}
-				timer = 0.0f;
-			}
-			if (Normal) {
-				position.z += moveSpeed_;
-			} else {
-				position.z -= moveSpeed_;
-			}
-		}
-
-		/// ここまで
-
 		Vector3 move = worldTransform_.translation_;
 
-		// 初期速度
-		const float kBulletSpeed = 0.005f;
+		// 一定速度でプレイヤーを追尾するための速度
+		const float kChaseSpeed = 0.1f;
 
 		// プレイヤーへのベクトルを計算
 		Vector3 playerWorldPosition = player_->GetWorldPosition();
 		Vector3 enemyWorldPosition = GetWorldPosition();
 		Vector3 toPlayer = Normalize(playerWorldPosition - enemyWorldPosition);
 
-		// 初期速度はプレイヤーに向かうベクトルで設定
-		velocity = toPlayer * kBulletSpeed;
+		// 一定速度でプレイヤーに向かうベクトルで設定
+		velocity = toPlayer * kChaseSpeed;
 
-		// 現在の進行方向を少しずつプレイヤー方向に補正
-		float adjustmentFactor = 0.045f; // 補正の割合。値を調整することで追尾の滑らかさを変更
-		velocity_ = Normalize(velocity_ + toPlayer * adjustmentFactor);
+		// Playerとの衝突判定
+		if (CheckCollisionWithPlayer()) {
+			// 衝突時の処理（移動を停止）
+			velocity.x = 0;
+			velocity.z = 0;
+		} else {
+			// 速度をそのまま適用
+			worldTransform_.translation_.x += velocity.x;
+			worldTransform_.translation_.z += velocity.z;
+		}
 
-		Enemy* newenemy = new Enemy();
-		// ターゲット（プレイヤー）を追尾するように設定
-		newenemy->SetTarget(player_);
-
-		float movementSpeed = 0.5f; // 移動速度の調整
-		worldTransform_.translation_.x += velocity_.x * movementSpeed;
-		worldTransform_.translation_.y += velocity_.y * movementSpeed;
-		worldTransform_.translation_.z += velocity_.z * movementSpeed;
-
-		worldTransform_.translation_ = position;
+		worldTransform_.translation_.y = position.y;
 	}
 
 	ImGui::Begin("enemy");
@@ -175,4 +151,10 @@ Vector3 Enemy::GetWorldPosition() {
 	worldPos.z = worldTransform_.matWorld_.m[3][2];
 
 	return worldPos;
+}
+
+bool Enemy::CheckCollisionWithPlayer() {
+	AABB playerAABB = player_->GetAABB();
+	AABB enemyAABB = GetAABB();
+	return IsCollisionAABB(playerAABB, enemyAABB);
 }

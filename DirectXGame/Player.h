@@ -14,6 +14,8 @@
 
 using namespace KamataEngine;
 
+class Enemy;
+
 enum class Controler { 
 	player, 
 	enemyTransfar 
@@ -51,12 +53,13 @@ public:
 	// Enemyのリストを設定するメソッドを追加
 	void SetEnemyList(const std::vector<Enemy*>& enemies);
 
-	Vector3 GetWorldPosition();
-
 	// Enemyのリストを追加
 	std::vector<Enemy*> enemyList_;
 
 	void EnemyHead() { onEnemy = true; }
+
+	
+	Vector3 GetWorldPosition();
 
 private:
 	WorldTransform worldTransform_;
@@ -92,4 +95,8 @@ private:
 	Controler controler = Controler::player;
 	uint32_t textureHandle = 0;
 	bool collisionEnemy = false;
+
+	Vector3 stop = {0, 0, 0};
+
+	Enemy* enemy = nullptr;
 };
