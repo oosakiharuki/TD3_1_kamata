@@ -10,19 +10,21 @@ void Player::Init(Model* model, Camera* viewProjection, Vector3& pos, Block* blo
 }
 
 void Player::Update() {
-    float x = 0, z = 0;
+    velocity = { 0.0f, 0.0f, 0.0f }; // 毎フレーム初期化
 
     Input::GetInstance()->GetJoystickState(0, state);
     Input::GetInstance()->GetJoystickStatePrevious(0, preState);
 
-    // ゲームパッドの入力処理（移動）
+    float x = 0, z = 0;
+
+    // ゲームパッドの入力
     if (Input::GetInstance()->GetJoystickState(0, state)) {
         x = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f;
         z = static_cast<float>(state.Gamepad.sThumbLY) / 32768.0f;
 
         const float deadZone = 0.2f;
-        if (abs(x) < deadZone) x = 0.0f;
-        if (abs(z) < deadZone) z = 0.0f;
+        if (abs(x) < deadZone) { x = 0.0f; }
+        if (abs(z) < deadZone) { z = 0.0f; }
     }
 
     if (Input::GetInstance()->TriggerKey(DIK_1)) {
@@ -35,52 +37,62 @@ void Player::Update() {
         currentState = State::Ghost;
     }
 
-    // キーボード入力での移動（WASD）
-    if (Input::GetInstance()->PushKey(DIK_W)) {
-        z = speed;  // Wキーで前進
-    }
-    if (Input::GetInstance()->PushKey(DIK_S)) {
-        z = -speed;  // Sキーで後退
-    }
-    if (Input::GetInstance()->PushKey(DIK_A)) {
-        x = -speed;  // Aキーで左移動
-    }
-    if (Input::GetInstance()->PushKey(DIK_D)) {
-        x = speed;  // Dキーで右移動
-    }
+    velocity.x += x * speed;
+    velocity.z += z * speed;
+
+    // キーボードの入力
+    if (Input::GetInstance()->PushKey(DIK_A)) { velocity.x -= speed; }
+    if (Input::GetInstance()->PushKey(DIK_D)) { velocity.x += speed; }
+    if (Input::GetInstance()->PushKey(DIK_S)) { velocity.z -= speed; }
+    if (Input::GetInstance()->PushKey(DIK_W)) { velocity.z += speed; }
 
     // ジャンプ処理
     if (IsJump) {
-        if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-            velocity.y -= 1.2f;
-        }
-        else {
-            velocity.y -= 0.1f;
-        }
+        velocity.y -= 0.1f;
     }
     else {
         velocity.y = 0.0f;
     }
 
-    // ジャンプの開始
-    if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !IsJump) {
+    if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) &&
+        !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !IsJump) {
         IsJump = true;
         velocity.y = 1.5f;
     }
 
-    // Y軸の衝突判定（地面と衝突）
-    worldTransform.translation_.y += velocity.y;
+    // 地面に着地したらジャンプ終了
     if (worldTransform.translation_.y < 0.0f) {
         worldTransform.translation_.y = 0.0f;
         IsJump = false;
     }
 
-    // X軸とZ軸の移動処理
-    worldTransform.translation_.x += x * speed;
-    worldTransform.translation_.z += z * speed;
-
-    // X, Y, Z位置の更新
+    // 位置を更新
+    worldTransform.translation_ += velocity;
     worldTransform.UpdateMatrix();
+}
+
+void Player::CheckCollision(Block* block) {
+    if (!block->IsActive()) return;
+
+    AABB playerAABB = {
+        worldTransform.translation_ - Vector3(1.0f, 1.0f, 1.0f),
+        worldTransform.translation_ + Vector3(1.0f, 1.0f, 1.0f)
+    };
+
+    AABB blockAABB = block->GetAABB();
+
+    if (IsCollisionAABB(playerAABB, blockAABB)) {
+        switch (currentState) {
+        case State::Normal:
+            worldTransform.translation_ -= velocity; // 速度分だけ戻す
+            break;
+        case State::Bomb:
+            block->SetActive(false);
+            break;
+        case State::Ghost:
+            break;
+        }
+    }
 }
 
 void Player::Draw() {
@@ -94,32 +106,4 @@ void Player::DrawUI() {
     ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
 
     ImGui::End();
-}
-
-void Player::CheckCollision(Block* block) {
-    if (!block->IsActive()) return; // ブロックが無効なら判定しない
-
-    AABB playerAABB = {
-        worldTransform.translation_ - Vector3(0.5f, 0.5f, 0.5f),
-        worldTransform.translation_ + Vector3(0.5f, 0.5f, 0.5f)
-    };
-
-    AABB blockAABB = block->GetAABB();
-
-    if (IsCollisionAABB(playerAABB, blockAABB)) {
-        switch (currentState) {
-        case State::Normal:
-            // 衝突すると動けない
-            worldTransform.translation_.x -= velocity.x;
-            worldTransform.translation_.z -= velocity.z;
-            break;
-        case State::Bomb:
-            // 衝突するとブロックを消す
-            block->SetActive(false);
-            break;
-        case State::Ghost:
-            // すり抜ける（何もしない）
-            break;
-        }
-    }
 }

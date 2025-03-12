@@ -34,10 +34,10 @@ private:
 
     State currentState = State::Normal; // 初期状態をNormalに設定
 
-    Vector3 position;
-    Vector3 velocity;
+    Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度ベクトル
+    Vector3 position;                      // 現在の位置
     bool IsJump = false;
 
     XINPUT_STATE state, preState;
-    const float speed = 0.2f;
+    const float speed = 0.2f; // 移動速度
 };
