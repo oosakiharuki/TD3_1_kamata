@@ -1,4 +1,5 @@
 #pragma once
+#include "BulletPhysicsManager.h"
 #include "Ground.h"
 #include "KamataEngine.h"
 #include "Player.h"
@@ -23,4 +24,5 @@ private:
 
 	Player* player_ = nullptr;
 	Ground* modelGround_ = nullptr;
+	BulletPhysicsManager* physicsManager_ = nullptr; // 物理エンジンマネージャー
 };

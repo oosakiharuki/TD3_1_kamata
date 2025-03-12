@@ -202,6 +202,7 @@ LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Ground.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mymath.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Vector3.h" />
