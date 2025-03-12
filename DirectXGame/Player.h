@@ -1,7 +1,7 @@
 #pragma once
 #include "3d/Camera.h"
 #include "3d/Model.h"
-
+#include "Mymath.h"
 #include "3d/WorldTransform.h"
 #include "AABB.h"
 #include "CameraController.h"
@@ -50,6 +50,8 @@ public:
 
 	// Enemyのリストを設定するメソッドを追加
 	void SetEnemyList(const std::vector<Enemy*>& enemies);
+
+	Vector3 GetWorldPosition();
 
 	// Enemyのリストを追加
 	std::vector<Enemy*> enemyList_;

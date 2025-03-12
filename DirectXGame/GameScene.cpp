@@ -33,10 +33,11 @@ void GameScene::Initialize() {
 
 	AddObstacle(allObstacles_, {6.2f, -0.5f, -41.0f}, {19.5f, 3.5f, -27.3f});  //宇宙模様の床
 
-	    // Enemyの生成と初期化
+    // Enemyの生成と初期化
 	for (int i = 0; i < 5; ++i) { // 例として5体のEnemyを生成
 		Enemy* enemy = new Enemy();
 		enemy->Init(&camera_);
+		enemy->SetTarget(player_); // Playerの位置を設定
 		for (const auto& obstacles : allObstacles_) {
 			enemy->SetObstacleList(obstacles);
 		}
@@ -44,17 +45,11 @@ void GameScene::Initialize() {
 	}
 
 	// 各Enemyの初期位置を設定
-	if (enemyList_.size() > 0)
-		enemyList_[0]->SetPosition({-20.0f, 0.0f, -10.0f});
-	if (enemyList_.size() > 1)
-		enemyList_[1]->SetPosition({-10.0f, 0.0f, -10.0f});
-	if (enemyList_.size() > 2)
-		enemyList_[2]->SetPosition({20.0f, 0.0f, -20.0f});
-	if (enemyList_.size() > 3)
-		enemyList_[3]->SetPosition({-40.0f, 0.0f, -10.0f});
-	if (enemyList_.size() > 4)
-		enemyList_[4]->SetPosition({50.0f, 0.0f, -20.0f});
-
+	if (enemyList_.size() > 0) enemyList_[0]->SetPosition({-20.0f, 0.0f, -10.0f});
+	if (enemyList_.size() > 1) enemyList_[1]->SetPosition({-10.0f, 0.0f, -10.0f});
+	if (enemyList_.size() > 2) enemyList_[2]->SetPosition({20.0f, 0.0f, -20.0f});
+	if (enemyList_.size() > 3) enemyList_[3]->SetPosition({-40.0f, 0.0f, -10.0f});
+	if (enemyList_.size() > 4) enemyList_[4]->SetPosition({50.0f, 0.0f, -20.0f});
 
 	player_->SetEnemyList(enemyList_);
 
@@ -80,11 +75,7 @@ void GameScene::Update() {
 			++it;
 		}
 	}
-	/*/
-	for (auto enemy : enemyList_) {
-		enemy->Update();
-	}
-	/*/
+
 }
 
 void GameScene::Draw() {
