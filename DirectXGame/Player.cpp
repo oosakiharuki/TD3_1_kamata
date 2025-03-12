@@ -13,9 +13,6 @@ void Player::Init(Camera* camera) {
 	worldTransform_.translation_ = position;
 }
 
-void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
-
-void Player::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
 
 void Player::Update() {
 	// 入力による移動
@@ -44,31 +41,6 @@ void Player::Update() {
 	velocityY_ -= gravity;
 	position.y += velocityY_;
 
-	// プレイヤーのAABB作成（例：幅1.0, 高さ2.0, 奥行1.0）
-	float halfW = 0.5f, halfH = 1.0f, halfD = 0.5f;
-	AABB playerAABB;
-	playerAABB.min = {position.x - halfW, position.y - halfH, position.z - halfD};
-	playerAABB.max = {position.x + halfW, position.y + halfH, position.z + halfD};
-
-	// 反復的衝突解決（すり抜け防止のため、最大10回まで解決を試みる）
-	const int maxIterations = 10;
-	int iterations = 0;
-	bool collisionOccurred = false;
-	do {
-		collisionOccurred = false;
-		for (auto& obstacleAABB : obstacleList_) {
-			if (IsCollisionAABB(playerAABB, obstacleAABB)) {
-				ResolveAABBCollision(playerAABB, obstacleAABB, velocityY_, onGround_);
-				collisionOccurred = true;
-			}
-		}
-		iterations++;
-	} while (collisionOccurred && iterations < maxIterations);
-
-	// 衝突解決後のAABB中心をプレイヤー座標に反映
-	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
-	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
-	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
 
 	worldTransform_.translation_ = position;
 	worldTransform_.TransferMatrix();
