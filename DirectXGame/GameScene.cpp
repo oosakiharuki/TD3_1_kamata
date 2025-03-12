@@ -10,6 +10,7 @@ GameScene::~GameScene() {
 	for (auto enemy : enemyList_) {
 		delete enemy;
 	}
+	delete cannonEenmy;
 }
 
 void GameScene::Initialize() {
@@ -54,7 +55,13 @@ void GameScene::Initialize() {
 		enemyList_[3]->SetPosition({-40.0f, 0.0f, -10.0f});
 	if (enemyList_.size() > 4)
 		enemyList_[4]->SetPosition({50.0f, 0.0f, -20.0f});
-
+	
+	cannonEenmy = new CannonEnemy();
+	cannonEenmy->Init(&camera_);
+	for (const auto& obstacles : allObstacles_) {
+		cannonEenmy->SetObstacleList(obstacles);
+	}
+	cannonEenmy->SetPlayer(player_);
 
 	player_->SetEnemyList(enemyList_);
 
@@ -63,6 +70,8 @@ void GameScene::Initialize() {
 	for (const auto& obstacles : allObstacles_) {
 		player_->SetObstacleList(obstacles);
 	}
+
+	player_->SetCannon(cannonEenmy);
 
 	// Ground の生成・初期化
 	modelGround_ = new Ground();
@@ -80,6 +89,10 @@ void GameScene::Update() {
 			++it;
 		}
 	}
+
+	//cannonEenmy->SetPlayerAABB(player_->GetAABB());
+	cannonEenmy->Update();
+
 	/*/
 	for (auto enemy : enemyList_) {
 		enemy->Update();
@@ -101,6 +114,9 @@ void GameScene::Draw() {
 	for (auto enemy : enemyList_) {
 		enemy->Draw();
 	}
+
+	cannonEenmy->Draw();
+
 	Model::PostDraw();
 
 	// UI描画

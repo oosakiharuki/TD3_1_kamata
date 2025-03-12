@@ -104,13 +104,13 @@ void Player::Update() {
 	//position.z += z * speed;
 
 		
-	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_) {
+	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
 		controler = Controler::player;
 
-	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_) {
+	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
@@ -143,6 +143,33 @@ void Player::Update() {
 		iterations++;
 	} while (collisionOccurred && iterations < maxIterations);
 
+	AABB cannonAABB = cannonEnemy->GetAABB();
+	
+	if (IsCollisionAABB(playerAABB, cannonAABB) && !EnemyContral) {
+		// 衝突時の処理（例：リストから削除）
+		// it = enemyList_.erase(it);
+		ResolveAABBCollision(playerAABB, cannonAABB, velocityY_, onGround_);
+
+		// 頭からしか入れなくする
+		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y)) {
+			cannonEnemy->ContralPlayer();
+			EnemyContral = true;
+			collisionEnemy = true;
+		}
+	}
+
+	if (EnemyContral && cannonEnemy->GetPlayerCtrl()) {
+		cannonEnemy->SetParent(&worldTransform_);
+
+		if (Input::GetInstance()->TriggerKey(DIK_J)) {
+			cannonEnemy->PlayerFire();//カメラ向きで変えれるようにする
+		}
+
+
+	} else {
+		cannonEnemy->ReMove(worldTransform_.translation_);
+	}
+
 
     // Enemyとの衝突判定
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
@@ -168,6 +195,8 @@ void Player::Update() {
 		}
 		++it;
 	}
+
+
 
 	// 衝突解決後のAABB中心をプレイヤー座標に反映
 	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;

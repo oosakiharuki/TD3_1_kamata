@@ -11,6 +11,7 @@
 #include "Enemy.h"
 #include "input/input.h"
 
+#include "CannonEnemy.h"
 
 using namespace KamataEngine;
 
@@ -35,6 +36,7 @@ public:
 	void GetEnemyHead(AABB aabb) { enemyAABB = aabb; }
 
 	const WorldTransform* GetWorld() { return &worldTransform_; }
+	Vector3 GetWorldPosition() { return position; }
 
 	bool GetEnemyContral() { return EnemyContral; }
 	void SetEnemyContral(bool anser) {
@@ -55,6 +57,8 @@ public:
 	std::vector<Enemy*> enemyList_;
 
 	void EnemyHead() { onEnemy = true; }
+
+	void SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
 
 private:
 	WorldTransform worldTransform_;
@@ -90,4 +94,7 @@ private:
 	Controler controler = Controler::player;
 	uint32_t textureHandle = 0;
 	bool collisionEnemy = false;
+
+
+	CannonEnemy* cannonEnemy = nullptr;
 };

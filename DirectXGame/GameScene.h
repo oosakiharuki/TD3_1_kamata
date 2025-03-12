@@ -4,6 +4,8 @@
 #include "Player.h"
 #include "Enemy.h"
 
+#include "CannonEnemy.h"
+
 using namespace KamataEngine;
 
 class GameScene {
@@ -30,4 +32,7 @@ private:
 	std::vector<std::vector<AABB>> allObstacles_;
 
 	uint32_t textureHandle = 0;
+
+
+	CannonEnemy* cannonEenmy = nullptr;
 };
