@@ -1,4 +1,5 @@
 #include "Collision.h"
+#include "AABB.h"
 
 // 各軸の重なり量を計算する関数
 Vector3 GetOverlapAmount(const AABB& a, const AABB& b) {
@@ -22,7 +23,6 @@ Vector3 GetOverlapAmount(const AABB& a, const AABB& b) {
 void ResolveAABBCollision(AABB& playerAABB, const AABB& obstacleAABB, float& velocityY, bool& onGround) {
 	Vector3 overlap = GetOverlapAmount(playerAABB, obstacleAABB);
 
-	// 重なりが最小の軸を判断（<= を用いて等しい場合も含む）
 	if (overlap.x <= overlap.y && overlap.x <= overlap.z) {
 		float playerCenterX = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
 		float obstacleCenterX = (obstacleAABB.min.x + obstacleAABB.max.x) * 0.5f;
@@ -46,5 +46,16 @@ void ResolveAABBCollision(AABB& playerAABB, const AABB& obstacleAABB, float& vel
 		float push = (playerCenterZ < obstacleCenterZ) ? -overlap.z : overlap.z;
 		playerAABB.min.z += push;
 		playerAABB.max.z += push;
+	}
+}
+
+// プレイヤーとブロック（障害物リスト）の衝突判定を行う関数
+void CheckPlayerBlockCollision(AABB& playerAABB, const std::vector<AABB>& blockObstacles, float& velocityY, bool& onGround) {
+	// 各ブロック障害物ごとに判定し、衝突があれば解決処理を行う
+	for (const auto& obstacle : blockObstacles) {
+		// AABB 間の衝突判定（AABB.h内の IsCollisionAABB を利用）
+		if (IsCollisionAABB(playerAABB, obstacle)) {
+			ResolveAABBCollision(playerAABB, obstacle, velocityY, onGround);
+		}
 	}
 }
