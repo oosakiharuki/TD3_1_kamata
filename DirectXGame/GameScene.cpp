@@ -31,31 +31,33 @@ void GameScene::Initialize() {
 	// 床の障害物リストの作成（床全体の AABB）
 	AddObstacle(floorObstacles_, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f});
 
+	// 座標方式のCSVを使用するための変更
+	// MapChipField の初期化
 	mapChipField_ = new MapChipField();
-	mapChipField_->LoadMapChipCsv("./Resources/map/map.csv");
+	mapChipField_->LoadCoordinateCsv("./Resources/map/map.csv"); // LoadMapChipCsvではなくLoadCoordinateCsvを使用
 
-	// MapChipRenderer の生成と初期化（既に読み込んだ MapChipField を渡す）
-	// CSV 形式：各行が「x,y,z,blockNum」になっているファイル
+	// MapChipRenderer の初期化
 	mapChipRenderer_ = new MapChipRenderer();
 	if (!mapChipRenderer_->Init(&camera_, "./Resources/map/map.csv")) {
 		// 読み込み失敗時の処理
+		// エラーハンドリングを追加
+		delete mapChipRenderer_;
+		mapChipRenderer_ = nullptr;
 	}
 
-	// MapChipField の内容から障害物リストを生成
+	// 座標方式のMapChipFieldから障害物リストを生成
 	std::vector<AABB> tileObstacles;
-	uint32_t vert = mapChipField_->GetNumBlockVirtical();
-	uint32_t horz = mapChipField_->GetNumBlockHorizontal();
-	for (uint32_t y = 0; y < vert; ++y) {
-		for (uint32_t x = 0; x < horz; ++x) {
-			MapChipType type = mapChipField_->GetMapChipTypeByIndex(x, y);
-			if (type != MapChipType::kBlank) {
-				// 各タイルの中心座標（ブロックサイズは kBlockWidth, kBlockHeight = 1.0f と仮定）
-				Vector3 pos = mapChipField_->GetMapChipPostionByIndex(x, y);
-				AABB obstacle;
-				obstacle.min = {pos.x - 0.5f, pos.y - 0.5f, -0.5f};
-				obstacle.max = {pos.x + 0.5f, pos.y + 0.5f, 0.5f};
-				tileObstacles.push_back(obstacle);
-			}
+	const std::vector<BlockDataCoord>& blocks = mapChipField_->GetBlocks();
+
+	// 座標方式で読み込んだブロック情報から障害物を生成
+	for (const auto& block : blocks) {
+		// ブランク（空白）以外のブロックのみ障害物として追加
+		if (block.type != MapChipType::kBlank) {
+			AABB obstacle;
+			// ブロックの中心座標はposition、サイズは一律1.0fと仮定
+			obstacle.min = {block.position.x - 0.5f, block.position.y - 0.5f, block.position.z - 0.5f};
+			obstacle.max = {block.position.x + 0.5f, block.position.y + 0.5f, block.position.z + 0.5f};
+			tileObstacles.push_back(obstacle);
 		}
 	}
 
