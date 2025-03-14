@@ -1,5 +1,6 @@
 #include "GameScene.h"
 #include "AABB.h"
+#include <algorithm>
 #include <vector>
 
 GameScene::GameScene() {}
@@ -7,6 +8,8 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	delete player_;
 	delete modelGround_;
+	delete mapChipField_;
+
 	for (auto enemy : enemyList_) {
 		delete enemy;
 	}
@@ -25,27 +28,51 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_->Init(&camera_, textureHandle);
 
-	// 障害物リストの作成例
-	AddObstacle(allObstacles_, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});            // 例：壁のAABB
-	AddObstacle(allObstacles_, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f}); // 例：床のAABB全体の床
-	AddObstacle(allObstacles_, {-10.0f, -0.5f, -10.0f}, {20.0f, 3.0f, 20.0f});     // 新しい足場AABB白
-	AddObstacle(allObstacles_, {18.0f, -0.5f, -10.0f}, {37.5f, 6.0f, 20.0f});      // 新しい足場のAABB白
+	// 床の障害物リストの作成（床全体の AABB）
+	AddObstacle(floorObstacles_, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f});
 
-	AddObstacle(allObstacles_, {6.2f, -0.5f, -41.0f}, {19.5f, 3.5f, -27.3f}); // 宇宙模様の床
+	mapChipField_ = new MapChipField();
+	mapChipField_->LoadMapChipCsv("./Resources/map/map.csv");
 
-	// Enemyの生成と初期化
-	for (int i = 0; i < 5; ++i) { // 例として5体のEnemyを生成
+	// MapChipRenderer の生成と初期化（既に読み込んだ MapChipField を渡す）
+	// CSV 形式：各行が「x,y,z,blockNum」になっているファイル
+	mapChipRenderer_ = new MapChipRenderer();
+	if (!mapChipRenderer_->Init(&camera_, "./Resources/map/map.csv")) {
+		// 読み込み失敗時の処理
+	}
+
+	// MapChipField の内容から障害物リストを生成
+	std::vector<AABB> tileObstacles;
+	uint32_t vert = mapChipField_->GetNumBlockVirtical();
+	uint32_t horz = mapChipField_->GetNumBlockHorizontal();
+	for (uint32_t y = 0; y < vert; ++y) {
+		for (uint32_t x = 0; x < horz; ++x) {
+			MapChipType type = mapChipField_->GetMapChipTypeByIndex(x, y);
+			if (type != MapChipType::kBlank) {
+				// 各タイルの中心座標（ブロックサイズは kBlockWidth, kBlockHeight = 1.0f と仮定）
+				Vector3 pos = mapChipField_->GetMapChipPostionByIndex(x, y);
+				AABB obstacle;
+				obstacle.min = {pos.x - 0.5f, pos.y - 0.5f, -0.5f};
+				obstacle.max = {pos.x + 0.5f, pos.y + 0.5f, 0.5f};
+				tileObstacles.push_back(obstacle);
+			}
+		}
+	}
+
+	// Enemy の生成と初期化（障害物リストに床障害物とマップチップから生成した障害物をセット）
+	for (int i = 0; i < 5; ++i) {
 		Enemy* enemy = new Enemy();
 		enemy->Init(&camera_);
-		enemy->SetTarget(player_); // Playerの位置を設定
-		for (const auto& obstacles : allObstacles_) {
+		enemy->SetTarget(player_);
+		for (const auto& obstacles : floorObstacles_) {
 			enemy->SetObstacleList(obstacles);
 		}
+		enemy->SetObstacleList(tileObstacles);
 		enemyList_.push_back(enemy);
 	}
 
-	// 各Enemyの初期位置を設定
-	if (enemyList_.size() > 0)
+	// 各 Enemy の初期位置設定
+	if (!enemyList_.empty())
 		enemyList_[0]->SetPosition({-20.0f, 0.0f, -10.0f});
 	if (enemyList_.size() > 1)
 		enemyList_[1]->SetPosition({-10.0f, 0.0f, -10.0f});
@@ -57,11 +84,10 @@ void GameScene::Initialize() {
 		enemyList_[4]->SetPosition({50.0f, 0.0f, -20.0f});
 
 	player_->SetEnemyList(enemyList_);
-
-	// 障害物リストを Player にセット
-	for (const auto& obstacles : allObstacles_) {
+	for (const auto& obstacles : floorObstacles_) {
 		player_->SetObstacleList(obstacles);
 	}
+	player_->SetObstacleList(tileObstacles);
 
 	// Ground の生成・初期化
 	modelGround_ = new Ground();
@@ -70,20 +96,21 @@ void GameScene::Initialize() {
 
 void GameScene::Update() {
 	player_->Update();
-	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
-		(*it)->Update();
-		if (std::find(player_->enemyList_.begin(), player_->enemyList_.end(), *it) == player_->enemyList_.end()) {
-			delete *it;
-			it = enemyList_.erase(it);
-		} else {
-			// 衝突判定
-			if ((*it)->CheckCollisionWithPlayer()) {
-				// 衝突時の処理（移動を停止）
-				(*it)->SetVelocity(Vector3(0, 0, 0));
-			}
-			++it;
-		}
-	}
+	// MapChipField は静的なマップなので Update 処理は不要
+
+	//// Enemy の更新と不要な Enemy の削除・衝突判定
+	// for (auto it = enemyList_.begin(); it != enemyList_.end();) {
+	//	(*it)->Update();
+	//	if (std::find(player_->enemyList_.begin(), player_->enemyList_.end(), *it) == player_->enemyList_.end()) {
+	//		delete *it;
+	//		it = enemyList_.erase(it);
+	//	} else {
+	//		if ((*it)->CheckCollisionWithPlayer()) {
+	//			(*it)->SetVelocity(Vector3(0, 0, 0));
+	//		}
+	//		++it;
+	//	}
+	// }
 }
 
 void GameScene::Draw() {
@@ -93,16 +120,18 @@ void GameScene::Draw() {
 	Sprite::PreDraw(commandList);
 	Sprite::PostDraw();
 
-	// モデル描画
 	Model::PreDraw(commandList);
 	player_->Draw();
 	modelGround_->Draw();
-	for (auto enemy : enemyList_) {
-		enemy->Draw();
-	}
+
+	mapChipRenderer_->Draw();
+
+	//// Enemy の描画
+	// for (auto enemy : enemyList_) {
+	//	enemy->Draw();
+	// }
 	Model::PostDraw();
 
-	// UI描画
 	Sprite::PreDraw(commandList);
 	Sprite::PostDraw();
 }
@@ -111,8 +140,37 @@ void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const 
 	AABB obstacle;
 	obstacle.min = min;
 	obstacle.max = max;
-	if (allObstacles.empty() || allObstacles.back().size() >= 100) { // 100個の障害物を追加
+	if (allObstacles.empty() || allObstacles.back().size() >= 100) {
 		allObstacles.emplace_back();
 	}
 	allObstacles.back().push_back(obstacle);
+}
+
+void GameScene::SpawnEnemy(const Vector3& position) {
+	Enemy* enemy = new Enemy();
+	enemy->Init(&camera_);
+	enemy->SetTarget(player_);
+	enemy->SetPosition(position);
+	for (const auto& obstacles : floorObstacles_) {
+		enemy->SetObstacleList(obstacles);
+	}
+	// 生成時もマップチップから生成した障害物をセット
+	std::vector<AABB> tileObstacles;
+	uint32_t vert = mapChipField_->GetNumBlockVirtical();
+	uint32_t horz = mapChipField_->GetNumBlockHorizontal();
+	for (uint32_t y = 0; y < vert; ++y) {
+		for (uint32_t x = 0; x < horz; ++x) {
+			MapChipType type = mapChipField_->GetMapChipTypeByIndex(x, y);
+			if (type != MapChipType::kBlank) {
+				Vector3 pos = mapChipField_->GetMapChipPostionByIndex(x, y);
+				AABB obstacle;
+				obstacle.min = {pos.x - 0.5f, pos.y - 0.5f, -0.5f};
+				obstacle.max = {pos.x + 0.5f, pos.y + 0.5f, 0.5f};
+				tileObstacles.push_back(obstacle);
+			}
+		}
+	}
+	enemy->SetObstacleList(tileObstacles);
+	enemyList_.push_back(enemy);
+	player_->SetEnemyList(enemyList_);
 }
