@@ -1,5 +1,5 @@
 #pragma once
-#include"KamataEngine.h"
+#include "KamataEngine.h"
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -29,6 +29,9 @@ public:
 	// 読み込んだ座標情報に基づきブロックを描画する
 	void Draw();
 
+	// グリッド方式のマップチップ用に各ブロックのワールド変換を生成する
+	void GenerateBlocks();
+
 private:
 	// CSV をパースして blocks_ に情報を格納する
 	bool LoadBlockCoordinatesFromCSV(const std::string& csvFile);
@@ -41,6 +44,9 @@ private:
 	Model* block2Model_ = nullptr;
 	Model* doorModel_ = nullptr;
 
-	// CSV から読み込んだブロック配置情報
+	// CSV から読み込んだブロック配置情報（座標方式）
 	std::vector<BlockData> blocks_;
+
+	// グリッド方式用の各ブロックのワールド変換ポインタ配列
+	std::vector<WorldTransform*> gridTransforms_;
 };

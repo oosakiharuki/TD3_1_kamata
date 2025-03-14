@@ -44,6 +44,7 @@ void GameScene::Initialize() {
 		delete mapChipRenderer_;
 		mapChipRenderer_ = nullptr;
 	}
+	mapChipRenderer_->GenerateBlocks();
 
 	// 座標方式のMapChipFieldから障害物リストを生成
 	std::vector<AABB> tileObstacles;

@@ -1,25 +1,60 @@
 #include "MapChipRenderer.h"
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include "Mymath.h"
 
-MapChipRenderer::MapChipRenderer() { worldTransform_.Initialize(); }
+// ユーティリティ関数：前後の空白を除去
+static std::string trim(const std::string& s) {
+	std::string result = s;
+	result.erase(result.begin(), std::find_if(result.begin(), result.end(), [](unsigned char ch) { return !std::isspace(ch); }));
+	result.erase(std::find_if(result.rbegin(), result.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), result.end());
+	return result;
+}
+
+MapChipRenderer::MapChipRenderer() {
+	// ワールド変換の初期化
+	worldTransform_.Initialize();
+}
 
 MapChipRenderer::~MapChipRenderer() {
 	delete blockModel_;
 	delete block2Model_;
 	delete doorModel_;
+	// gridTransforms_ 内のポインタを解放
+	for (auto wt : gridTransforms_) {
+		delete wt;
+	}
+	gridTransforms_.clear();
 }
 
 bool MapChipRenderer::Init(Camera* camera, const std::string& csvFile) {
 	camera_ = camera;
-
-	// CSV ファイルからブロック座標情報を読み込む
-	if (!LoadBlockCoordinatesFromCSV(csvFile)) {
+	if (!camera_) {
+		std::cerr << "カメラが設定されていません。" << std::endl;
 		return false;
 	}
 
-	// 各ブロック用のモデルを読み込み
+	// CSV ファイルからブロック情報を読み込む
+	if (!LoadBlockCoordinatesFromCSV(csvFile)) {
+		std::cerr << "CSV 読み込みに失敗しました: " << csvFile << std::endl;
+		return false;
+	}
+
+	// モデルのロード（OBJ ファイル名は環境に合わせてください）
 	blockModel_ = Model::CreateFromOBJ("block", true);
 	block2Model_ = Model::CreateFromOBJ("block", true);
 	doorModel_ = Model::CreateFromOBJ("block", true);
+
+	if (!blockModel_ || !block2Model_ || !doorModel_) {
+		std::cerr << "モデルのロードに失敗しました。" << std::endl;
+		return false;
+	}
+
+	// グリッド方式用ワールド変換を生成
+	GenerateBlocks();
 
 	return true;
 }
@@ -27,102 +62,118 @@ bool MapChipRenderer::Init(Camera* camera, const std::string& csvFile) {
 bool MapChipRenderer::LoadBlockCoordinatesFromCSV(const std::string& csvFile) {
 	std::ifstream file(csvFile);
 	if (!file.is_open()) {
+		std::cerr << "CSV ファイルが開けませんでした: " << csvFile << std::endl;
 		return false;
 	}
-
-	// 既存のブロックデータをクリア
-	blocks_.clear();
-
 	std::string line;
+	int lineNumber = 0;
 	while (std::getline(file, line)) {
+		++lineNumber;
 		if (line.empty())
 			continue;
-
 		std::istringstream iss(line);
 		std::string token;
 		BlockData data;
-
-		// x座標の読み込み
-		if (std::getline(iss, token, ',')) {
-			data.position.x = std::stof(token);
-		} else {
-			continue; // x座標が読み込めない場合はスキップ
+		// 先頭 4 トークン（x, y, z, blockNum）のみ取得
+		if (!std::getline(iss, token, ','))
+			continue;
+		try {
+			data.position.x = std::stof(trim(token));
+		} catch (...) {
+			std::cerr << "行 " << lineNumber << " の x 値変換エラー: " << token << std::endl;
+			continue;
 		}
-
-		// y座標の読み込み
-		if (std::getline(iss, token, ',')) {
-			data.position.y = std::stof(token);
-		} else {
-			continue; // y座標が読み込めない場合はスキップ
+		if (!std::getline(iss, token, ','))
+			continue;
+		try {
+			data.position.y = std::stof(trim(token));
+		} catch (...) {
+			std::cerr << "行 " << lineNumber << " の y 値変換エラー: " << token << std::endl;
+			continue;
 		}
-
-		// z座標の読み込み
-		if (std::getline(iss, token, ',')) {
-			data.position.z = std::stof(token);
-		} else {
-			continue; // z座標が読み込めない場合はスキップ
+		if (!std::getline(iss, token, ','))
+			continue;
+		try {
+			data.position.z = std::stof(trim(token));
+		} catch (...) {
+			std::cerr << "行 " << lineNumber << " の z 値変換エラー: " << token << std::endl;
+			continue;
 		}
-
-		// ブロックタイプの読み込み
-		if (std::getline(iss, token, ',')) {
-			int typeInt = std::stoi(token);
-			data.type = static_cast<BlockType>(typeInt);
-		} else {
-			continue; // タイプが読み込めない場合はスキップ
+		if (!std::getline(iss, token, ','))
+			continue;
+		try {
+			data.type = static_cast<BlockType>(std::stoi(trim(token)));
+		} catch (...) {
+			std::cerr << "行 " << lineNumber << " の blockNum 変換エラー: " << token << std::endl;
+			continue;
 		}
-
-		// デバッグ用：読み込んだ値を確認
-		// std::cout << "Loaded block: (" << data.position.x << ", "
-		//           << data.position.y << ", " << data.position.z
-		//           << "), type: " << static_cast<int>(data.type) << std::endl;
-
 		blocks_.push_back(data);
 	}
-
 	file.close();
 	return true;
+}
+
+void MapChipRenderer::GenerateBlocks() {
+	// gridTransforms_ の初期化：既存の変換があれば削除
+	for (auto wt : gridTransforms_) {
+		delete wt;
+	}
+	gridTransforms_.clear();
+
+	// blocks_ のサイズに合わせて gridTransforms_ を初期化
+	gridTransforms_.resize(blocks_.size(), nullptr);
+
+	// 各ブロックごとにワールド変換を生成
+	for (size_t i = 0; i < blocks_.size(); ++i) {
+		BlockData& block = blocks_[i];
+		// BlockType が kBlank でない場合のみワールド変換を生成
+		if (block.type == BlockType::kBlock || block.type == BlockType::kBlock2 || block.type == BlockType::kDoor) {
+			WorldTransform* wt = new WorldTransform();
+			wt->Initialize();
+			wt->translation_ = block.position;
+			wt->matWorld_ = MakeAffineMatrix(wt->scale_, wt->rotation_, wt->translation_);
+			wt->TransferMatrix();
+			gridTransforms_[i] = wt;
+		}
+	}
 }
 
 void MapChipRenderer::Draw() {
 	if (!camera_)
 		return;
 
-	// 各ブロックの描画
-	for (const auto& block : blocks_) {
-		// ブロックの座標に合わせてワールド変換を設定
-		worldTransform_.Initialize();
+	// CSV から読み込んだ各ブロックを描画
+	// ※ここでは blocks_ の情報と対応する gridTransforms_ を利用して描画します
+	for (size_t i = 0; i < blocks_.size(); ++i) {
+		BlockData& block = blocks_[i];
+		WorldTransform* wt = gridTransforms_[i];
+		if (!wt)
+			continue;
 
-		// 位置を設定 - これが反映されていることを確認
-		worldTransform_.translation_ = block.position;
-
-		// デバッグ用：位置が正しく設定されているか確認
-		// std::cout << "Block position: (" << block.position.x << ", "
-		//           << block.position.y << ", " << block.position.z << ")" << std::endl;
-
-		// 変換行列を更新 - この呼び出しが必要
-		worldTransform_.TransferMatrix();
-
-		// block.type に応じたモデルを描画
+		// ブロックタイプに応じたモデルを描画
 		switch (block.type) {
 		case BlockType::kBlock:
 			if (blockModel_) {
-				blockModel_->Draw(worldTransform_, *camera_);
+				blockModel_->Draw(*wt, *camera_);
 			}
 			break;
 		case BlockType::kBlock2:
 			if (block2Model_) {
-				block2Model_->Draw(worldTransform_, *camera_);
+				block2Model_->Draw(*wt, *camera_);
 			}
 			break;
 		case BlockType::kDoor:
 			if (doorModel_) {
-				doorModel_->Draw(worldTransform_, *camera_);
+				doorModel_->Draw(*wt, *camera_);
 			}
 			break;
 		default:
+			// kBlank などは描画しない
 			break;
 		}
 	}
+
+	// 再更新が必要な場合はワールド変換の行列更新を実施
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
 }
