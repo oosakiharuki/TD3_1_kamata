@@ -26,12 +26,7 @@ void GameScene::Initialize() {
 	player_->Init(&camera_, textureHandle);
 
 	// 障害物リストの作成例
-	AddObstacle(allObstacles_, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});            // 例：壁のAABB
 	AddObstacle(allObstacles_, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f}); // 例：床のAABB全体の床
-	AddObstacle(allObstacles_, {-10.0f, -0.5f, -10.0f}, {20.0f, 3.0f, 20.0f});     // 新しい足場AABB白
-	AddObstacle(allObstacles_, {18.0f, -0.5f, -10.0f}, {37.5f, 6.0f, 20.0f});      // 新しい足場のAABB白
-
-	AddObstacle(allObstacles_, {6.2f, -0.5f, -41.0f}, {19.5f, 3.5f, -27.3f}); // 宇宙模様の床
 
 	// Enemyの生成と初期化
 	for (int i = 0; i < 5; ++i) { // 例として5体のEnemyを生成
