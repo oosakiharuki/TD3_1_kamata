@@ -98,19 +98,19 @@ void GameScene::Update() {
 	player_->Update();
 	// MapChipField は静的なマップなので Update 処理は不要
 
-	//// Enemy の更新と不要な Enemy の削除・衝突判定
-	// for (auto it = enemyList_.begin(); it != enemyList_.end();) {
-	//	(*it)->Update();
-	//	if (std::find(player_->enemyList_.begin(), player_->enemyList_.end(), *it) == player_->enemyList_.end()) {
-	//		delete *it;
-	//		it = enemyList_.erase(it);
-	//	} else {
-	//		if ((*it)->CheckCollisionWithPlayer()) {
-	//			(*it)->SetVelocity(Vector3(0, 0, 0));
-	//		}
-	//		++it;
-	//	}
-	// }
+	// Enemy の更新と不要な Enemy の削除・衝突判定
+	 for (auto it = enemyList_.begin(); it != enemyList_.end();) {
+		(*it)->Update();
+		if (std::find(player_->enemyList_.begin(), player_->enemyList_.end(), *it) == player_->enemyList_.end()) {
+			delete *it;
+			it = enemyList_.erase(it);
+		} else {
+			if ((*it)->CheckCollisionWithPlayer()) {
+				(*it)->SetVelocity(Vector3(0, 0, 0));
+			}
+			++it;
+		}
+	 }
 }
 
 void GameScene::Draw() {
@@ -126,10 +126,10 @@ void GameScene::Draw() {
 
 	mapChipRenderer_->Draw();
 
-	//// Enemy の描画
-	// for (auto enemy : enemyList_) {
-	//	enemy->Draw();
-	// }
+	// Enemy の描画
+	 for (auto enemy : enemyList_) {
+		enemy->Draw();
+	 }
 	Model::PostDraw();
 
 	Sprite::PreDraw(commandList);
