@@ -1,10 +1,12 @@
 #pragma once
+#include "CannonEnemy.h"
+#include "Enemy.h"
 #include "Ground.h"
 #include "KamataEngine.h"
 #include "Player.h"
-#include "Enemy.h"
-
-#include "CannonEnemy.h"
+// 追加するインクルード
+#include "Door.h"
+#include "Key.h"
 
 using namespace KamataEngine;
 
@@ -20,7 +22,7 @@ private:
 	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
 
 	void LoadStage(std::string objFile);
-	
+
 	void UpdateStageAABB();
 
 	DirectXCommon* dxCommon_ = nullptr;
@@ -37,9 +39,12 @@ private:
 
 	uint32_t textureHandle = 0;
 
-
 	CannonEnemy* cannonEenmy = nullptr;
 
 	Model* stage = nullptr;
 	std::stringstream Command;
+
+	// 追加するメンバ変数
+	Key* key_ = nullptr;   // 鍵オブジェクト
+	Door* door_ = nullptr; // ドアオブジェクト
 };

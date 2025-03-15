@@ -111,9 +111,11 @@
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="CannonEnemy.cpp" />
     <ClCompile Include="Collision.cpp" />
+    <ClCompile Include="Door.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="Ground.cpp" />
+    <ClCompile Include="key.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mymath.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -200,9 +202,11 @@
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="CannonEnemy.h" />
     <ClInclude Include="Collision.h" />
+    <ClInclude Include="Door.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Ground.h" />
+    <ClInclude Include="key.h" />
     <ClInclude Include="Mymath.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Vector3.h" />
