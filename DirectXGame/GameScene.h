@@ -19,6 +19,10 @@ public:
 private:
 	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
 
+	void LoadStage(std::string objFile);
+	
+	void UpdateStageAABB();
+
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
@@ -35,4 +39,7 @@ private:
 
 
 	CannonEnemy* cannonEenmy = nullptr;
+
+	Model* stage = nullptr;
+	std::stringstream Command;
 };

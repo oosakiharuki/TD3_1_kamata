@@ -228,7 +228,7 @@ void Player::Update() {
 		worldTransform_.translation_.y += 2.0f; // 敵の高さを足す
 	}
 
-	ImGui::Begin("test");
+	ImGui::Begin("player");
 	ImGui::DragFloat3("translate", &worldTransform_.translation_.x);
 	ImGui::DragFloat3("aabbMax", &playerAABB.max.x);
 	ImGui::DragFloat3("aabbMin", &playerAABB.min.x);
