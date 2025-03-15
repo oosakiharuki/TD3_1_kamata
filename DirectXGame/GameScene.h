@@ -44,7 +44,6 @@ private:
 	Model* stage = nullptr;
 	std::stringstream Command;
 
-	// 追加するメンバ変数
 	Key* key_ = nullptr;   // 鍵オブジェクト
 	Door* door_ = nullptr; // ドアオブジェクト
 };

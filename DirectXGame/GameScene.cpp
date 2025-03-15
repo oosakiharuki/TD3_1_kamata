@@ -13,7 +13,6 @@ GameScene::~GameScene() {
 	}
 	delete cannonEenmy;
 	delete stage;
-	// 追加する解放処理
 	delete key_;
 	delete door_;
 }
