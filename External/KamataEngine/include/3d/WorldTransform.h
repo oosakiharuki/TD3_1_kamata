@@ -32,8 +32,6 @@ public:
 	WorldTransform() = default;
 	~WorldTransform() = default;
 
-	void UpdateMatrix();
-
 	/// <summary>
 	/// 初期化
 	/// </summary>
@@ -46,6 +44,8 @@ public:
 	/// マッピングする
 	/// </summary>
 	void Map();
+
+	void UpdateMatrix();
 	/// <summary>
 	/// 行列を転送する
 	/// </summary>
