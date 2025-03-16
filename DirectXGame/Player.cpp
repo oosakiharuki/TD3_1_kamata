@@ -1,9 +1,10 @@
 #include "Player.h"
-#include "imgui.h"
-#include <iostream>
-#include <algorithm>
-
-#include <KamataEngine.h>
+//#include "imgui.h"
+//#include <iostream>
+//#include <algorithm>
+//
+/////================
+//#include <KamataEngine.h>
 
 Player::Player() {}
 
@@ -39,27 +40,92 @@ void Player::Update() {
 	}
 
 	float x = 0, z = 0;
+	float xCamera = 0, zCamera = 0;
+
+	float angle = 0;
+
+
+	const float deadZone = 0.2f; // スティックの感度調整
 
 	Input::GetInstance()->GetJoystickState(0, state);
 	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
 
 	if (Input::GetInstance()->GetJoystickState(0, state)) {
+			
+		// 右スティックの入力
+		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f; // -1.0f～1.0f
+		zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
+		                                                   
+		// デッドゾーン処理      
+		if (abs(xCamera) < deadZone) {
+			xCamera = 0.0f;
+		}
+		if (abs(zCamera) < deadZone) {
+			zCamera = 0.0f;
+		}
+
+
+		// 回転
+		const float rotate = 0.7f;
+		bool isMoving1 = false;
+
+		Vector3 RotateCamera = {xCamera, 0.0f, zCamera};
+		if (Length(RotateCamera) > rotate) {
+			isMoving1 = true;
+		}
+		if (isMoving1) {
+			cameraPitch += zCamera;
+			cameraYaw += xCamera;
+		}
+
 		// 左スティックの入力
 		x = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f; // -1.0f～1.0f
 		z = static_cast<float>(state.Gamepad.sThumbLY) / 32768.0f; // -1.0f～1.0f
 
 		// デッドゾーン処理
-		const float deadZone = 0.2f; // スティックの感度調整
 		if (abs(x) < deadZone) {
 			x = 0.0f;
 		}
 		if (abs(z) < deadZone) {
 			z = 0.0f;
 		}
-		position.x += x * speed;
-		position.z += z * speed;
+		// 回転
+		//const float rotate = 0.7f;
+		bool isMoving = false;
+
+		Vector3 RotateMove = {x , 0.0f, z};
+		if (Length(RotateMove) > rotate) {
+			isMoving = true;
+		}
+
+		Vector3 move = {x, 0.0f, z};
+		
+		if (isMoving) {
+			move = Normalize(move) * speed;
+	
+			move = TransformNormal(move, worldTransform_.matWorld_);
+			angle = std::atan2(RotateMove.x, RotateMove.z);
+			//worldTransform_.rotation_.y = -angle;
+			
+
+			position.x += move.x;
+			position.z += move.z;
+			
+		}
+
+	}
+
+	// QとEキーの入力処理
+	if (Input::GetInstance()->PushKey(DIK_Q)) {
+		cameraYaw -= 1.0f; // Qキーで左回転
+	}
+	if (Input::GetInstance()->PushKey(DIK_E)) {
+		cameraYaw += 1.0f; // Eキーで右回転
 	}
 	
+	cameraController_.SetYaw(cameraYaw);
+	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
+
 	switch (controler) {
 	case Controler::player:
 
@@ -104,13 +170,13 @@ void Player::Update() {
 	//position.z += z * speed;
 
 		
-	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_) {
+	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
 		controler = Controler::player;
 
-	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_) {
+	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
@@ -142,6 +208,38 @@ void Player::Update() {
 		}
 		iterations++;
 	} while (collisionOccurred && iterations < maxIterations);
+
+	AABB cannonAABB = cannonEnemy->GetAABB();
+	
+	if (IsCollisionAABB(playerAABB, cannonAABB) && !EnemyContral) {
+		// 衝突時の処理（例：リストから削除）
+		// it = enemyList_.erase(it);
+		ResolveAABBCollision(playerAABB, cannonAABB, velocityY_, onGround_);
+
+		// 頭からしか入れなくする
+		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y)) {
+			cannonEnemy->ContralPlayer();
+			EnemyContral = true;
+			collisionEnemy = true;
+		}
+	}
+
+	if (EnemyContral && cannonEnemy->GetPlayerCtrl()) {
+		cannonEnemy->SetParent(&worldTransform_);
+
+
+		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_X) && 
+			!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
+			cannonEnemy->PlayerFire(); // カメラ向きで変えれるようにする
+		} 
+		else if (Input::GetInstance()->TriggerKey(DIK_J)) {
+			cannonEnemy->PlayerFire();//カメラ向きで変えれるようにする
+		}
+
+
+	} else {
+		cannonEnemy->ReMove(worldTransform_.translation_);
+	}
 
 
     // Enemyとの衝突判定
@@ -211,6 +309,14 @@ void Player::Update() {
 	cameraController_.Update(camera_, position);
 }
 
+//void Player::DrawUI() {
+//    ImGui::Begin("Player State");
+//
+//    const char* stateNames[] = { "Normal", "Bomb", "Ghost" };
+//    ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
+//
+//    ImGui::End();
+//}
 
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_,  textureHandle); }
 

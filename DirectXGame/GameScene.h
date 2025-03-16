@@ -30,4 +30,6 @@ private:
 	std::vector<std::vector<AABB>> allObstacles_;
 
 	uint32_t textureHandle = 0;
+
+	CannonEnemy* cannonEenmy = nullptr;
 };
