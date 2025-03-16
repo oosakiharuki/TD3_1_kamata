@@ -10,13 +10,10 @@ void Door::Init(Camera* camera) {
 	worldTransform_.Initialize();
 
 	// "cube" モデルを読み込み
-	model_ = Model::CreateFromOBJ("cube", true);
+	model_ = Model::CreateFromOBJ("door", true);
 
 	// 位置を設定
 	worldTransform_.translation_ = position_;
-
-	// サイズを設定（ドアらしく縦長に）
-	worldTransform_.scale_ = doorSize_;
 
 	// 行列を更新
 	worldTransform_.UpdateMatrix();

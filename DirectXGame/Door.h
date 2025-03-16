@@ -47,8 +47,6 @@ private:
 	bool isDoorTouched_ = false; // ドアに触れたフラグ
 	bool isDoorOpened_ = false;  // ドアが開いたフラグ
 
-	// ドアのサイズ
-	Vector3 doorSize_ = {2.0f, 3.0f, 0.5f}; // 幅、高さ、奥行き
 
 	// 開閉アニメーション用変数
 	float openAngle_ = 0.0f;
