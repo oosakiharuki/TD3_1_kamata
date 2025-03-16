@@ -1,9 +1,8 @@
 #include "Player.h"
 #include "imgui.h"
-#include <iostream>
-#include <algorithm>
-
 #include <KamataEngine.h>
+#include <algorithm>
+#include <iostream>
 
 Player::Player() {}
 
@@ -39,32 +38,24 @@ void Player::Update() {
 	}
 
 	float x = 0, z = 0;
-
 	Input::GetInstance()->GetJoystickState(0, state);
 	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
 
 	if (Input::GetInstance()->GetJoystickState(0, state)) {
-		// 左スティックの入力
-		x = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f; // -1.0f～1.0f
-		z = static_cast<float>(state.Gamepad.sThumbLY) / 32768.0f; // -1.0f～1.0f
-
-		// デッドゾーン処理
-		const float deadZone = 0.2f; // スティックの感度調整
-		if (abs(x) < deadZone) {
+		x = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f;
+		z = static_cast<float>(state.Gamepad.sThumbLY) / 32768.0f;
+		const float deadZone = 0.2f;
+		if (abs(x) < deadZone)
 			x = 0.0f;
-		}
-		if (abs(z) < deadZone) {
+		if (abs(z) < deadZone)
 			z = 0.0f;
-		}
 		position.x += x * speed;
 		position.z += z * speed;
 	}
-	
+
 	switch (controler) {
 	case Controler::player:
-
 		if (!onGround_) {
-			// のりうつるときの処理
 			if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !EnemyContral) {
 				velocityY_ -= 1.2f;
 				isTransfar = true;
@@ -77,39 +68,22 @@ void Player::Update() {
 		}
 		break;
 	case Controler::enemyTransfar:
-
-		// if (onEnemy || position.y <= 2.0f) {
-		//	onGround_ = true;
-		// } else {
-		//	onGround_ = false;
-		// }
-
-		break;
-	default:
 		break;
 	};
 
-
-	// ジャンプ処理
 	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && onGround_) {
 		velocityY_ = 0.3f;
 		onGround_ = false;
-	}
-	else if (Input::GetInstance()->TriggerKey(DIK_SPACE) && onGround_) {
+	} else if (Input::GetInstance()->TriggerKey(DIK_SPACE) && onGround_) {
 		velocityY_ = 0.3f;
 		onGround_ = false;
 	}
 
-	//position.x += x * speed;
-	//position.z += z * speed;
-
-		
 	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
 		controler = Controler::player;
-
 	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
@@ -117,18 +91,14 @@ void Player::Update() {
 		controler = Controler::player;
 	}
 
-	// 重力処理
 	float gravity = 0.01f;
 	velocityY_ -= gravity;
 	position.y += velocityY_;
 
-	// プレイヤーのAABB作成（例：幅1.0, 高さ2.0, 奥行1.0）
 	float halfW = 1.0f, halfH = 1.0f, halfD = 1.0f;
-	
 	playerAABB.min = {position.x - halfW, position.y - halfH, position.z - halfD};
 	playerAABB.max = {position.x + halfW, position.y + halfH, position.z + halfD};
 
-	// 反復的衝突解決（すり抜け防止のため、最大10回まで解決を試みる）
 	const int maxIterations = 10;
 	int iterations = 0;
 	bool collisionOccurred = false;
@@ -144,13 +114,9 @@ void Player::Update() {
 	} while (collisionOccurred && iterations < maxIterations);
 
 	AABB cannonAABB = cannonEnemy->GetAABB();
-	
-	if (IsCollisionAABB(playerAABB, cannonAABB) && !EnemyContral) {
-		// 衝突時の処理（例：リストから削除）
-		// it = enemyList_.erase(it);
-		ResolveAABBCollision(playerAABB, cannonAABB, velocityY_, onGround_);
 
-		// 頭からしか入れなくする
+	if (IsCollisionAABB(playerAABB, cannonAABB) && !EnemyContral) {
+		ResolveAABBCollision(playerAABB, cannonAABB, velocityY_, onGround_);
 		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y)) {
 			cannonEnemy->ContralPlayer();
 			EnemyContral = true;
@@ -160,34 +126,24 @@ void Player::Update() {
 
 	if (EnemyContral && cannonEnemy->GetPlayerCtrl()) {
 		cannonEnemy->SetParent(&worldTransform_);
-
 		if (Input::GetInstance()->TriggerKey(DIK_J)) {
-			cannonEnemy->PlayerFire();//カメラ向きで変えれるようにする
+			cannonEnemy->PlayerFire();
 		}
-
-
 	} else {
 		cannonEnemy->ReMove(worldTransform_.translation_);
 	}
 
-
-    // Enemyとの衝突判定
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
 		enemyAABB = (*it)->GetAABB();
-
 		if (IsCollisionAABB(playerAABB, enemyAABB) && !EnemyContral) {
-			// 衝突時の処理（例：リストから削除）
-			// it = enemyList_.erase(it);			
 			ResolveAABBCollision(playerAABB, enemyAABB, velocityY_, onGround_);
-	
-			// 頭からしか入れなくする
-			if (isTransfar &&(playerAABB.min.y >= enemyAABB.max.y)) {
+			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y)) {
 				(*it)->ContralPlayer();
 				EnemyContral = true;
-				collisionEnemy = true;	
-			} 
+				collisionEnemy = true;
+			}
 		}
-		
+
 		if (EnemyContral && (*it)->GetPlayerCtrl()) {
 			(*it)->SetParent(&worldTransform_);
 		} else {
@@ -196,25 +152,12 @@ void Player::Update() {
 		++it;
 	}
 
-
-
-	// 衝突解決後のAABB中心をプレイヤー座標に反映
 	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
 
-	/*/
-	// Enemyとの衝突判定
-	for (const auto& enemy : enemyList_) {
-		AABB enemyAABB = enemy->GetAABB();
-		if (IsCollisionAABB(playerAABB, enemyAABB)) {
-			// 衝突時の処理をここに記述
-		}
-	}
-	/*/
-
 	if (onEnemy) {
-		position.y += 2.0f; // 敵の上に乗るようにする
+		position.y += 2.0f;
 		onEnemy = false;
 	}
 	if (EnemyContral && collisionEnemy) {
@@ -223,9 +166,8 @@ void Player::Update() {
 	}
 
 	worldTransform_.translation_ = position;
-
 	if (EnemyContral) {
-		worldTransform_.translation_.y += 2.0f; // 敵の高さを足す
+		worldTransform_.translation_.y += 2.0f;
 	}
 
 	ImGui::Begin("player");
@@ -240,7 +182,16 @@ void Player::Update() {
 	cameraController_.Update(camera_, position);
 }
 
-
-void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_,  textureHandle); }
+void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); }
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
+
+// ★ 新しく追加：ドアとの衝突解決処理
+void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
+	AABB currentAABB = GetAABB();
+	ResolveAABBCollision(currentAABB, doorAABB, velocityY_, onGround_);
+	position.x = (currentAABB.min.x + currentAABB.max.x) * 0.5f;
+	position.y = (currentAABB.min.y + currentAABB.max.y) * 0.5f;
+	position.z = (currentAABB.min.z + currentAABB.max.z) * 0.5f;
+	worldTransform_.translation_ = position;
+}

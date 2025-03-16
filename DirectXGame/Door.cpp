@@ -21,23 +21,25 @@ void Door::Init(Camera* camera) {
 
 void Door::Update() {
 	// プレイヤーとの衝突判定
-	if (player_ && key_) {
+	if (player_) {
 		AABB playerAABB = player_->GetAABB();
 		AABB doorAABB = GetAABB();
 
 		if (IsCollisionAABB(playerAABB, doorAABB)) {
-			// 鍵を持っている場合、ドアに触れたフラグを立てる
-			if (key_->IsKeyObtained() && !isDoorTouched_) {
+			// 鍵を持っている場合、ドアに触れたフラグを立ててアニメーション開始
+			if (key_ && key_->IsKeyObtained() && !isDoorTouched_) {
 				isDoorTouched_ = true;
 				isAnimating_ = true;
 			}
+			// 衝突解決：プレイヤーがドアにめり込まないようにする
+			player_->ResolveCollisionWithDoor(doorAABB);
 		}
 	}
 
 	// ドアの開閉アニメーション
 	if (isAnimating_) {
-		// ドアを開く（Y軸回転）
-		if (openAngle_ < 1.5f) { // 約90度（ラジアン）
+		// ドアを開く（Y軸回転：約90度＝1.5ラジアン）
+		if (openAngle_ < 1.5f) {
 			openAngle_ += 0.05f;
 			worldTransform_.rotation_.y = openAngle_;
 
@@ -48,10 +50,10 @@ void Door::Update() {
 		}
 	}
 
-	// 行列を更新
+	// 行列更新
 	worldTransform_.UpdateMatrix();
 
-	// ImGuiデバッグ表示
+	// ImGuiによるデバッグ表示
 	ImGui::Begin("Door Status");
 	ImGui::Checkbox("Door Touch", &isDoorTouched_);
 	ImGui::Checkbox("Door Opened", &isDoorOpened_);
@@ -60,15 +62,25 @@ void Door::Update() {
 
 void Door::Draw() { model_->Draw(worldTransform_, *camera_); }
 
-// AABBを取得するメソッド
 AABB Door::GetAABB() const {
-	float halfW = 0.5f * worldTransform_.scale_.x;
-	float halfH = 0.5f * worldTransform_.scale_.y;
-	float halfD = 0.5f * worldTransform_.scale_.z;
+	// ドアのローカル座標：
+	//   min = (-3, 0, -1), max = (3, 6, 1)
+	//   中心 = (0, 3, 0)
+	//   半サイズ(=halfExtents) = (3, 3, 1)
+	Vector3 localCenter = {0.0f, 3.0f, 0.0f};
+	Vector3 halfExtents = {3.0f, 3.0f, 1.0f};
 
+	// スケールを要素ごとに乗算
+	Vector3 scaledCenter = {localCenter.x * worldTransform_.scale_.x, localCenter.y * worldTransform_.scale_.y, localCenter.z * worldTransform_.scale_.z};
+
+	Vector3 scaledHalfExtents = {halfExtents.x * worldTransform_.scale_.x, halfExtents.y * worldTransform_.scale_.y, halfExtents.z * worldTransform_.scale_.z};
+
+	// ドアのワールド中心 = ピボット位置(translation_) + scaledCenter
+	Vector3 doorCenter = {worldTransform_.translation_.x + scaledCenter.x, worldTransform_.translation_.y + scaledCenter.y, worldTransform_.translation_.z + scaledCenter.z};
+
+	// AABBを計算
 	AABB doorAABB;
-	doorAABB.min = {worldTransform_.translation_.x - halfW, worldTransform_.translation_.y - halfH, worldTransform_.translation_.z - halfD};
-	doorAABB.max = {worldTransform_.translation_.x + halfW, worldTransform_.translation_.y + halfH, worldTransform_.translation_.z + halfD};
-
+	doorAABB.min = {doorCenter.x - scaledHalfExtents.x, doorCenter.y - scaledHalfExtents.y, doorCenter.z - scaledHalfExtents.z};
+	doorAABB.max = {doorCenter.x + scaledHalfExtents.x, doorCenter.y + scaledHalfExtents.y, doorCenter.z + scaledHalfExtents.z};
 	return doorAABB;
 }

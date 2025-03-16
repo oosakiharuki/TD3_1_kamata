@@ -37,7 +37,7 @@ private:
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
 	Model* model_ = nullptr;
-	Vector3 position_ = {1.5f, 2.510f, 48.592f}; // 指定された位置
+	Vector3 position_ = {1.5f, 0.0f, 48.592f}; // 指定された位置
 
 	// 参照
 	Player* player_ = nullptr;
