@@ -28,13 +28,6 @@ void CannonEnemy::SetObstacleList(const std::vector<AABB>& obstacles) { obstacle
 void CannonEnemy::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
 
 
-float CannonEnemy::Length(const Vector3& v) {
-	float result;
-	result = (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
-	return result;
-}
-
-
 void CannonEnemy::Update() {
 
 	// 入力による移動

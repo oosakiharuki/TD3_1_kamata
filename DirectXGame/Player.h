@@ -8,9 +8,17 @@
 #include "Collision.h"
 #include "Enemy.h"
 #include "input/input.h"
+
+//#include "Block.h"  // 衝突判定用にブロックをインクルード
+//#include "AABB.h"
+//#include <2d/ImGuiManager.h> // ImGuiのヘッダーを追加
+
+#include "CannonEnemy.h"
+
 #include "math/Vector3.h"
 #include "SpringEnemy.h"
 #include <vector>
+
 
 using namespace KamataEngine;
 
@@ -61,6 +69,22 @@ public:
 	void CheckCollisionWithSprings();
 
 private:
+////<<<<<<< ステージギミック
+//    //WorldTransform worldTransform;
+//    //Camera* viewProjection_ = nullptr;
+//    //Model* model_ = nullptr;
+//    Block* block_ = nullptr;  // 衝突判定用のブロックを保持
+//
+//    State currentState = State::Normal; // 初期状態をNormalに設定
+//
+//   // Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度ベクトル
+//    //Vector3 position;                      // 現在の位置
+//    //bool IsJump = false;
+//
+//   //XINPUT_STATE state, preState;
+//   // const float speed = 0.2f; // 移動速度
+////};
+////=======
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
 	Model* PlayerModel_ = nullptr;
@@ -90,7 +114,11 @@ private:
 	uint32_t textureHandle = 0;
 	bool collisionEnemy = false;
 
+
 	CannonEnemy* cannonEnemy = nullptr;
+
+	float cameraPitch = 0.0f;
+	float cameraYaw = 0.0f;
 
 	bool isOpenDoor = false;
 	AABB doorAABB;

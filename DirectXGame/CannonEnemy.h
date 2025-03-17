@@ -28,7 +28,6 @@ public:
 
 	void AddObstacle(const AABB& obstacle);
 
-	float Length(const Vector3& v);
 
 	//void SetPlayerAABB(AABB aabb) { playerAABB = aabb; }
 

@@ -12,6 +12,8 @@ GameScene::~GameScene() {
 		delete enemy;
 	}
 	delete cannonEenmy;
+
+///=======
 	delete stage;
 	delete key_;
 	delete door_;
@@ -20,6 +22,7 @@ GameScene::~GameScene() {
 	for (auto spring : springEnemies_) {
 		delete spring;
 	}
+
 }
 
 void GameScene::Initialize() {
@@ -108,6 +111,7 @@ void GameScene::Initialize() {
 		cannonEenmy->SetObstacleList(obstacles);
 	}
 	cannonEenmy->SetPlayer(player_);
+	player_->SetCannon(cannonEenmy);
 
 	player_->SetEnemyList(enemyList_);
 
@@ -135,6 +139,9 @@ void GameScene::Update() {
 		}
 	}
 
+		cannonEenmy->Update();
+
+
 	// cannonEenmy->SetPlayerAABB(player_->GetAABB());
 	cannonEenmy->Update();
 
@@ -145,6 +152,7 @@ void GameScene::Update() {
 		spring->Update();
 	}
 #pragma endregion
+
 
 	/*/
 	for (auto enemy : enemyList_) {
@@ -175,6 +183,7 @@ void GameScene::Draw() {
 	}
 
 	cannonEenmy->Draw();
+
 	// 追加：ばね敵の描画
 	for (auto spring : springEnemies_) {
 		spring->Draw();
@@ -182,6 +191,7 @@ void GameScene::Draw() {
 
 	key_->Draw();
 	door_->Draw();
+
 
 	Model::PostDraw();
 
