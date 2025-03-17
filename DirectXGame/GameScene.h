@@ -7,13 +7,20 @@
 #include "Door.h"
 #include "Key.h"
 #include "SpringEnemy.h"
+#include "Block.h"
 
 using namespace KamataEngine;
 
 class GameScene {
 public:
+	// ゲームシーン
+
+	// コンストラクタ
 	GameScene();
+
+	// デストラクタ
 	~GameScene();
+
 	void Initialize();
 	void Update();
 	void Draw();
@@ -49,4 +56,7 @@ private:
 
 	Key* key_ = nullptr;   // 鍵オブジェクト
 	Door* door_ = nullptr; // ドアオブジェクト
+
+	Block* block_ = nullptr;
+	Model* modelBlock_ = nullptr;
 };
