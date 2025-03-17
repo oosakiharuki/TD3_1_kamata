@@ -15,6 +15,11 @@ GameScene::~GameScene() {
 	delete stage;
 	delete key_;
 	delete door_;
+
+	// 追加：ばね敵の解放
+	for (auto spring : springEnemies_) {
+		delete spring;
+	}
 }
 
 void GameScene::Initialize() {
@@ -58,6 +63,32 @@ void GameScene::Initialize() {
 		}
 		enemyList_.push_back(enemy);
 	}
+
+#pragma region ばね敵の生成と初期化
+
+	// 追加：ばね敵の生成と初期化
+	for (int i = 0; i < 3; ++i) { // 3つのばね敵を生成
+		SpringEnemy* spring = new SpringEnemy();
+		spring->Init(&camera_);
+		for (const auto& obstacles : allObstacles_) {
+			spring->SetObstacleList(obstacles);
+		}
+		springEnemies_.push_back(spring);
+	}
+	// ばね敵の位置を設定
+	if (springEnemies_.size() > 0)
+		springEnemies_[0]->SetPosition({0.0f, 0.0f, -25.0f});
+	if (springEnemies_.size() > 1)
+		springEnemies_[1]->SetPosition({15.0f, 0.0f, -10.0f});
+	if (springEnemies_.size() > 2)
+		springEnemies_[2]->SetPosition({-15.0f, 0.0f, 5.0f});
+
+	// プレイヤーとばね敵の相互参照を設定
+	for (auto spring : springEnemies_) {
+		spring->SetPlayer(player_);
+	}
+	player_->SetSpringEnemies(springEnemies_);
+#pragma endregion
 
 	// 各Enemyの初期位置を設定
 	if (enemyList_.size() > 0)
@@ -107,6 +138,14 @@ void GameScene::Update() {
 	// cannonEenmy->SetPlayerAABB(player_->GetAABB());
 	cannonEenmy->Update();
 
+#pragma region ばね敵の更新
+
+	// 追加：ばね敵の更新
+	for (auto spring : springEnemies_) {
+		spring->Update();
+	}
+#pragma endregion
+
 	/*/
 	for (auto enemy : enemyList_) {
 	    enemy->Update();
@@ -136,6 +175,10 @@ void GameScene::Draw() {
 	}
 
 	cannonEenmy->Draw();
+	// 追加：ばね敵の描画
+	for (auto spring : springEnemies_) {
+		spring->Draw();
+	}
 
 	key_->Draw();
 	door_->Draw();

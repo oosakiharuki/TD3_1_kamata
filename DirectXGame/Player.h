@@ -9,6 +9,7 @@
 #include "Enemy.h"
 #include "input/input.h"
 #include "math/Vector3.h"
+#include "SpringEnemy.h"
 #include <vector>
 
 using namespace KamataEngine;
@@ -56,6 +57,9 @@ public:
 	void ResolveCollisionWithDoor(const AABB& aabb) { doorAABB = aabb; }
 	void SetOpenDoor(bool isOpen) { isOpenDoor = isOpen; }
 
+	void SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { springEnemies_ = springEnemies; }
+	void CheckCollisionWithSprings();
+
 private:
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
@@ -90,4 +94,5 @@ private:
 
 	bool isOpenDoor = false;
 	AABB doorAABB;
+	std::vector<SpringEnemy*> springEnemies_;
 };
