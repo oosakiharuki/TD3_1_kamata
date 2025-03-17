@@ -1,4 +1,4 @@
-#include "myMath.h"
+#include "Mymath.h"
 
 
 // 拡大縮小行列

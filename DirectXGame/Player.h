@@ -117,7 +117,7 @@ private:
 
 	CannonEnemy* cannonEnemy = nullptr;
 
-	float cameraPitch = 0.0f;
+	//float cameraPitch = 30.0f;
 	float cameraYaw = 0.0f;
 
 	bool isOpenDoor = false;

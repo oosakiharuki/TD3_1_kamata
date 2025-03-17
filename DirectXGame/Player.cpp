@@ -61,7 +61,7 @@ void Player::Update() {
 
 		// 右スティックの入力
 		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f; // -1.0f～1.0f
-		zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
+		//zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
 		                                                   
 		// デッドゾーン処理      
 		if (abs(xCamera) < deadZone) {
@@ -74,16 +74,9 @@ void Player::Update() {
 
 		// 回転
 		const float rotate = 0.7f;
-		bool isMoving1 = false;
 
-		Vector3 RotateCamera = {xCamera, 0.0f, zCamera};
-		if (Length(RotateCamera) > rotate) {
-			isMoving1 = true;
-		}
-		if (isMoving1) {
-			cameraPitch += zCamera;
-			cameraYaw += xCamera;
-		}
+		cameraYaw += xCamera;	
+		//cameraPitch += zCamera;
 
 		// 左スティックの入力
 		x = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f; // -1.0f～1.0f
@@ -130,6 +123,7 @@ void Player::Update() {
 		cameraYaw += 1.0f; // Eキーで右回転
 	}
 	
+	//cameraController_.SetPitch(cameraPitch);
 	cameraController_.SetYaw(cameraYaw);
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
 

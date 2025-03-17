@@ -23,6 +23,8 @@ Matrix4x4 MakeRotateYMatrix(float angle);
 // Z軸回転行列
 Matrix4x4 MakeRotateZMatrix(float angle);
 
+Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b);
+
 // 座標変換
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
