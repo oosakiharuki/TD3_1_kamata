@@ -193,7 +193,7 @@ void GameScene::UpdateStageAABB() {
 		} else {
 			continue;
 		}
-		// 2と7
+
 		if (cornerNumber > 0) {
 
 			getline(line_stream, word, ' ');
@@ -215,7 +215,7 @@ void GameScene::UpdateStageAABB() {
 				if (max.x <= x) {
 					max.x = x;
 				}
-
+				// 前よりも小さいとき
 				if (min.x > x) {
 					min.x = x;
 				}
@@ -240,7 +240,7 @@ void GameScene::UpdateStageAABB() {
 
 		if (cornerNumber == 8) {
 			if (!reverse) {
-				AddObstacle(allObstacles_, min, max); // 宇宙模様の床
+				AddObstacle(allObstacles_, min, max); //結合した基盤となるobj
 			} else {
 
 				float minX;
@@ -250,7 +250,7 @@ void GameScene::UpdateStageAABB() {
 
 				min.x = maxX;
 				max.x = minX;
-				AddObstacle(allObstacles_, {min.x, min.y, min.z}, {max.x, max.y, max.z}); // 宇宙模様の床
+				AddObstacle(allObstacles_, {min.x, min.y, min.z}, {max.x, max.y, max.z}); // それ以外のすべてobj
 			}
 
 			cornerNumber = 0;

@@ -24,16 +24,18 @@ void Door::Update() {
 	if (player_) {
 		AABB playerAABB = player_->GetAABB();
 		AABB doorAABB = GetAABB();
+	
+		//プレイヤーにもAABBを渡す
+		player_->ResolveCollisionWithDoor(doorAABB);
 
-		if (IsCollisionAABB(playerAABB, doorAABB)) {
+		if (IsCollisionAABB(playerAABB, doorAABB) && !isDoorOpened_) {
 			// 鍵を持っている場合、ドアに触れたフラグを立ててアニメーション開始
 			if (key_ && key_->IsKeyObtained() && !isDoorTouched_) {
 				isDoorTouched_ = true;
 				isAnimating_ = true;
 			}
-			// 衝突解決：プレイヤーがドアにめり込まないようにする
-			player_->ResolveCollisionWithDoor(doorAABB);
 		}
+		player_->SetOpenDoor(isDoorOpened_);
 	}
 
 	// ドアの開閉アニメーション

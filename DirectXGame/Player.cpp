@@ -133,6 +133,11 @@ void Player::Update() {
 		cannonEnemy->ReMove(worldTransform_.translation_);
 	}
 
+	// 衝突解決：プレイヤーがドアにめり込まないようにする
+	if (IsCollisionAABB(playerAABB, doorAABB) && !isOpenDoor) {
+		ResolveAABBCollision(playerAABB, doorAABB, velocityY_, onGround_);
+	}
+
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
 		enemyAABB = (*it)->GetAABB();
 		if (IsCollisionAABB(playerAABB, enemyAABB) && !EnemyContral) {
@@ -186,12 +191,3 @@ void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandl
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
 
-// ★ 新しく追加：ドアとの衝突解決処理
-void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
-	AABB currentAABB = GetAABB();
-	ResolveAABBCollision(currentAABB, doorAABB, velocityY_, onGround_);
-	position.x = (currentAABB.min.x + currentAABB.max.x) * 0.5f;
-	position.y = (currentAABB.min.y + currentAABB.max.y) * 0.5f;
-	position.z = (currentAABB.min.z + currentAABB.max.z) * 0.5f;
-	worldTransform_.translation_ = position;
-}

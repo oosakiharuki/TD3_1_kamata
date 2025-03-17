@@ -53,7 +53,8 @@ public:
 	void SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
 
 	// ★ 新しく追加：ドアとの衝突を解決するメソッド
-	void ResolveCollisionWithDoor(const AABB& doorAABB);
+	void ResolveCollisionWithDoor(const AABB& aabb) { doorAABB = aabb; }
+	void SetOpenDoor(bool isOpen) { isOpenDoor = isOpen; }
 
 private:
 	WorldTransform worldTransform_;
@@ -86,4 +87,7 @@ private:
 	bool collisionEnemy = false;
 
 	CannonEnemy* cannonEnemy = nullptr;
+
+	bool isOpenDoor = false;
+	AABB doorAABB;
 };
