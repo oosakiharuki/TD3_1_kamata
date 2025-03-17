@@ -1,8 +1,12 @@
 #pragma once
+#include "CannonEnemy.h"
+#include "Enemy.h"
 #include "Ground.h"
 #include "KamataEngine.h"
 #include "Player.h"
-#include "Enemy.h"
+#include "Door.h"
+#include "Key.h"
+#include "SpringEnemy.h"
 
 using namespace KamataEngine;
 
@@ -17,6 +21,10 @@ public:
 private:
 	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
 
+	void LoadStage(std::string objFile);
+
+	void UpdateStageAABB();
+
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
@@ -29,5 +37,16 @@ private:
 	std::vector<Enemy*> enemyList_;
 	std::vector<std::vector<AABB>> allObstacles_;
 
+	// 追加：ばね敵のリスト
+	std::vector<SpringEnemy*> springEnemies_;
+
 	uint32_t textureHandle = 0;
+
+	CannonEnemy* cannonEenmy = nullptr;
+
+	Model* stage = nullptr;
+	std::stringstream Command;
+
+	Key* key_ = nullptr;   // 鍵オブジェクト
+	Door* door_ = nullptr; // ドアオブジェクト
 };
