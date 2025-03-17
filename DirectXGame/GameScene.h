@@ -4,9 +4,9 @@
 #include "Ground.h"
 #include "KamataEngine.h"
 #include "Player.h"
-// 追加するインクルード
 #include "Door.h"
 #include "Key.h"
+#include "SpringEnemy.h"
 
 using namespace KamataEngine;
 
@@ -36,6 +36,9 @@ private:
 	// Enemyのリストを追加
 	std::vector<Enemy*> enemyList_;
 	std::vector<std::vector<AABB>> allObstacles_;
+
+	// 追加：ばね敵のリスト
+	std::vector<SpringEnemy*> springEnemies_;
 
 	uint32_t textureHandle = 0;
 

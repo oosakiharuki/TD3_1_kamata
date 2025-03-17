@@ -170,6 +170,9 @@ void Player::Update() {
 		worldTransform_.translation_.y += 2.0f;
 	}
 
+	// ばね敵との衝突チェック
+	CheckCollisionWithSprings();
+
 	ImGui::Begin("player");
 	ImGui::DragFloat3("translate", &worldTransform_.translation_.x);
 	ImGui::DragFloat3("aabbMax", &playerAABB.max.x);
@@ -194,4 +197,23 @@ void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
 	position.y = (currentAABB.min.y + currentAABB.max.y) * 0.5f;
 	position.z = (currentAABB.min.z + currentAABB.max.z) * 0.5f;
 	worldTransform_.translation_ = position;
+}
+
+void Player::CheckCollisionWithSprings() {
+	for (auto* springEnemy : springEnemies_) {
+		AABB springAABB = springEnemy->GetAABB();
+
+		if (IsCollisionAABB(playerAABB, springAABB) && !EnemyContral) {
+			// Resolve collision
+			ResolveAABBCollision(playerAABB, springAABB, velocityY_, onGround_);
+
+			// If player is landing on top of the spring
+			if (velocityY_ <= 0 && playerAABB.min.y >= springAABB.max.y - 0.2f) {
+				// Apply the jump boost (much higher than normal jump)
+				velocityY_ = 0.6f * springEnemy->GetJumpBoost();
+				onGround_ = false;
+				springEnemy->Compress(); // Trigger visual feedback
+			}
+		}
+	}
 }
