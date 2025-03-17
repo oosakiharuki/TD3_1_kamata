@@ -27,6 +27,7 @@ void CannonEnemy::SetObstacleList(const std::vector<AABB>& obstacles) { obstacle
 
 void CannonEnemy::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
 
+
 void CannonEnemy::Update() {
 
 	// 入力による移動

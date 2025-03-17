@@ -28,6 +28,7 @@ public:
 
 	void AddObstacle(const AABB& obstacle);
 
+
 	//void SetPlayerAABB(AABB aabb) { playerAABB = aabb; }
 
 	void SetPlayer(Player* player) { player_ = player; }
