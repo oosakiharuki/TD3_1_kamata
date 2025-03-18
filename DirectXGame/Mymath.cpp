@@ -1,4 +1,4 @@
-#include "myMath.h"
+#include "Mymath.h"
 
 
 // 拡大縮小行列
@@ -125,6 +125,28 @@ Vector3 Normalize(const Vector3& v) {
 	result.x = float(v.x / sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)));
 	result.y = float(v.y / sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)));
 	result.z = float(v.z / sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)));
+
+	return result;
+}
+
+Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
+	Vector3 result{v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]};
+	return result;
+}
+
+float Length(const Vector3& v) {
+	float result;
+	result = (float)sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+	return result;
+}
+
+float LeapShortAngle(float a, float b, float t) {
+	float result;
+
+	float diff = a - b;
+
+	result = (float)std::fmod(diff, 360) * t;
+	result = (float)std::fmod(diff, 180) * t;
 
 	return result;
 }

@@ -16,8 +16,15 @@ public:
 	// カメラのピッチ角度（見下ろす角度：度数法）を設定します
 	void SetPitch(float pitchDeg);
 
+	void SetYaw(float yawDeg);
+	const float GetYaw() { return yawDeg_; }
+
+	void SetTarget(const WorldTransform* target) { target_ = target; }
+
 private:
 	Vector3 offset_; // プレイヤーからのオフセット
 	float pitchDeg_; // カメラのピッチ角度（度）
 	float yawDeg_;   // カメラのヨー角度（度）
+
+	const WorldTransform* target_ = nullptr;
 };
