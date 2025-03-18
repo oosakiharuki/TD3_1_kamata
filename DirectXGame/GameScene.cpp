@@ -45,6 +45,12 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_->Init(&camera_, textureHandle);
 
+///<<<<<<< EnemyGhost
+	// 障害物リストの作成例
+	//AddObstacle(allObstacles_, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f}); // 例：床のAABB全体の床
+
+///=======
+  
 	stage = Model::CreateFromOBJ("stage", true);
 
 	// AddObstacle(allObstacles_, { -100.0f, - 1.0f, - 100.0f }, { 100.0f, 1.0f, 100.0f }); // 宇宙模様の床
@@ -68,6 +74,7 @@ void GameScene::Initialize() {
 	for (int i = 0; i < 5; ++i) { // 例として5体のEnemyを生成
 		Enemy* enemy = new Enemy();
 		enemy->Init(&camera_);
+		enemy->SetTarget(player_); // Playerの位置を設定
 		for (const auto& obstacles : allObstacles_) {
 			enemy->SetObstacleList(obstacles);
 		}
@@ -144,11 +151,16 @@ void GameScene::Update() {
 			delete *it;
 			it = enemyList_.erase(it);
 		} else {
+			// 衝突判定
+			if ((*it)->CheckCollisionWithPlayer()) {
+				// 衝突時の処理（移動を停止）
+				(*it)->SetVelocity(Vector3(0, 0, 0));
+			}
 			++it;
 		}
 	}
 
-		cannonEenmy->Update();
+	cannonEenmy->Update();
 
 
 	// cannonEenmy->SetPlayerAABB(player_->GetAABB());

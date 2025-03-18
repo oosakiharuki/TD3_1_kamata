@@ -248,6 +248,7 @@ void Player::Update() {
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
 
+
 	if (onEnemy) {
 		position.y += 2.0f;
 		onEnemy = false;
@@ -319,6 +320,19 @@ void Player::DrawUI() {
 	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
 
 	ImGui::End();
+}
+
+
+Vector3 Player::GetWorldPosition() {
+
+	// ワールド座標を入れる変数
+	Vector3 worldPos;
+	// ワールド行列の平行移動成分を取得（ワールド座標）
+	worldPos.x = worldTransform_.matWorld_.m[3][0];
+	worldPos.y = worldTransform_.matWorld_.m[3][1];
+	worldPos.z = worldTransform_.matWorld_.m[3][2];
+
+	return worldPos;
 }
 
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); }

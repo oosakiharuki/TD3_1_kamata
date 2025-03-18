@@ -27,7 +27,6 @@ void Ground::Update() { worldTransform.TransferMatrix(); }
 
 void Ground::Draw() {
 	groundModel_->Draw(worldTransform, *camera_);
-	groundScaffoldModel_->Draw(worldTransform, *camera_); // GroundScaffoldを描画
 }
 
 void Ground::LoadTrianglesFromOBJ(const std::string& filename) {

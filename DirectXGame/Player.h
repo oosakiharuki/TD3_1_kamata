@@ -1,6 +1,9 @@
 #pragma once
 #include "3d/Camera.h"
 #include "3d/Model.h"
+
+#include "Mymath.h"
+
 #include "3d/WorldTransform.h"
 #include "AABB.h"
 #include "CameraController.h"
@@ -16,7 +19,7 @@
 #include "SpringEnemy.h"
 #include <vector>
 
-
+class Enemy;
 using namespace KamataEngine;
 
 class Player {
@@ -52,6 +55,8 @@ public:
 	std::vector<Enemy*> enemyList_;
 
 	void EnemyHead() { onEnemy = true; }
+
+	Vector3 GetWorldPosition();
 
 	void SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
 
@@ -118,6 +123,10 @@ private:
 
 	uint32_t textureHandle = 0;
 	bool collisionEnemy = false;
+
+	Vector3 stop = {0, 0, 0};
+
+	Enemy* enemy = nullptr;
 
 	Block* block_ = nullptr; // 衝突判定用のブロックを保持
 	State currentState = State::Normal; // 初期状態をNormalに設定

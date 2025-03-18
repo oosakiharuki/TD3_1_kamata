@@ -25,6 +25,8 @@ public:
 	void Update();
 	void Draw();
 
+	void SpawnEnemy(const Vector3& position); // 新しいメソッドを追加
+
 private:
 	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
 

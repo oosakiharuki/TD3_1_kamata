@@ -1,7 +1,7 @@
 #pragma once
 #include "3d/Camera.h"
 #include "3d/Model.h"
-
+#include "Player.h"
 #include "3d/WorldTransform.h"
 #include "AABB.h"
 #include "CameraController.h"
@@ -9,9 +9,11 @@
 #include "math/Vector3.h"
 #include <vector>
 #include "input/input.h"
-
+#include "Mymath.h"
 
 using namespace KamataEngine;
+
+class Player;
 
 class Enemy {
 public:
@@ -39,6 +41,17 @@ public:
 	// 位置を設定するメソッドを追加
 	void SetPosition(const Vector3& position);
 
+	void SetTarget(Player* target); // Ensure Player is defined
+
+	Vector3 GetWorldPosition();
+
+	void Enemystop(const Vector3 stop) { velocity_ = stop; }
+
+    void SetVelocity(const Vector3& velocity1) { velocity_ = velocity1; }
+
+	// Playerとの衝突を検出するメソッドを追加
+	bool CheckCollisionWithPlayer();
+
 
 private:
 	WorldTransform worldTransform_; // Fix the error by ensuring the type is defined
@@ -47,6 +60,7 @@ private:
 	Vector3 position = {0, 0, -20};
 	bool onGround_ = true;
 	float velocityY_ = 0.0f;
+	Vector3 velocity_;
 
 	// 障害物リスト
 	std::vector<AABB> obstacleList_;
@@ -71,4 +85,8 @@ private:
 	const float stanTime = 3.0f;
 
 	bool isPlayer = false;
+
+	bool MoveNot = false;
+
+	Player* player_ = nullptr;
 };
