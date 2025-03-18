@@ -137,23 +137,17 @@ void Player::Update() {
 	cameraController_.SetYaw(cameraYaw);
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
 
-	switch (controler) {
-	case Controler::player:
-		if (!onGround_) {
-			if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !EnemyContral && !isTransfar) {
-				velocityY_ -= 1.2f;
-				isTransfar = true;
-			} else if (Input::GetInstance()->TriggerKey(DIK_SPACE) && !EnemyContral && !isTransfar) {
-				velocityY_ -= 1.2f;
-				isTransfar = true;
-			}
-		} else {
-			isTransfar = false;
-		}
-		break;
-	case Controler::enemyTransfar:
-		break;
-	};
+	if (!onGround_) {
+		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !EnemyContral && !isTransfar) {
+			velocityY_ -= 1.2f;
+			isTransfar = true;
+		} else if (Input::GetInstance()->TriggerKey(DIK_SPACE) && !EnemyContral && !isTransfar) {
+			velocityY_ -= 1.2f;
+			isTransfar = true;
+		}	    
+	} else {
+		isTransfar = false;
+	}
 
 	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && onGround_) {
 		velocityY_ = 0.3f;
@@ -171,12 +165,10 @@ void Player::Update() {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
-		controler = Controler::player;
 	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
-		controler = Controler::player;
 	}
 
 	float gravity = 0.01f;
@@ -291,20 +283,33 @@ void Player::CheckCollision() {
 	}
 
 	AABB blockAABB = block_->GetAABB();
-
-	if (IsCollisionAABB(playerAABB, blockAABB)) {
-		switch (currentState) {
-		case State::Normal:
-			//worldTransform_.translation_ -= velocity; // 速度分だけ戻す
+			  
+	switch (currentState) {
+	case State::Normal:
+		if (IsCollisionAABB(playerAABB, blockAABB)) {
+			// worldTransform_.translation_ -= velocity; // 速度分だけ戻す
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-			break;
-		case State::Bomb:
-			block_->SetActive(false);
-			break;
-		case State::Ghost:
-			break;
 		}
+		break;
+	case State::Bomb:
+		if (IsCollisionAABB(playerAABB, blockAABB)) {
+			// worldTransform_.translation_ -= velocity; // 速度分だけ戻す
+			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+		}
+
+		for (Bom* bom : cannonEnemy->GetBom()) {
+
+			AABB bomAABB = bom->GetAABB();
+
+			if (IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
+				block_->SetActive(false);
+			}
+		}
+		break;
+	case State::Ghost:
+		break;
 	}
+
 }
 
 void Player::DrawUI() {

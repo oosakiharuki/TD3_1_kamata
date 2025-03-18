@@ -37,4 +37,13 @@ void Bom::Draw(Camera* camera) {
 
 }
 
+AABB Bom::GetAABB() {
+	float halfW = 1.0f, halfH = 1.0f, halfD = 1.0f; 
+	AABB bomAABB;
+	bomAABB.min = {worldTransform_.translation_.x - halfW, worldTransform_.translation_.y - halfH, worldTransform_.translation_.z - halfD};
+	bomAABB.max = {worldTransform_.translation_.x + halfW, worldTransform_.translation_.y + halfH, worldTransform_.translation_.z + halfD};
+
+	return bomAABB;
+}
+
 

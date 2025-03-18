@@ -19,8 +19,6 @@
 
 using namespace KamataEngine;
 
-enum class Controler { player, enemyTransfar };
-
 class Player {
 public:
 	Player();
@@ -44,7 +42,6 @@ public:
 		isTransfar = false;
 		velocity.y = 0.0f;
 		EnemyContral = anser;
-		controler = Controler::enemyTransfar;
 	}
 
 	void SetObstacleList(const std::vector<AABB>& obstacles);
@@ -119,14 +116,13 @@ private:
 
 	bool EnemyContral = false;
 
-	Controler controler = Controler::player;
 	uint32_t textureHandle = 0;
 	bool collisionEnemy = false;
 
 	Block* block_ = nullptr; // 衝突判定用のブロックを保持
 	State currentState = State::Normal; // 初期状態をNormalに設定
 
-	CannonEnemy* cannonEnemy = nullptr;
+	CannonEnemy* cannonEnemy = nullptr;	
 
 	//float cameraPitch = 30.0f;
 	float cameraYaw = 0.0f;
