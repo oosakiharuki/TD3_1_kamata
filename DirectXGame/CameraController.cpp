@@ -1,15 +1,15 @@
 #include "CameraController.h"
-#include <KamataEngine.h>
 #include "Mymath.h"
+#include <KamataEngine.h>
 
 #include "Player.h"
 
 CameraController::CameraController() : offset_{0.0f, 15.0f, -20.0f}, pitchDeg_(25.0f) {}
 ///=======
-//CameraController::CameraController() : offset_{0.0f, 20.0f, -20.0f}, pitchDeg_(45.0f) {}
+// CameraController::CameraController() : offset_{0.0f, 20.0f, -20.0f}, pitchDeg_(45.0f) {}
 
-//offset_{0.0f, 3.0f, -20.0f}, pitchDeg_(360.0f) {}　普通
-//offset_{0.0f, 20.0f, -0.0f}, pitchDeg_(85.0f), yawDeg_(0.0f) {}　真上
+// offset_{0.0f, 3.0f, -20.0f}, pitchDeg_(360.0f) {}　普通
+// offset_{0.0f, 20.0f, -0.0f}, pitchDeg_(85.0f), yawDeg_(0.0f) {}　真上
 
 CameraController::~CameraController() {}
 
@@ -23,14 +23,15 @@ void CameraController::Update(Camera* camera, const Vector3& playerPosition) {
 	if (camera == nullptr) {
 		return;
 	}
-
+#ifdef _DEBUG
 	ImGui::Begin("camera");
 	ImGui::DragFloat3("cameraTranslate", &camera->translation_.x);
 	ImGui::DragFloat3("cameraRotate", &camera->rotation_.x);
 	ImGui::DragFloat3("offset", &offset_.x);
 	ImGui::End();
-	
-	//カメラ開店に合わせて回転させる
+#endif
+
+	// カメラ開店に合わせて回転させる
 	offset_ = {0.0f, -15.0f, -20.0f};
 
 	Matrix4x4 result;

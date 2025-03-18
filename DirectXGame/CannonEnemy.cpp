@@ -1,19 +1,17 @@
 #include "CannonEnemy.h"
 #include "Bom.h"
-#include <iostream>
-#include <algorithm>
 #include "Player.h"
+#include <algorithm>
+#include <iostream>
 
 CannonEnemy::CannonEnemy() {}
 
-CannonEnemy::~CannonEnemy() { 
+CannonEnemy::~CannonEnemy() {
 	delete model_;
 	for (Bom* bom : bullets_) {
 		delete bom;
 	}
 }
-
-
 
 void CannonEnemy::Init(Camera* camera) {
 	camera_ = camera;
@@ -26,7 +24,6 @@ void CannonEnemy::Init(Camera* camera) {
 void CannonEnemy::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
 
 void CannonEnemy::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
-
 
 void CannonEnemy::Update() {
 
@@ -86,9 +83,7 @@ void CannonEnemy::Update() {
 			AABB playerAABB = player_->GetAABB();
 
 			Vector3 closestPoint{
-			    std::clamp(position.x, playerAABB.min.x, playerAABB.max.x), 
-				std::clamp(position.y, playerAABB.min.y, playerAABB.max.y), 
-				std::clamp(position.z, playerAABB.min.z, playerAABB.max.z)};
+			    std::clamp(position.x, playerAABB.min.x, playerAABB.max.x), std::clamp(position.y, playerAABB.min.y, playerAABB.max.y), std::clamp(position.z, playerAABB.min.z, playerAABB.max.z)};
 
 			float distance = Length(closestPoint - position);
 
@@ -118,16 +113,16 @@ void CannonEnemy::Update() {
 
 		worldTransform_.translation_ = position;
 	}
-
+#ifdef _DEBUG
 	ImGui::Begin("enemy");
 	ImGui::DragFloat3("translate", &position.x);
 	ImGui::End();
-
+#endif
 	for (Bom* bom : bullets_) {
 		bom->Update();
 	}
 
-	bullets_.remove_if([](Bom* bom){
+	bullets_.remove_if([](Bom* bom) {
 		if (bom->IsDaed()) {
 			delete bom;
 			return true;
@@ -135,17 +130,14 @@ void CannonEnemy::Update() {
 		return false;
 	});
 
-
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
-
-
 }
 
 void CannonEnemy::Draw() {
-	
-	model_->Draw(worldTransform_,*camera_);
-	
+
+	model_->Draw(worldTransform_, *camera_);
+
 	for (Bom* bom : bullets_) {
 		bom->Draw(camera_);
 	}
@@ -199,7 +191,6 @@ void CannonEnemy::PlayerFire() {
 
 	bullets_.push_back(newBullet);
 }
-
 
 // AABBを取得するメソッドを定義
 AABB CannonEnemy::GetAABB() {

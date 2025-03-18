@@ -104,11 +104,11 @@ void Enemy::Update() {
 
 		worldTransform_.translation_.y = position.y;
 	}
-
+#ifdef _DEBUG
 	ImGui::Begin("enemy");
 	ImGui::DragFloat3("translate", &position.x);
 	ImGui::End();
-
+#endif
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
 }

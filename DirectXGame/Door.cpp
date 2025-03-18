@@ -1,6 +1,7 @@
 #include "Door.h"
+#ifdef _DEBUG
 #include "imgui.h"
-
+#endif
 Door::Door() {}
 
 Door::~Door() { delete model_; }
@@ -54,12 +55,13 @@ void Door::Update() {
 
 	// 行列更新
 	worldTransform_.UpdateMatrix();
-
+#ifdef _DEBUG
 	// ImGuiによるデバッグ表示
 	ImGui::Begin("Door Status");
 	ImGui::Checkbox("Door Touch", &isDoorTouched_);
 	ImGui::Checkbox("Door Opened", &isDoorOpened_);
 	ImGui::End();
+#endif
 }
 
 void Door::Draw() { model_->Draw(worldTransform_, *camera_); }

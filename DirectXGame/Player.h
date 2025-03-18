@@ -56,7 +56,6 @@ public:
 
 	void EnemyHead() { onEnemy = true; }
 
-	Vector3 GetWorldPosition();
 
 	void SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
 

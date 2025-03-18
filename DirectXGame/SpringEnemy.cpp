@@ -91,13 +91,14 @@ void SpringEnemy::Update() {
 
 		worldTransform_.translation_ = position;
 	}
-
+#ifdef _DEBUG
 	// デバッグUI
 	ImGui::Begin("SpringEnemy");
 	ImGui::DragFloat3("Position", &position.x);
 	ImGui::DragFloat("Jump Boost", &jumpBoostFactor, 0.1f, 1.0f, 5.0f);
 	ImGui::Text("Compressed: %s", isCompressed ? "Yes" : "No");
 	ImGui::End();
+#endif
 
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();

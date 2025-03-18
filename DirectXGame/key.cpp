@@ -1,5 +1,8 @@
 #include "Key.h"
+
+#ifdef _DEBUG
 #include "imgui.h"
+#endif
 
 Key::Key() {}
 
@@ -49,9 +52,11 @@ void Key::Update() {
 	worldTransform_.UpdateMatrix();
 
 	// ImGuiデバッグ表示
+#ifdef _DEBUG
 	ImGui::Begin("Key Status");
 	ImGui::Checkbox("KeyFlg", &isObtained_);
 	ImGui::End();
+#endif
 }
 
 void Key::Draw() {

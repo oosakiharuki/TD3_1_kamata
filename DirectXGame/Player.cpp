@@ -1,17 +1,19 @@
 #include "Player.h"
 
-//#include "imgui.h"
-//#include <iostream>
-//#include <algorithm>
+// #include "imgui.h"
+// #include <iostream>
+// #include <algorithm>
 //
 /////================
-//#include <KamataEngine.h>
+// #include <KamataEngine.h>
 
+#ifdef _DEBUG
 #include "imgui.h"
+#endif
+
 #include <KamataEngine.h>
 #include <algorithm>
 #include <iostream>
-
 
 Player::Player() {}
 
@@ -45,7 +47,7 @@ void Player::Update() {
 	if (Input::GetInstance()->PushKey(DIK_D)) {
 		position.x += moveSpeed;
 	}
-	
+
 	if (Input::GetInstance()->TriggerKey(DIK_1)) {
 		currentState = State::Normal;
 	}
@@ -61,7 +63,6 @@ void Player::Update() {
 
 	float angle = 0;
 
-
 	const float deadZone = 0.2f; // スティックの感度調整
 
 	Input::GetInstance()->GetJoystickState(0, state);
@@ -71,9 +72,9 @@ void Player::Update() {
 
 		// 右スティックの入力
 		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f; // -1.0f～1.0f
-		//zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
-		                                                   
-		// デッドゾーン処理      
+		// zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
+
+		// デッドゾーン処理
 		if (abs(xCamera) < deadZone) {
 			xCamera = 0.0f;
 		}
@@ -81,12 +82,11 @@ void Player::Update() {
 			zCamera = 0.0f;
 		}
 
-
 		// 回転
 		const float rotate = 0.7f;
 
-		cameraYaw += xCamera;	
-		//cameraPitch += zCamera;
+		cameraYaw += xCamera;
+		// cameraPitch += zCamera;
 
 		// 左スティックの入力
 		x = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f; // -1.0f～1.0f
@@ -95,36 +95,32 @@ void Player::Update() {
 		// デッドゾーン処理
 		if (abs(x) < deadZone) {
 			x = 0.0f;
-		if (abs(z) < deadZone)
-			z = 0.0f;
+			if (abs(z) < deadZone)
+				z = 0.0f;
 		}
 		// 回転
-		//const float rotate = 0.7f;
+		// const float rotate = 0.7f;
 		bool isMoving = false;
 
-		Vector3 RotateMove = {x , 0.0f, z};
+		Vector3 RotateMove = {x, 0.0f, z};
 		if (Length(RotateMove) > rotate) {
 			isMoving = true;
 		}
 
 		Vector3 move = {x, 0.0f, z};
-		
+
 		if (isMoving) {
 			move = Normalize(move) * speed;
-	
+
 			move = TransformNormal(move, worldTransform_.matWorld_);
 			angle = std::atan2(RotateMove.x, RotateMove.z);
-			//worldTransform_.rotation_.y = -angle;
-			
+			// worldTransform_.rotation_.y = -angle;
 
 			position.x += move.x;
 			position.z += move.z;
-			
 		}
-
 	}
 
-  
 	// QとEキーの入力処理
 	if (Input::GetInstance()->PushKey(DIK_Q)) {
 		cameraYaw -= 1.0f; // Qキーで左回転
@@ -132,8 +128,8 @@ void Player::Update() {
 	if (Input::GetInstance()->PushKey(DIK_E)) {
 		cameraYaw += 1.0f; // Eキーで右回転
 	}
-	
-	//cameraController_.SetPitch(cameraPitch);
+
+	// cameraController_.SetPitch(cameraPitch);
 	cameraController_.SetYaw(cameraYaw);
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
 
@@ -144,7 +140,7 @@ void Player::Update() {
 		} else if (Input::GetInstance()->TriggerKey(DIK_SPACE) && !EnemyContral && !isTransfar) {
 			velocityY_ -= 1.2f;
 			isTransfar = true;
-		}	    
+		}
 	} else {
 		isTransfar = false;
 	}
@@ -157,9 +153,8 @@ void Player::Update() {
 		onGround_ = false;
 	}
 
-
-	//position.x += x * speed;
-	//position.z += z * speed;
+	// position.x += x * speed;
+	// position.z += z * speed;
 
 	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
@@ -206,13 +201,11 @@ void Player::Update() {
 
 	if (EnemyContral && cannonEnemy->GetPlayerCtrl()) {
 		cannonEnemy->SetParent(&worldTransform_);
-    
-		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_X) && 
-			!(preState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
+
+		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_X) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
 			cannonEnemy->PlayerFire(); // カメラ向きに発射される
-		} 
-		else if (Input::GetInstance()->TriggerKey(DIK_J)) {
-			cannonEnemy->PlayerFire();//カメラ向きに発射される
+		} else if (Input::GetInstance()->TriggerKey(DIK_J)) {
+			cannonEnemy->PlayerFire(); // カメラ向きに発射される
 		}
 	} else {
 		cannonEnemy->ReMove(worldTransform_.translation_);
@@ -248,7 +241,6 @@ void Player::Update() {
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
 
-
 	if (onEnemy) {
 		position.y += 2.0f;
 		onEnemy = false;
@@ -266,11 +258,13 @@ void Player::Update() {
 	// ばね敵との衝突チェック
 	CheckCollisionWithSprings();
 
+#ifdef _DEBUG
 	ImGui::Begin("player");
 	ImGui::DragFloat3("translate", &worldTransform_.translation_.x);
 	ImGui::DragFloat3("aabbMax", &playerAABB.max.x);
 	ImGui::DragFloat3("aabbMin", &playerAABB.min.x);
 	ImGui::End();
+#endif
 
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
@@ -284,7 +278,7 @@ void Player::CheckCollision() {
 	}
 
 	AABB blockAABB = block_->GetAABB();
-			  
+
 	switch (currentState) {
 	case State::Normal:
 		if (IsCollisionAABB(playerAABB, blockAABB)) {
@@ -310,7 +304,6 @@ void Player::CheckCollision() {
 	case State::Ghost:
 		break;
 	}
-
 }
 
 void Player::DrawUI() {
@@ -322,32 +315,19 @@ void Player::DrawUI() {
 	ImGui::End();
 }
 
-
-Vector3 Player::GetWorldPosition() {
-
-	// ワールド座標を入れる変数
-	Vector3 worldPos;
-	// ワールド行列の平行移動成分を取得（ワールド座標）
-	worldPos.x = worldTransform_.matWorld_.m[3][0];
-	worldPos.y = worldTransform_.matWorld_.m[3][1];
-	worldPos.z = worldTransform_.matWorld_.m[3][2];
-
-	return worldPos;
-}
-
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); }
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
 
 //// ★ 新しく追加：ドアとの衝突解決処理
-//void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
+// void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
 //	AABB currentAABB = GetAABB();
 //	ResolveAABBCollision(currentAABB, doorAABB, velocityY_, onGround_);
 //	position.x = (currentAABB.min.x + currentAABB.max.x) * 0.5f;
 //	position.y = (currentAABB.min.y + currentAABB.max.y) * 0.5f;
 //	position.z = (currentAABB.min.z + currentAABB.max.z) * 0.5f;
 //	worldTransform_.translation_ = position;
-//}
+// }
 
 void Player::CheckCollisionWithSprings() {
 	for (auto* springEnemy : springEnemies_) {
