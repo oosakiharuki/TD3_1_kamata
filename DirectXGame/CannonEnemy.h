@@ -37,8 +37,9 @@ public:
 	void SetParent(const WorldTransform* parent) { worldTransform_.parent_ = parent; }
 	void ContralPlayer();
 	void ReMove(const Vector3& position_);
-	bool GetPlayerCtrl() { return isPlayer; }
+	bool GetPlayerCtrl() const { return isPlayer; }
 
+	std::list<Bom*> GetBom() { return bullets_; }
 
 private:
 	WorldTransform worldTransform_; // Fix the error by ensuring the type is defined

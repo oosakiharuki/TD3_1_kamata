@@ -16,6 +16,8 @@ public:
 	void Draw(Camera* camera);
 	bool IsDaed() { return isDead; }
 
+	AABB GetAABB();
+
 private:
 	WorldTransform worldTransform_;
 	Model* model_ = nullptr;

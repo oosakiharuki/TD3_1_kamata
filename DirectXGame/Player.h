@@ -9,11 +9,8 @@
 #include "Enemy.h"
 #include "input/input.h"
 
-//#include "Block.h"  // 衝突判定用にブロックをインクルード
-//#include "AABB.h"
-//#include <2d/ImGuiManager.h> // ImGuiのヘッダーを追加
-
-#include "CannonEnemy.h"
+#include "Block.h"  // 衝突判定用にブロックをインクルード
+#include <2d/ImGuiManager.h> // ImGuiのヘッダーを追加
 
 #include "math/Vector3.h"
 #include "SpringEnemy.h"
@@ -21,8 +18,6 @@
 
 
 using namespace KamataEngine;
-
-enum class Controler { player, enemyTransfar };
 
 class Player {
 public:
@@ -47,7 +42,6 @@ public:
 		isTransfar = false;
 		velocity.y = 0.0f;
 		EnemyContral = anser;
-		controler = Controler::enemyTransfar;
 	}
 
 	void SetObstacleList(const std::vector<AABB>& obstacles);
@@ -67,6 +61,18 @@ public:
 
 	void SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { springEnemies_ = springEnemies; }
 	void CheckCollisionWithSprings();
+
+	enum class State {
+		Normal, // 通常状態
+		Bomb,   // ブロックを壊せる状態
+		Ghost   // ブロックをすり抜ける状態
+	};
+
+	void DrawUI(); // UI描画用の関数を追加
+
+	void SetBlock(Block* block) { block_ = block; }
+
+	void CheckCollision(); // 衝突判定を追加
 
 private:
 ////<<<<<<< ステージギミック
@@ -110,12 +116,13 @@ private:
 
 	bool EnemyContral = false;
 
-	Controler controler = Controler::player;
 	uint32_t textureHandle = 0;
 	bool collisionEnemy = false;
 
+	Block* block_ = nullptr; // 衝突判定用のブロックを保持
+	State currentState = State::Normal; // 初期状態をNormalに設定
 
-	CannonEnemy* cannonEnemy = nullptr;
+	CannonEnemy* cannonEnemy = nullptr;	
 
 	//float cameraPitch = 30.0f;
 	float cameraYaw = 0.0f;

@@ -22,7 +22,8 @@ GameScene::~GameScene() {
 	for (auto spring : springEnemies_) {
 		delete spring;
 	}
-
+	delete block_;
+	delete modelBlock_;
 }
 
 void GameScene::Initialize() {
@@ -32,6 +33,12 @@ void GameScene::Initialize() {
 
 	worldTransform_.Initialize();
 	camera_.Initialize();
+
+	uint32_t texturehandle2 = TextureManager::GetInstance()->Load("Block.png");
+	block_ = new Block();
+	modelBlock_ = Model::Create();
+	block_->Init(modelBlock_, &camera_,texturehandle2);
+
 
 	// Player の生成と初期化
 	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
@@ -115,6 +122,8 @@ void GameScene::Initialize() {
 
 	player_->SetEnemyList(enemyList_);
 
+	player_->SetBlock(block_);
+
 	// 障害物リストを Player にセット
 	for (const auto& obstacles : allObstacles_) {
 		player_->SetObstacleList(obstacles);
@@ -162,6 +171,9 @@ void GameScene::Update() {
 
 	key_->Update();
 	door_->Update();
+
+	block_->Update();
+	player_->DrawUI();
 }
 
 void GameScene::Draw() {
@@ -192,6 +204,7 @@ void GameScene::Draw() {
 	key_->Draw();
 	door_->Draw();
 
+	block_->Draw();
 
 	Model::PostDraw();
 
