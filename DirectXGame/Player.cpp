@@ -347,3 +347,7 @@ void Player::CheckCollisionWithSprings() {
 		}
 	}
 }
+
+void Player::SetState(State newState) {
+	currentState = newState;
+}

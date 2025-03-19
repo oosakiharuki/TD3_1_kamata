@@ -126,7 +126,10 @@ AABB Enemy::GetAABB() const {
 
 void Enemy::ContralPlayer() {
 	isPlayer = true;
-	worldTransform_.translation_ = {0, -2, 0};
+	worldTransform_.translation_ = { 0, -2, 0 };
+	if (player_) {
+		player_->SetState(Player::State::Ghost);
+	}
 }
 
 void Enemy::ReMove(const Vector3& position_) {
@@ -138,6 +141,9 @@ void Enemy::ReMove(const Vector3& position_) {
 		isStan = true;
 		isPlayer = false;
 		worldTransform_.parent_ = nullptr;
+		if (player_) {
+			player_->SetState(Player::State::Normal);
+		}
 	}
 }
 

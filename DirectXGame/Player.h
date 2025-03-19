@@ -45,6 +45,12 @@ public:
 		isTransfar = false;
 		velocity.y = 0.0f;
 		EnemyContral = anser;
+		if (EnemyContral) {
+			currentState = State::Ghost;
+		}
+		else {
+			currentState = State::Normal;
+		}
 	}
 
 	void SetObstacleList(const std::vector<AABB>& obstacles);
@@ -77,6 +83,8 @@ public:
 	void SetBlock(Block* block) { block_ = block; }
 
 	void CheckCollision(); // 衝突判定を追加
+
+	void SetState(State newState);
 
 private:
 ////<<<<<<< ステージギミック
