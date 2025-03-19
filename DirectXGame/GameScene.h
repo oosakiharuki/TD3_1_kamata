@@ -29,16 +29,14 @@ public:
 	void Draw();
 
 	void SpawnEnemy(const Vector3& position); // 新しいメソッドを追加
+
+private:
 	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
 
 	void LoadStage(std::string objFile);
 
 	void UpdateStageAABB();
 
-	// 坂用障害物追加関数も同じ型を使うように変更
-	void AddSlopeObstacle(std::vector<std::vector<AABB>>& allObstacles, const std::vector<Vector3>& vertices);
-
-private:
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
@@ -46,7 +44,7 @@ private:
 	Camera camera_;
 	Player* player_ = nullptr;
 
-	// 障害物リスト（通常障害物も坂障害物もこのコンテナに入れる）
+	// 障害物リスト
 	std::vector<std::vector<AABB>> allObstacles_;
 
 	uint32_t textureHandle = 0;
