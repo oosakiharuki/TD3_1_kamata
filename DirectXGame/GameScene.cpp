@@ -40,6 +40,13 @@ void GameScene::Initialize() {
 
 	stage = Model::CreateFromOBJ("stage", true);
 
+	// 天球の生成
+	skydome_ = new Skydome();
+	// 天球3Dモデルの生成
+	modelSkydome_ = Model::CreateFromOBJ("space", true);
+	// 天球の初期化
+	skydome_->Initialize(modelSkydome_, &camera_);
+
 	// 障害物情報の読み込み
 	LoadStage("Resources/stage/stage.obj");
 	UpdateStageAABB();
@@ -97,6 +104,7 @@ void GameScene::Update() {
 
 	block_->Update();
 	player_->DrawUI();
+	skydome_->Update();
 }
 
 void GameScene::Draw() {
@@ -124,6 +132,7 @@ void GameScene::Draw() {
 	}
 
 	block_->Draw();
+	skydome_->Draw();
 
 	Model::PostDraw();
 

@@ -9,6 +9,7 @@
 #include "Key.h"
 #include "MapLoader.h" // MapLoaderをインクルード
 #include "Player.h"
+#include "Skydome.h"
 #include "SpringEnemy.h"
 
 using namespace KamataEngine;
@@ -60,4 +61,8 @@ private:
 
 	Block* block_ = nullptr;
 	Model* modelBlock_ = nullptr;
+
+	// 天球
+	Skydome* skydome_ = nullptr;
+	Model* modelSkydome_ = nullptr;
 };
