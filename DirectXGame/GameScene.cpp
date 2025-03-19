@@ -2,6 +2,7 @@
 #include "AABB.h"
 #include <fstream>
 #include <vector>
+#include <cassert>
 
 GameScene::GameScene() {}
 
