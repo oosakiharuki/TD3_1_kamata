@@ -23,13 +23,10 @@ public:
 
 	void SetTranslate(Vector3 translate) { cameraTranslate = translate; }
 
-
 private:
 	Vector3 offset_; // プレイヤーからのオフセット
 	float pitchDeg_; // カメラのピッチ角度（度）
 	float yawDeg_;   // カメラのヨー角度（度）
-
-	Vector3 cameraTranslate;
 
 	const WorldTransform* target_ = nullptr;
 };

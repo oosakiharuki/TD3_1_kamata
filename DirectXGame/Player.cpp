@@ -1,17 +1,9 @@
 #include "Player.h"
-
-// #include "imgui.h"
-// #include <iostream>
-// #include <algorithm>
-//
-/////================
-// #include <KamataEngine.h>
-
 #ifdef _DEBUG
 #include "imgui.h"
 #endif
 
-#include <KamataEngine.h>
+
 #include <algorithm>
 #include <iostream>
 

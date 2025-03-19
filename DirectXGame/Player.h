@@ -1,21 +1,12 @@
 #pragma once
-#include "3d/Camera.h"
-#include "3d/Model.h"
-
+#include"KamataEngine.h"
 #include "Mymath.h"
-
-#include "3d/WorldTransform.h"
 #include "AABB.h"
 #include "CameraController.h"
 #include "CannonEnemy.h"
 #include "Collision.h"
 #include "Enemy.h"
-#include "input/input.h"
-
 #include "Block.h"  // 衝突判定用にブロックをインクルード
-#include <2d/ImGuiManager.h> // ImGuiのヘッダーを追加
-
-#include "math/Vector3.h"
 #include "SpringEnemy.h"
 #include <vector>
 

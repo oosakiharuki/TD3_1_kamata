@@ -4,12 +4,7 @@
 
 #include "Player.h"
 
-CameraController::CameraController() : offset_{0.0f, 5.0f, -20.0f}, pitchDeg_(10.0f) {}
-///=======
-// CameraController::CameraController() : offset_{0.0f, 20.0f, -20.0f}, pitchDeg_(45.0f) {}
-
-// offset_{0.0f, 3.0f, -20.0f}, pitchDeg_(360.0f) {}　普通
-// offset_{0.0f, 20.0f, -0.0f}, pitchDeg_(85.0f), yawDeg_(0.0f) {}　真上
+CameraController::CameraController() : offset_{0.0f, 20.0f, -25.0f}, pitchDeg_(35.0f) {}
 
 CameraController::~CameraController() {}
 
@@ -31,31 +26,30 @@ void CameraController::Update(Camera* camera, const Vector3& playerPosition) {
 	ImGui::End();
 #endif
 
-	// カメラ開店に合わせて回転させる
-	offset_ = {0.0f + cameraTranslate.x, -5.0f + cameraTranslate.y, -20.0f - cameraTranslate.z};
+	// Convert rotation angles from degrees to radians
+	float pitchRad = pitchDeg_ * (3.14159265f / 180.0f);
+	float yawRad = yawDeg_ * (3.14159265f / 180.0f);
 
-	Matrix4x4 result;
-	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(camera->rotation_.y);
-	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(camera->rotation_.z);
-	Matrix4x4 rotateYZMatrix = Multiply(rotateYMatrix, rotateZMatrix);
-	Matrix4x4 translateMatrix = MakeTranslateMatrix(camera->translation_);
-	result = Multiply(rotateYZMatrix, translateMatrix);
+	// Base distance from player (adjustable with cameraTranslate.z)
+	float distance = 20.0f - cameraTranslate.z;
 
-	Matrix4x4 rotate = result;
+	// Calculate horizontal distance based on pitch
+	float horizontalDistance = distance * std::cos(pitchRad);
 
-	offset_ = TransformNormal(offset_, rotate);
+	// Calculate vertical offset based on pitch
+	float verticalOffset = distance * std::sin(pitchRad);
 
-	// プレイヤーの座標にオフセットを加えてカメラ位置を設定
-	camera->translation_.x = playerPosition.x - offset_.x;
-	camera->translation_.y = playerPosition.y - offset_.y;
-	camera->translation_.z = playerPosition.z + offset_.z;
+	// Calculate camera position using player position as pivot
+	camera->translation_.x = playerPosition.x - horizontalDistance * std::sin(yawRad);
+	camera->translation_.y = playerPosition.y + 5.0f + cameraTranslate.y + verticalOffset;
+	camera->translation_.z = playerPosition.z - horizontalDistance * std::cos(yawRad);
 
-	// カメラの回転を設定
-	camera->rotation_.x = pitchDeg_ * (3.14159265f / 180.0f);
-	camera->rotation_.y = yawDeg_ * (3.14159265f / 180.0f);
+	// Set camera rotation to look at player
+	camera->rotation_.x = pitchRad;
+	camera->rotation_.y = yawRad;
 	camera->rotation_.z = 0.0f;
 
-	// カメラ行列の更新と転送
+	// Update camera matrices
 	camera->UpdateViewMatrix();
 	camera->TransferMatrix();
 }
