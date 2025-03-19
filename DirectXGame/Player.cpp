@@ -74,10 +74,33 @@ void Player::Update() {
 	if (Input::GetInstance()->TriggerKey(DIK_3)) {
 		currentState = State::Ghost;
 	}
+	
+	//コントローラとキーボード両方で回さないようにするフラグ
+	bool isKeyBorad = false;
+
+	// キーボードによるカメラ回転X
+	if (Input::GetInstance()->PushKey(DIK_LEFT)) {
+		cameraYaw -= 2.5f;
+		isKeyBorad = true;
+	}
+	if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
+		cameraYaw += 2.5f;
+		isKeyBorad = true;
+	} 
+
+	// キーボードによるカメラ回転Y
+	if (Input::GetInstance()->PushKey(DIK_DOWN)) {
+		cameraPitch -= 2.5f;
+		isKeyBorad = true;
+	}
+	if (Input::GetInstance()->PushKey(DIK_UP)) {
+		cameraPitch += 2.5f;
+		isKeyBorad = true;
+	}
 
 	// GamePad右スティックによるカメラ回転処理
 	float xCamera = 0.0f, zCamera = 0.0f;
-	if (Input::GetInstance()->GetJoystickState(0, state)) {
+	if (Input::GetInstance()->GetJoystickState(0, state) && !isKeyBorad) {
 
 		// 右スティックの入力
 		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f; // -1.0f～1.0f
@@ -92,21 +115,14 @@ void Player::Update() {
 
 		//カメラ向き
 		//Y軸
-		cameraYaw += xCamera;
+		cameraYaw += xCamera * 2.5f;
 		//X軸
-		cameraPitch += zCamera;
-		cameraPitch = std::clamp(cameraPitch, 10.0f, 60.0f);
+		cameraPitch += zCamera * 2.5f;
 	
 	}
 
-	// キーボードによるカメラ回転 (Q/E)
-	if (Input::GetInstance()->PushKey(DIK_Q)) {
-		cameraYaw -= 2.5f;
-	}
-	if (Input::GetInstance()->PushKey(DIK_E)) {
-		cameraYaw += 2.5f;
-	}
-
+	cameraPitch = std::clamp(cameraPitch, 10.0f, 60.0f);
+	
 	cameraController_.SetPitch(cameraPitch);
 	cameraController_.SetYaw(cameraYaw);
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
