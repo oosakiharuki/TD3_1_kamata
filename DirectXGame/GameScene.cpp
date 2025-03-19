@@ -210,8 +210,9 @@ void GameScene::Draw() {
 void GameScene::LoadStage(std::string objFile) {
 	std::ifstream file;
 	file.open(objFile);
+#ifdef _DEBUG
 	assert(file.is_open());
-
+#endif // _DEBUG
 	Command << file.rdbuf();
 
 	file.close();

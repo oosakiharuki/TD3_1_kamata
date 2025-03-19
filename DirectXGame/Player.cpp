@@ -307,12 +307,17 @@ void Player::CheckCollision() {
 }
 
 void Player::DrawUI() {
+#ifdef _DEBUG
+
+
+
 	ImGui::Begin("Player State");
 
 	const char* stateNames[] = {"Normal", "Bomb", "Ghost"};
 	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
 
 	ImGui::End();
+#endif // _DEBUG
 }
 
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); }
