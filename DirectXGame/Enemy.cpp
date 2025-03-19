@@ -11,7 +11,7 @@ void Enemy::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
-	PlayerModel_ = Model::CreateFromOBJ("cube", true);
+	PlayerModel_ = Model::CreateFromOBJ("EnemyGhost", true);
 	worldTransform_.translation_ = position;
 }
 
@@ -127,6 +127,9 @@ AABB Enemy::GetAABB() const {
 void Enemy::ContralPlayer() {
 	isPlayer = true;
 	worldTransform_.translation_ = {0, -2, 0};
+	if (player_) {
+		player_->SetState(Player::State::Ghost);
+	}
 }
 
 void Enemy::ReMove(const Vector3& position_) {
@@ -138,6 +141,9 @@ void Enemy::ReMove(const Vector3& position_) {
 		isStan = true;
 		isPlayer = false;
 		worldTransform_.parent_ = nullptr;
+		if (player_) {
+			player_->SetState(Player::State::Normal);
+		}
 	}
 }
 

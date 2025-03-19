@@ -78,6 +78,8 @@ public:
 
 	void CheckCollision(); // 衝突判定を追加
 
+	void SetState(State newState);
+
 private:
 ////<<<<<<< ステージギミック
 //    //WorldTransform worldTransform;

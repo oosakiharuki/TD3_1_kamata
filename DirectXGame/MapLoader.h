@@ -1,0 +1,67 @@
+#pragma once
+#include "Door.h"
+#include "KamataEngine.h"
+#include "Key.h"
+#include "Player.h"
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+using namespace KamataEngine;
+
+// マップオブジェクトの種類を表す列挙型
+enum class MapObjectType {
+	Key,
+	Door,
+	// 将来的に他のオブジェクトタイプを追加可能
+};
+
+// CSVから読み込んだオブジェクトデータの構造体
+struct MapObjectData {
+	Vector3 position;
+	MapObjectType type;
+};
+
+class MapLoader {
+public:
+	MapLoader();
+	~MapLoader();
+
+	// CSVファイルからマップデータを読み込む
+	bool LoadMapData(const std::string& csvPath);
+
+	// 読み込んだデータに基づいてオブジェクトを生成・初期化
+	void CreateObjects(Camera* camera, Player* player);
+
+	// オブジェクトの更新
+	void Update();
+
+	// オブジェクトの描画
+	void Draw();
+
+	// 鍵とドアの相互参照を設定
+	void SetupObjectReferences();
+
+	// 鍵が取得されたかどうかを確認
+	bool IsKeyObtained() const;
+
+	// ドアが開いたかどうかを確認
+	bool IsDoorOpened() const;
+
+private:
+	// 読み込んだマップオブジェクトデータのリスト
+	std::vector<MapObjectData> mapObjectsData_;
+
+	// 生成された鍵のリスト
+	std::vector<Key*> keys_;
+
+	// 生成されたドアのリスト
+	std::vector<Door*> doors_;
+
+	// CSVから座標とオブジェクトタイプを解析
+	bool ParseCSVLine(const std::string& line, MapObjectData& data);
+
+	// リソースのクリーンアップ
+	void ClearResources();
+};

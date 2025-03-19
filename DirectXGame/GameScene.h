@@ -1,13 +1,14 @@
 #pragma once
-#include "CannonEnemy.h"
-#include "Enemy.h"
-#include "Ground.h"
-#include "KamataEngine.h"
-#include "Player.h"
-#include "Door.h"
-#include "Key.h"
-#include "SpringEnemy.h"
 #include "Block.h"
+#include "CannonEnemy.h"
+#include "Door.h"
+#include "Enemy.h"
+
+#include "KamataEngine.h"
+#include "Key.h"
+#include "MapLoader.h" // 追加：MapLoaderをインクルード
+#include "Player.h"
+#include "SpringEnemy.h"
 
 using namespace KamataEngine;
 
@@ -40,7 +41,7 @@ private:
 	WorldTransform worldTransform_;
 	Camera camera_;
 	Player* player_ = nullptr;
-	Ground* modelGround_ = nullptr;
+
 
 	// Enemyのリストを追加
 	std::vector<Enemy*> enemyList_;
@@ -51,13 +52,13 @@ private:
 
 	uint32_t textureHandle = 0;
 
-	CannonEnemy* cannonEenmy = nullptr;
+	CannonEnemy* cannonEnemy = nullptr;
 
 	Model* stage = nullptr;
 	std::stringstream Command;
 
-	Key* key_ = nullptr;   // 鍵オブジェクト
-	Door* door_ = nullptr; // ドアオブジェクト
+	// 追加：MapLoaderのインスタンス
+	MapLoader* mapLoader_ = nullptr;
 
 	Block* block_ = nullptr;
 	Model* modelBlock_ = nullptr;

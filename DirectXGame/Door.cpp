@@ -13,8 +13,6 @@ void Door::Init(Camera* camera) {
 	// "cube" モデルを読み込み
 	model_ = Model::CreateFromOBJ("door", true);
 
-	// 位置を設定
-	worldTransform_.translation_ = position_;
 
 	// 行列を更新
 	worldTransform_.UpdateMatrix();
@@ -88,3 +86,4 @@ AABB Door::GetAABB() const {
 	doorAABB.max = {doorCenter.x + scaledHalfExtents.x, doorCenter.y + scaledHalfExtents.y, doorCenter.z + scaledHalfExtents.z};
 	return doorAABB;
 }
+
