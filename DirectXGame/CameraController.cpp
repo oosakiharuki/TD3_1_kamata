@@ -4,7 +4,7 @@
 
 #include "Player.h"
 
-CameraController::CameraController() : offset_{0.0f, 20.0f, -25.0f}, pitchDeg_(35.0f) {}
+CameraController::CameraController() : offset_{0.0f, 5.0f, -20.0f}, pitchDeg_(10.0f) {}
 
 CameraController::~CameraController() {}
 
@@ -26,30 +26,30 @@ void CameraController::Update(Camera* camera, const Vector3& playerPosition) {
 	ImGui::End();
 #endif
 
-	// Convert rotation angles from degrees to radians
+	// 回転角をラジアンに変換
 	float pitchRad = pitchDeg_ * (3.14159265f / 180.0f);
 	float yawRad = yawDeg_ * (3.14159265f / 180.0f);
 
-	// Base distance from player (adjustable with cameraTranslate.z)
-	float distance = 20.0f - cameraTranslate.z;
+	// プレイヤーからの基本距離（cameraTranslate.zで調整可能）
+	float distance = 20.0f + cameraTranslate.z;
 
-	// Calculate horizontal distance based on pitch
+	// ピッチ角に基づく水平距離を計算
 	float horizontalDistance = distance * std::cos(pitchRad);
 
-	// Calculate vertical offset based on pitch
+	// ピッチ角に基づく垂直オフセットを計算
 	float verticalOffset = distance * std::sin(pitchRad);
 
-	// Calculate camera position using player position as pivot
+	// プレイヤーを中心としたカメラ位置を計算
 	camera->translation_.x = playerPosition.x - horizontalDistance * std::sin(yawRad);
 	camera->translation_.y = playerPosition.y + 5.0f + cameraTranslate.y + verticalOffset;
 	camera->translation_.z = playerPosition.z - horizontalDistance * std::cos(yawRad);
 
-	// Set camera rotation to look at player
+	// プレイヤーを見るようにカメラの回転を設定
 	camera->rotation_.x = pitchRad;
 	camera->rotation_.y = yawRad;
 	camera->rotation_.z = 0.0f;
 
-	// Update camera matrices
+	// カメラ行列の更新と転送
 	camera->UpdateViewMatrix();
 	camera->TransferMatrix();
 }
