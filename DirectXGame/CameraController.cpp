@@ -4,7 +4,7 @@
 
 #include "Player.h"
 
-CameraController::CameraController() : offset_{0.0f, 15.0f, -20.0f}, pitchDeg_(25.0f) {}
+CameraController::CameraController() : offset_{0.0f, 5.0f, -20.0f}, pitchDeg_(10.0f) {}
 ///=======
 // CameraController::CameraController() : offset_{0.0f, 20.0f, -20.0f}, pitchDeg_(45.0f) {}
 
@@ -32,7 +32,7 @@ void CameraController::Update(Camera* camera, const Vector3& playerPosition) {
 #endif
 
 	// カメラ開店に合わせて回転させる
-	offset_ = {0.0f, -15.0f, -20.0f};
+	offset_ = {0.0f + cameraTranslate.x, -5.0f + cameraTranslate.y, -20.0f - cameraTranslate.z};
 
 	Matrix4x4 result;
 	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(camera->rotation_.y);

@@ -72,7 +72,7 @@ void Player::Update() {
 
 		// 右スティックの入力
 		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f; // -1.0f～1.0f
-		// zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
+		 zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
 
 		// デッドゾーン処理
 		if (abs(xCamera) < deadZone) {
@@ -85,8 +85,24 @@ void Player::Update() {
 		// 回転
 		const float rotate = 0.7f;
 
+		//カメラ向き
+		//Y軸
 		cameraYaw += xCamera;
-		// cameraPitch += zCamera;
+		//X軸
+		cameraPitch += zCamera;
+		cameraPitch = std::clamp(cameraPitch, 10.0f, 60.0f);
+	
+
+		//カメラの場所
+		cameraTranslate.x = 0.0f;
+
+		cameraTranslate.y -= (zCamera) / 3.14f;
+		cameraTranslate.y = std::clamp(cameraTranslate.y, -20.0f, -2.0f);
+
+		cameraTranslate.z -= zCamera / (3.14f * 2);
+		cameraTranslate.z = std::clamp(cameraTranslate.z, -10.0f, 0.0f);
+
+
 
 		// 左スティックの入力
 		x = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f; // -1.0f～1.0f
@@ -129,7 +145,9 @@ void Player::Update() {
 		cameraYaw += 1.0f; // Eキーで右回転
 	}
 
-	// cameraController_.SetPitch(cameraPitch);
+	cameraController_.SetPitch(cameraPitch);
+	cameraController_.SetTranslate(cameraTranslate);
+
 	cameraController_.SetYaw(cameraYaw);
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
 
@@ -213,6 +231,26 @@ void Player::Update() {
 
 	CheckCollision();
 
+
+	for (SpringEnemy* springEnemy : springEnemies_) {
+		AABB springAABB = springEnemy->GetAABB();
+
+		if (IsCollisionAABB(playerAABB, springAABB) && !EnemyContral) {
+			ResolveAABBCollision(playerAABB, springAABB, velocityY_, onGround_);
+			if (isTransfar && (playerAABB.min.y >= springAABB.max.y)) {
+				springEnemy->ContralPlayer();
+				EnemyContral = true;
+				collisionEnemy = true;
+			}
+		}
+
+		if (EnemyContral && springEnemy->GetPlayerCtrl()) {
+			springEnemy->SetParent(&worldTransform_);
+		} else {
+			springEnemy->ReMove(worldTransform_.translation_);
+		}
+	}
+
 	// 衝突解決：プレイヤーがドアにめり込まないようにする
 	if (IsCollisionAABB(playerAABB, doorAABB) && !isOpenDoor) {
 		ResolveAABBCollision(playerAABB, doorAABB, velocityY_, onGround_);
@@ -221,7 +259,22 @@ void Player::Update() {
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
 		enemyAABB = (*it)->GetAABB();
 		if (IsCollisionAABB(playerAABB, enemyAABB) && !EnemyContral) {
-			ResolveAABBCollision(playerAABB, enemyAABB, velocityY_, onGround_);
+
+			//真上に乗れて、横は透ける
+			Vector3 overlap = GetOverlapAmount(playerAABB,enemyAABB);
+			if (overlap.y < overlap.x && overlap.y < overlap.z) {
+				float playerCenterY = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
+				float obstacleCenterY = (enemyAABB.min.y + enemyAABB.max.y) * 0.5f;
+				float push = (playerCenterY < obstacleCenterY) ? -overlap.y : overlap.y;
+				playerAABB.min.y += push;
+				playerAABB.max.y += push;
+				// 上向きの押し戻しなら着地判定を立てる
+				if (push > 0.0f) {
+					velocityY_ = 0.0f;
+					onGround_ = true;
+				}
+			}
+
 			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y)) {
 				(*it)->ContralPlayer();
 				EnemyContral = true;
@@ -307,12 +360,16 @@ void Player::CheckCollision() {
 }
 
 void Player::DrawUI() {
+
+#ifdef _DEBUG
 	ImGui::Begin("Player State");
 
 	const char* stateNames[] = {"Normal", "Bomb", "Ghost"};
 	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
 
 	ImGui::End();
+
+#endif // DEBUG
 }
 
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); }
