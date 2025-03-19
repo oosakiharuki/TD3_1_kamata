@@ -26,7 +26,7 @@ void Player::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacl
 
 void Player::Update() {
 	// キーボードとGamePad左スティックの入力を合算して移動処理する
-	float keyboardSpeed = 0.45f;
+	float keyboardSpeed = 0.55f;
 	Vector3 inputVec = {0.0f, 0.0f, 0.0f};
 
 	// キーボード入力 (WASD)
@@ -90,11 +90,11 @@ void Player::Update() {
 
 	// キーボードによるカメラ回転Y
 	if (Input::GetInstance()->PushKey(DIK_DOWN)) {
-		cameraPitch -= 2.5f;
+		cameraPitch += 1.5f;
 		isKeyBorad = true;
 	}
 	if (Input::GetInstance()->PushKey(DIK_UP)) {
-		cameraPitch += 2.5f;
+		cameraPitch -= 1.5f;
 		isKeyBorad = true;
 	}
 
