@@ -7,21 +7,14 @@ GameScene::GameScene() {}
 
 GameScene::~GameScene() {
 	delete player_;
-	for (auto enemy : enemyList_) {
-		delete enemy;
-	}
-	delete cannonEnemy;
 
-	// 追加：MapLoaderの解放
+	// MapLoaderの解放
 	delete mapLoader_;
 
-	///=======
-	delete stage;
+	// EnemyLoaderの解放
+	delete enemyLoader_;
 
-	// 追加：ばね敵の解放
-	for (auto spring : springEnemies_) {
-		delete spring;
-	}
+	delete stage;
 	delete block_;
 	delete modelBlock_;
 }
@@ -44,10 +37,13 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_->Init(&camera_, textureHandle);
 
-	// 障害物リストの作成
 	stage = Model::CreateFromOBJ("stage", true);
 
-	// 追加：MapLoaderの生成と初期化
+	// 障害物情報の読み込み
+	LoadStage("Resources/stage/stage.obj");
+	UpdateStageAABB();
+
+	// MapLoaderの生成と初期化
 	mapLoader_ = new MapLoader();
 	// CSVからマップオブジェクト（鍵とドア）を読み込み
 	if (mapLoader_->LoadMapData("Resources/objects.csv")) {
@@ -55,68 +51,26 @@ void GameScene::Initialize() {
 		mapLoader_->CreateObjects(&camera_, player_);
 	}
 
-	LoadStage("Resources/stage/stage.obj");
-	UpdateStageAABB();
-
-	// Enemyの生成と初期化
-	for (int i = 0; i < 5; ++i) { // 例として5体のEnemyを生成
-		Enemy* enemy = new Enemy();
-		enemy->Init(&camera_);
-		enemy->SetTarget(player_); // Playerの位置を設定
-		for (const auto& obstacles : allObstacles_) {
-			enemy->SetObstacleList(obstacles);
-		}
-		enemyList_.push_back(enemy);
+	// EnemyLoaderの生成と初期化
+	enemyLoader_ = new EnemyLoader();
+	// CSVから敵の情報を読み込み
+	if (enemyLoader_->LoadEnemyData("Resources/enemies.csv")) {
+		// 敵を生成
+		enemyLoader_->CreateEnemies(&camera_, player_, allObstacles_);
 	}
 
-#pragma region ばね敵の生成と初期化
+	// 各種敵リストをプレイヤーに設定
+	player_->SetEnemyList(enemyLoader_->GetEnemyList());
 
-	// 追加：ばね敵の生成と初期化
-	for (int i = 0; i < 3; ++i) { // 3つのばね敵を生成
-		SpringEnemy* spring = new SpringEnemy();
-		spring->Init(&camera_);
-		for (const auto& obstacles : allObstacles_) {
-			spring->SetObstacleList(obstacles);
-		}
-		springEnemies_.push_back(spring);
+	// キャノン敵への参照をプレイヤーに設定
+	if (!enemyLoader_->GetCannonEnemyList().empty()) {
+		player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]); // 一番最初のキャノン敵を設定
 	}
-	// ばね敵の位置を設定
-	if (springEnemies_.size() > 0)
-		springEnemies_[0]->SetPosition({0.0f, 0.0f, -25.0f});
-	if (springEnemies_.size() > 1)
-		springEnemies_[1]->SetPosition({15.0f, 0.0f, -10.0f});
-	if (springEnemies_.size() > 2)
-		springEnemies_[2]->SetPosition({-15.0f, 0.0f, 5.0f});
 
-	// プレイヤーとばね敵の相互参照を設定
-	for (auto spring : springEnemies_) {
-		spring->SetPlayer(player_);
-	}
-	player_->SetSpringEnemies(springEnemies_);
-#pragma endregion
+	// バネ敵への参照をプレイヤーに設定
+	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
 
-	// 各Enemyの初期位置を設定
-	if (enemyList_.size() > 0)
-		enemyList_[0]->SetPosition({-20.0f, 10.0f, -10.0f});
-	if (enemyList_.size() > 1)
-		enemyList_[1]->SetPosition({-10.0f, 10.0f, -10.0f});
-	if (enemyList_.size() > 2)
-		enemyList_[2]->SetPosition({20.0f, 10.0f, -20.0f});
-	if (enemyList_.size() > 3)
-		enemyList_[3]->SetPosition({-40.0f, 10.0f, -10.0f});
-	if (enemyList_.size() > 4)
-		enemyList_[4]->SetPosition({50.0f, 10.0f, -20.0f});
-
-	cannonEnemy = new CannonEnemy();
-	cannonEnemy->Init(&camera_);
-	for (const auto& obstacles : allObstacles_) {
-		cannonEnemy->SetObstacleList(obstacles);
-	}
-	cannonEnemy->SetPlayer(player_);
-	player_->SetCannon(cannonEnemy);
-
-	player_->SetEnemyList(enemyList_);
-
+	// ブロックへの参照をプレイヤーに設定
 	player_->SetBlock(block_);
 
 	// 障害物リストを Player にセット
@@ -124,42 +78,21 @@ void GameScene::Initialize() {
 		player_->SetObstacleList(obstacles);
 	}
 
-	player_->SetCannon(cannonEnemy);
-
 
 }
 
 void GameScene::Update() {
 	player_->Update();
-	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
-		(*it)->Update();
-		if (std::find(player_->enemyList_.begin(), player_->enemyList_.end(), *it) == player_->enemyList_.end()) {
-			delete *it;
-			it = enemyList_.erase(it);
-		} else {
-			// 衝突判定
-			if ((*it)->CheckCollisionWithPlayer()) {
-				// 衝突時の処理（移動を停止）
-				(*it)->SetVelocity(Vector3(0, 0, 0));
-			}
-			++it;
-		}
+
+	// EnemyLoaderの更新
+	if (enemyLoader_) {
+		enemyLoader_->Update();
 	}
 
-	cannonEnemy->Update();
-
-	// 追加：MapLoaderの更新
+	// MapLoaderの更新
 	if (mapLoader_) {
 		mapLoader_->Update();
 	}
-
-#pragma region ばね敵の更新
-
-	// 追加：ばね敵の更新
-	for (auto spring : springEnemies_) {
-		spring->Update();
-	}
-#pragma endregion
 
 	block_->Update();
 	player_->DrawUI();
@@ -178,19 +111,13 @@ void GameScene::Draw() {
 	stage->Draw(worldTransform_, camera_, textureHandle);
 
 	player_->Draw();
-	// modelGround_->Draw();
-	for (auto enemy : enemyList_) {
-		enemy->Draw();
+
+	// EnemyLoaderで読み込んだ敵の描画
+	if (enemyLoader_) {
+		enemyLoader_->Draw();
 	}
 
-	cannonEnemy->Draw();
-
-	// 追加：ばね敵の描画
-	for (auto spring : springEnemies_) {
-		spring->Draw();
-	}
-
-	// 追加：MapLoaderでCSVから読み込んだオブジェクト（鍵とドア）の描画
+	// MapLoaderで読み込んだオブジェクト（鍵とドア）の描画
 	if (mapLoader_) {
 		mapLoader_->Draw();
 	}
@@ -204,12 +131,22 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 }
 
+// AddObstacle、LoadStage、UpdateStageAABBメソッドはそのまま以前の実装を使用
+void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max) {
+	AABB obstacle;
+	obstacle.min = min;
+	obstacle.max = max;
+	if (allObstacles.empty() || allObstacles.back().size() >= 100) { // 100個の障害物を追加
+		allObstacles.emplace_back();
+	}
+	allObstacles.back().push_back(obstacle);
+}
+
 void GameScene::LoadStage(std::string objFile) {
 	std::ifstream file;
 	file.open(objFile);
-#ifdef _DEBUG
 	assert(file.is_open());
-#endif // _DEBUG
+
 	Command << file.rdbuf();
 
 	file.close();
@@ -305,14 +242,4 @@ void GameScene::UpdateStageAABB() {
 			reverse = true;
 		}
 	}
-}
-
-void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max) {
-	AABB obstacle;
-	obstacle.min = min;
-	obstacle.max = max;
-	if (allObstacles.empty() || allObstacles.back().size() >= 100) { // 100個の障害物を追加
-		allObstacles.emplace_back();
-	}
-	allObstacles.back().push_back(obstacle);
 }

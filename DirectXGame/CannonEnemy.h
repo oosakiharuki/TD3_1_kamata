@@ -28,8 +28,7 @@ public:
 
 	void AddObstacle(const AABB& obstacle);
 
-
-	//void SetPlayerAABB(AABB aabb) { playerAABB = aabb; }
+	// void SetPlayerAABB(AABB aabb) { playerAABB = aabb; }
 
 	void SetPlayer(Player* player) { player_ = player; }
 	AABB GetAABB();
@@ -40,6 +39,12 @@ public:
 	bool GetPlayerCtrl() const { return isPlayer; }
 
 	std::list<Bom*> GetBom() { return bullets_; }
+
+	// 位置を設定するメソッドを追加
+	void SetPosition(const Vector3& pos) {
+		position = pos;
+		worldTransform_.translation_ = pos;
+	}
 
 private:
 	WorldTransform worldTransform_; // Fix the error by ensuring the type is defined
@@ -54,8 +59,8 @@ private:
 
 	// WorldTransform worldTransform;
 
-	//Vector3 velocity;
-	// bool IsJump = false;
+	// Vector3 velocity;
+	//  bool IsJump = false;
 
 	XINPUT_STATE state, preState;
 	const float speed = 0.2f;
@@ -71,8 +76,6 @@ private:
 	const float stanTime = 3.0f;
 
 	bool isPlayer = false;
-
-	
 
 	float radius = 50.0f;
 	float fireTimer = 2.0f;

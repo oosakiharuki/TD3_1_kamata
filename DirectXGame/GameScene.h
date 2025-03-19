@@ -3,10 +3,11 @@
 #include "CannonEnemy.h"
 #include "Door.h"
 #include "Enemy.h"
-
+#include "EnemyLoader.h" // EnemyLoaderをインクルード
+#include "Ground.h"
 #include "KamataEngine.h"
 #include "Key.h"
-#include "MapLoader.h" // 追加：MapLoaderをインクルード
+#include "MapLoader.h" // MapLoaderをインクルード
 #include "Player.h"
 #include "SpringEnemy.h"
 
@@ -43,22 +44,19 @@ private:
 	Player* player_ = nullptr;
 
 
-	// Enemyのリストを追加
-	std::vector<Enemy*> enemyList_;
+	// 障害物リスト
 	std::vector<std::vector<AABB>> allObstacles_;
 
-	// 追加：ばね敵のリスト
-	std::vector<SpringEnemy*> springEnemies_;
-
 	uint32_t textureHandle = 0;
-
-	CannonEnemy* cannonEnemy = nullptr;
 
 	Model* stage = nullptr;
 	std::stringstream Command;
 
-	// 追加：MapLoaderのインスタンス
+	// MapLoaderのインスタンス
 	MapLoader* mapLoader_ = nullptr;
+
+	// EnemyLoaderのインスタンス
+	EnemyLoader* enemyLoader_ = nullptr;
 
 	Block* block_ = nullptr;
 	Model* modelBlock_ = nullptr;
