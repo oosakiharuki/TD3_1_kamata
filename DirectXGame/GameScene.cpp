@@ -1,8 +1,8 @@
 #include "GameScene.h"
 #include "AABB.h"
+#include <cassert>
 #include <fstream>
 #include <vector>
-#include <cassert>
 
 GameScene::GameScene() {}
 
@@ -85,8 +85,6 @@ void GameScene::Initialize() {
 	for (const auto& obstacles : allObstacles_) {
 		player_->SetObstacleList(obstacles);
 	}
-
-
 }
 
 void GameScene::Update() {
