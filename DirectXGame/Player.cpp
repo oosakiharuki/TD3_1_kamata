@@ -97,10 +97,10 @@ void Player::Update() {
 
 	// キーボードによるカメラ回転 (Q/E)
 	if (Input::GetInstance()->PushKey(DIK_Q)) {
-		cameraYaw -= 1.0f;
+		cameraYaw -= 1.5f;
 	}
 	if (Input::GetInstance()->PushKey(DIK_E)) {
-		cameraYaw += 1.0f;
+		cameraYaw += 1.5f;
 	}
 
 	cameraController_.SetYaw(cameraYaw);
