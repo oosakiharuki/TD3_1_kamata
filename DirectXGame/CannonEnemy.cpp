@@ -204,6 +204,9 @@ AABB CannonEnemy::GetAABB() {
 void CannonEnemy::ContralPlayer() {
 	isPlayer = true;
 	worldTransform_.translation_ = {0, -2, 0};
+	if (player_) {
+		player_->SetState(Player::State::Bomb);
+	}
 }
 
 void CannonEnemy::ReMove(const Vector3& position_) {
@@ -215,5 +218,8 @@ void CannonEnemy::ReMove(const Vector3& position_) {
 		isStan = true;
 		isPlayer = false;
 		worldTransform_.parent_ = nullptr;
+		if (player_) {
+			player_->SetState(Player::State::Normal);
+		}
 	}
 }
