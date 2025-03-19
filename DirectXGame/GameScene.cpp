@@ -11,12 +11,13 @@ GameScene::~GameScene() {
 	for (auto enemy : enemyList_) {
 		delete enemy;
 	}
-	delete cannonEenmy;
+	delete cannonEnemy;
 
-///=======
+	// 追加：MapLoaderの解放
+	delete mapLoader_;
+
+	///=======
 	delete stage;
-	delete key_;
-	delete door_;
 
 	// 追加：ばね敵の解放
 	for (auto spring : springEnemies_) {
@@ -37,35 +38,23 @@ void GameScene::Initialize() {
 	uint32_t texturehandle2 = TextureManager::GetInstance()->Load("Block.png");
 	block_ = new Block();
 	modelBlock_ = Model::Create();
-	block_->Init(modelBlock_, &camera_,texturehandle2);
-
+	block_->Init(modelBlock_, &camera_, texturehandle2);
 
 	// Player の生成と初期化
 	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
 	player_ = new Player();
 	player_->Init(&camera_, textureHandle);
 
-///<<<<<<< EnemyGhost
-	// 障害物リストの作成例
-	//AddObstacle(allObstacles_, {-200.0f, -5.5f, -200.0f}, {200.0f, 0.0f, 200.0f}); // 例：床のAABB全体の床
-
-///=======
-  
+	// 障害物リストの作成
 	stage = Model::CreateFromOBJ("stage", true);
 
-	// AddObstacle(allObstacles_, { -100.0f, - 1.0f, - 100.0f }, { 100.0f, 1.0f, 100.0f }); // 宇宙模様の床
-	// AddObstacle(allObstacles_, {-29.9f, 1.0f, -39.9f}, { -49.9f, 3.0f, - 19.9f}); // 宇宙模様の床
-
-	// 鍵の生成・初期化
-	key_ = new Key();
-	key_->Init(&camera_);
-	key_->SetPlayer(player_);
-
-	// ドアの生成・初期化
-	door_ = new Door();
-	door_->Init(&camera_);
-	door_->SetPlayer(player_);
-	door_->SetKey(key_);
+	// 追加：MapLoaderの生成と初期化
+	mapLoader_ = new MapLoader();
+	// CSVからマップオブジェクト（鍵とドア）を読み込み
+	if (mapLoader_->LoadMapData("Resources/objects.csv")) {
+		// オブジェクトを生成
+		mapLoader_->CreateObjects(&camera_, player_);
+	}
 
 	LoadStage("Resources/stage/stage.obj");
 	UpdateStageAABB();
@@ -119,13 +108,13 @@ void GameScene::Initialize() {
 	if (enemyList_.size() > 4)
 		enemyList_[4]->SetPosition({50.0f, 10.0f, -20.0f});
 
-	cannonEenmy = new CannonEnemy();
-	cannonEenmy->Init(&camera_);
+	cannonEnemy = new CannonEnemy();
+	cannonEnemy->Init(&camera_);
 	for (const auto& obstacles : allObstacles_) {
-		cannonEenmy->SetObstacleList(obstacles);
+		cannonEnemy->SetObstacleList(obstacles);
 	}
-	cannonEenmy->SetPlayer(player_);
-	player_->SetCannon(cannonEenmy);
+	cannonEnemy->SetPlayer(player_);
+	player_->SetCannon(cannonEnemy);
 
 	player_->SetEnemyList(enemyList_);
 
@@ -136,7 +125,7 @@ void GameScene::Initialize() {
 		player_->SetObstacleList(obstacles);
 	}
 
-	player_->SetCannon(cannonEenmy);
+	player_->SetCannon(cannonEnemy);
 
 	// Ground の生成・初期化
 	modelGround_ = new Ground();
@@ -160,11 +149,12 @@ void GameScene::Update() {
 		}
 	}
 
-	cannonEenmy->Update();
+	cannonEnemy->Update();
 
-
-	// cannonEenmy->SetPlayerAABB(player_->GetAABB());
-	cannonEenmy->Update();
+	// 追加：MapLoaderの更新
+	if (mapLoader_) {
+		mapLoader_->Update();
+	}
 
 #pragma region ばね敵の更新
 
@@ -173,16 +163,6 @@ void GameScene::Update() {
 		spring->Update();
 	}
 #pragma endregion
-
-
-	/*/
-	for (auto enemy : enemyList_) {
-	    enemy->Update();
-	}
-	/*/
-
-	key_->Update();
-	door_->Update();
 
 	block_->Update();
 	player_->DrawUI();
@@ -206,15 +186,17 @@ void GameScene::Draw() {
 		enemy->Draw();
 	}
 
-	cannonEenmy->Draw();
+	cannonEnemy->Draw();
 
 	// 追加：ばね敵の描画
 	for (auto spring : springEnemies_) {
 		spring->Draw();
 	}
 
-	key_->Draw();
-	door_->Draw();
+	// 追加：MapLoaderでCSVから読み込んだオブジェクト（鍵とドア）の描画
+	if (mapLoader_) {
+		mapLoader_->Draw();
+	}
 
 	block_->Draw();
 
@@ -223,16 +205,6 @@ void GameScene::Draw() {
 	// UI描画
 	Sprite::PreDraw(commandList);
 	Sprite::PostDraw();
-}
-
-void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max) {
-	AABB obstacle;
-	obstacle.min = min;
-	obstacle.max = max;
-	if (allObstacles.empty() || allObstacles.back().size() >= 100) { // 100個の障害物を追加
-		allObstacles.emplace_back();
-	}
-	allObstacles.back().push_back(obstacle);
 }
 
 void GameScene::LoadStage(std::string objFile) {
@@ -246,7 +218,6 @@ void GameScene::LoadStage(std::string objFile) {
 }
 
 void GameScene::UpdateStageAABB() {
-
 	std::string line;
 	uint32_t cornerNumber = 0;
 
@@ -318,7 +289,7 @@ void GameScene::UpdateStageAABB() {
 
 		if (cornerNumber == 8) {
 			if (!reverse) {
-				AddObstacle(allObstacles_, min, max); //結合した基盤となるobj
+				AddObstacle(allObstacles_, min, max); // 結合した基盤となるobj
 			} else {
 
 				float minX;
@@ -336,4 +307,14 @@ void GameScene::UpdateStageAABB() {
 			reverse = true;
 		}
 	}
+}
+
+void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max) {
+	AABB obstacle;
+	obstacle.min = min;
+	obstacle.max = max;
+	if (allObstacles.empty() || allObstacles.back().size() >= 100) { // 100個の障害物を追加
+		allObstacles.emplace_back();
+	}
+	allObstacles.back().push_back(obstacle);
 }

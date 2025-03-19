@@ -1,6 +1,6 @@
 #pragma once
-#include"KamataEngine.h"
 #include "AABB.h"
+#include "KamataEngine.h"
 #include "Player.h"
 
 using namespace KamataEngine;
@@ -28,11 +28,17 @@ public:
 	// AABBを取得
 	AABB GetAABB() const;
 
+	// 位置を設定（CSVから読み込んだ位置に合わせるため）
+	void SetPosition(const Vector3& position) {
+		position_ = position;
+		worldTransform_.translation_ = position;
+	}
+
 private:
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
 	Model* model_ = nullptr;
-	Vector3 position_ = {3.499f, 9.510f, -47.592f}; // 指定された位置
+	Vector3 position_ = {3.499f, 9.510f, -47.592f}; // デフォルト位置（CSVから上書き可能）
 
 	// プレイヤー参照
 	Player* player_ = nullptr;
