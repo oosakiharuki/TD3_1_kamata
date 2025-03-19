@@ -31,7 +31,7 @@ void CameraController::Update(Camera* camera, const Vector3& playerPosition) {
 	float yawRad = yawDeg_ * (3.14159265f / 180.0f);
 
 	// プレイヤーからの基本距離（cameraTranslate.zで調整可能）
-	float distance = 20.0f + cameraTranslate.z;
+	float distance = 25.0f;
 
 	// ピッチ角に基づく水平距離を計算
 	float horizontalDistance = distance * std::cos(pitchRad);
@@ -41,7 +41,7 @@ void CameraController::Update(Camera* camera, const Vector3& playerPosition) {
 
 	// プレイヤーを中心としたカメラ位置を計算
 	camera->translation_.x = playerPosition.x - horizontalDistance * std::sin(yawRad);
-	camera->translation_.y = playerPosition.y + 5.0f + cameraTranslate.y + verticalOffset;
+	camera->translation_.y = playerPosition.y + 5.0f + verticalOffset;
 	camera->translation_.z = playerPosition.z - horizontalDistance * std::cos(yawRad);
 
 	// プレイヤーを見るようにカメラの回転を設定

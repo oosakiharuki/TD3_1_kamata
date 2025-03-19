@@ -128,9 +128,6 @@ private:
 	float cameraPitch = 5.0f;
 	float cameraYaw = 0.0f;
 
-	Vector3 cameraTranslate = {0,0,0};
-
-
 	bool isOpenDoor = false;
 	AABB doorAABB;
 	std::vector<SpringEnemy*> springEnemies_;
