@@ -17,7 +17,7 @@ void CannonEnemy::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
-	model_ = Model::CreateFromOBJ("cube", true);
+	model_ = Model::CreateFromOBJ("cannon", true);
 	worldTransform_.translation_ = position;
 }
 

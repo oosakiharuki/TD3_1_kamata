@@ -6,7 +6,7 @@ Bom::~Bom() { delete model_; }
 void Bom::Init(Vector3 position, Vector3 velocity) {
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
-	model_ = Model::CreateFromOBJ("cube", true);
+	model_ = Model::CreateFromOBJ("EnemyBullet", true);
 	position_ = position;
 	worldTransform_.translation_ = position_;
 

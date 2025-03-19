@@ -13,7 +13,7 @@ void Key::Init(Camera* camera) {
 	worldTransform_.Initialize();
 
 	// "cube" モデルを読み込み
-	model_ = Model::CreateFromOBJ("cube", true);
+	model_ = Model::CreateFromOBJ("key", true);
 
 	// 位置を設定
 	worldTransform_.translation_ = position_;

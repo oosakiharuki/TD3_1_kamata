@@ -10,7 +10,7 @@ void SpringEnemy::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube"モデルを読み込み、後で専用のばねモデルに置き換え可能
-	model_ = Model::CreateFromOBJ("cube", true);
+	model_ = Model::CreateFromOBJ("spring", true);
 	worldTransform_.translation_ = position;
 
 	// ばね敵用の特徴的なスケール設定（高さがあり、幅が狭い）

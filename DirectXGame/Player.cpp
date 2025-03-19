@@ -33,21 +33,46 @@ void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_
 void Player::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
 
 void Player::Update() {
-	// 入力による移動
-	float moveSpeed = 0.5f;
+	// キーボードとGamePad左スティックの入力を合算して移動処理する
+	float keyboardSpeed = 0.45f;
+	Vector3 inputVec = {0.0f, 0.0f, 0.0f};
+
+	// キーボード入力 (WASD)
 	if (Input::GetInstance()->PushKey(DIK_W)) {
-		position.z += moveSpeed;
+		inputVec.z += keyboardSpeed;
 	}
 	if (Input::GetInstance()->PushKey(DIK_S)) {
-		position.z -= moveSpeed;
+		inputVec.z -= keyboardSpeed;
 	}
 	if (Input::GetInstance()->PushKey(DIK_A)) {
-		position.x -= moveSpeed;
+		inputVec.x -= keyboardSpeed;
 	}
 	if (Input::GetInstance()->PushKey(DIK_D)) {
-		position.x += moveSpeed;
+		inputVec.x += keyboardSpeed;
 	}
 
+	// GamePad左スティック入力
+	const float deadZone = 0.2f;
+	if (Input::GetInstance()->GetJoystickState(0, state)) {
+		float gpX = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f;
+		float gpZ = static_cast<float>(state.Gamepad.sThumbLY) / 32768.0f;
+		if (fabs(gpX) < deadZone)
+			gpX = 0.0f;
+		if (fabs(gpZ) < deadZone)
+			gpZ = 0.0f;
+		inputVec.x += gpX;
+		inputVec.z += gpZ;
+	}
+
+	// 入力があれば正規化してスピード分移動
+	if (Length(inputVec) > 0) {
+		Vector3 move = Normalize(inputVec) * speed; // ※speedはメンバ変数等で定義済みとする
+		move = TransformNormal(move, worldTransform_.matWorld_);
+		position.x += move.x;
+		position.z += move.z;
+	}
+
+	// 状態切替
 	if (Input::GetInstance()->TriggerKey(DIK_1)) {
 		currentState = State::Normal;
 	}
@@ -58,81 +83,30 @@ void Player::Update() {
 		currentState = State::Ghost;
 	}
 
-	float x = 0, z = 0;
-	float xCamera = 0, zCamera = 0;
-
-	float angle = 0;
-
-	const float deadZone = 0.2f; // スティックの感度調整
-
-	Input::GetInstance()->GetJoystickState(0, state);
-	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
-
+	// GamePad右スティックによるカメラ回転処理
+	float xCamera = 0.0f, zCamera = 0.0f;
 	if (Input::GetInstance()->GetJoystickState(0, state)) {
-
-		// 右スティックの入力
-		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f; // -1.0f～1.0f
-		// zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
-
-		// デッドゾーン処理
-		if (abs(xCamera) < deadZone) {
+		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f;
+		// zCameraは使ってないのでコメントアウト
+		if (fabs(xCamera) < deadZone)
 			xCamera = 0.0f;
-		}
-		if (abs(zCamera) < deadZone) {
+		if (fabs(zCamera) < deadZone)
 			zCamera = 0.0f;
-		}
-
-		// 回転
-		const float rotate = 0.7f;
-
 		cameraYaw += xCamera;
-		// cameraPitch += zCamera;
-
-		// 左スティックの入力
-		x = static_cast<float>(state.Gamepad.sThumbLX) / 32768.0f; // -1.0f～1.0f
-		z = static_cast<float>(state.Gamepad.sThumbLY) / 32768.0f; // -1.0f～1.0f
-
-		// デッドゾーン処理
-		if (abs(x) < deadZone) {
-			x = 0.0f;
-			if (abs(z) < deadZone)
-				z = 0.0f;
-		}
-		// 回転
-		// const float rotate = 0.7f;
-		bool isMoving = false;
-
-		Vector3 RotateMove = {x, 0.0f, z};
-		if (Length(RotateMove) > rotate) {
-			isMoving = true;
-		}
-
-		Vector3 move = {x, 0.0f, z};
-
-		if (isMoving) {
-			move = Normalize(move) * speed;
-
-			move = TransformNormal(move, worldTransform_.matWorld_);
-			angle = std::atan2(RotateMove.x, RotateMove.z);
-			// worldTransform_.rotation_.y = -angle;
-
-			position.x += move.x;
-			position.z += move.z;
-		}
 	}
 
-	// QとEキーの入力処理
+	// キーボードによるカメラ回転 (Q/E)
 	if (Input::GetInstance()->PushKey(DIK_Q)) {
-		cameraYaw -= 1.0f; // Qキーで左回転
+		cameraYaw -= 1.0f;
 	}
 	if (Input::GetInstance()->PushKey(DIK_E)) {
-		cameraYaw += 1.0f; // Eキーで右回転
+		cameraYaw += 1.0f;
 	}
 
-	// cameraController_.SetPitch(cameraPitch);
 	cameraController_.SetYaw(cameraYaw);
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
 
+	// ジャンプ・移動時の各種処理
 	if (!onGround_) {
 		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !EnemyContral && !isTransfar) {
 			velocityY_ -= 1.2f;
@@ -153,9 +127,6 @@ void Player::Update() {
 		onGround_ = false;
 	}
 
-	// position.x += x * speed;
-	// position.z += z * speed;
-
 	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
@@ -166,14 +137,17 @@ void Player::Update() {
 		onEnemy = true;
 	}
 
+	// 重力と垂直移動
 	float gravity = 0.01f;
 	velocityY_ -= gravity;
 	position.y += velocityY_;
 
+	// プレイヤーのAABB更新
 	float halfW = 1.0f, halfH = 1.0f, halfD = 1.0f;
 	playerAABB.min = {position.x - halfW, position.y - halfH, position.z - halfD};
 	playerAABB.max = {position.x + halfW, position.y + halfH, position.z + halfD};
 
+	// 障害物との衝突解決
 	const int maxIterations = 10;
 	int iterations = 0;
 	bool collisionOccurred = false;
@@ -188,8 +162,8 @@ void Player::Update() {
 		iterations++;
 	} while (collisionOccurred && iterations < maxIterations);
 
+	// キャノン敵との衝突処理
 	AABB cannonAABB = cannonEnemy->GetAABB();
-
 	if (IsCollisionAABB(playerAABB, cannonAABB) && !EnemyContral) {
 		ResolveAABBCollision(playerAABB, cannonAABB, velocityY_, onGround_);
 		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y)) {
@@ -201,11 +175,10 @@ void Player::Update() {
 
 	if (EnemyContral && cannonEnemy->GetPlayerCtrl()) {
 		cannonEnemy->SetParent(&worldTransform_);
-
 		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_X) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
-			cannonEnemy->PlayerFire(); // カメラ向きに発射される
+			cannonEnemy->PlayerFire();
 		} else if (Input::GetInstance()->TriggerKey(DIK_J)) {
-			cannonEnemy->PlayerFire(); // カメラ向きに発射される
+			cannonEnemy->PlayerFire();
 		}
 	} else {
 		cannonEnemy->ReMove(worldTransform_.translation_);
@@ -213,11 +186,12 @@ void Player::Update() {
 
 	CheckCollision();
 
-	// 衝突解決：プレイヤーがドアにめり込まないようにする
+	// ドアとの衝突処理
 	if (IsCollisionAABB(playerAABB, doorAABB) && !isOpenDoor) {
 		ResolveAABBCollision(playerAABB, doorAABB, velocityY_, onGround_);
 	}
 
+	// 敵との衝突処理
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
 		enemyAABB = (*it)->GetAABB();
 		if (IsCollisionAABB(playerAABB, enemyAABB) && !EnemyContral) {
@@ -237,10 +211,10 @@ void Player::Update() {
 		++it;
 	}
 
+	// AABBの中心を基に位置を更新
 	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 	position.z = (playerAABB.min.z + playerAABB.max.z) * 0.5f;
-
 	if (onEnemy) {
 		position.y += 2.0f;
 		onEnemy = false;
@@ -249,7 +223,6 @@ void Player::Update() {
 		position.y -= 2.0f;
 		collisionEnemy = false;
 	}
-
 	worldTransform_.translation_ = position;
 	if (EnemyContral) {
 		worldTransform_.translation_.y += 2.0f;
@@ -271,6 +244,7 @@ void Player::Update() {
 
 	cameraController_.Update(camera_, position);
 }
+
 
 void Player::CheckCollision() {
 	if (!block_->IsActive()) {

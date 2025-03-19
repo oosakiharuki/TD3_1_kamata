@@ -3,7 +3,7 @@
 #include "CannonEnemy.h"
 #include "Door.h"
 #include "Enemy.h"
-#include "Ground.h"
+
 #include "KamataEngine.h"
 #include "Key.h"
 #include "MapLoader.h" // 追加：MapLoaderをインクルード
@@ -41,7 +41,7 @@ private:
 	WorldTransform worldTransform_;
 	Camera camera_;
 	Player* player_ = nullptr;
-	Ground* modelGround_ = nullptr;
+
 
 	// Enemyのリストを追加
 	std::vector<Enemy*> enemyList_;

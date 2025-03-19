@@ -7,7 +7,6 @@ GameScene::GameScene() {}
 
 GameScene::~GameScene() {
 	delete player_;
-	delete modelGround_;
 	for (auto enemy : enemyList_) {
 		delete enemy;
 	}
@@ -127,9 +126,7 @@ void GameScene::Initialize() {
 
 	player_->SetCannon(cannonEnemy);
 
-	// Ground の生成・初期化
-	modelGround_ = new Ground();
-	modelGround_->Init(&camera_);
+
 }
 
 void GameScene::Update() {
