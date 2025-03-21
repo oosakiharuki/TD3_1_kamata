@@ -52,6 +52,7 @@ public:
 	// Playerとの衝突を検出するメソッドを追加
 	bool CheckCollisionWithPlayer();
 
+	void SetChaseRadius(float radius); // 追尾範囲を設定するメソッド
 
 private:
 	WorldTransform worldTransform_; // Fix the error by ensuring the type is defined
@@ -61,6 +62,7 @@ private:
 	bool onGround_ = true;
 	float velocityY_ = 0.0f;
 	Vector3 velocity_;
+	float kChaseSpeed = 0.1f;
 
 	// 障害物リスト
 	std::vector<AABB> obstacleList_;
@@ -89,4 +91,9 @@ private:
 	bool MoveNot = false;
 
 	Player* player_ = nullptr;
+
+	float radius = 30.0f;
+
+	float chaseRadius_ = 30.0f;   // 追尾範囲の初期値
+	bool IsPlayerInChaseRadius(); // 追尾範囲内にPlayerがいるかどうかをチェックするメソッド
 };

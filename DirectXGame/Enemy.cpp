@@ -2,6 +2,8 @@
 #include "AABB.h"
 #include "Collision.h"
 #include <KamataEngine.h>
+#include <algorithm>
+#include <iostream>
 
 Enemy::Enemy() {}
 
@@ -80,33 +82,32 @@ void Enemy::Update() {
 
 		Vector3 move = worldTransform_.translation_;
 
-		// 一定速度でプレイヤーを追尾するための速度
-		const float kChaseSpeed = 0.1f;
+		if (IsPlayerInChaseRadius()) {
+			// プレイヤーへのベクトルを計算
+			Vector3 playerWorldPosition = player_->GetWorldPosition();
+			Vector3 enemyWorldPosition = GetWorldPosition();
+			Vector3 toPlayer = Normalize(playerWorldPosition - enemyWorldPosition);
 
-		// プレイヤーへのベクトルを計算
-		Vector3 playerWorldPosition = player_->GetWorldPosition();
-		Vector3 enemyWorldPosition = GetWorldPosition();
-		Vector3 toPlayer = Normalize(playerWorldPosition - enemyWorldPosition);
+			Vector3 direction = playerWorldPosition - enemyWorldPosition;
+			direction.y = 0; // Y軸回転のみなので高さは無視
+			direction = Normalize(direction);
 
-		Vector3 direction = playerWorldPosition - enemyWorldPosition;
-		direction.y = 0; // Y軸回転のみなので高さは無視
-		direction = Normalize(direction);
+			// Y軸の回転角度を計算
+			worldTransform_.rotation_.y = atan2(direction.x, -direction.z);
 
-		// Y軸の回転角度を計算
-		worldTransform_.rotation_.y = atan2(direction.x, -direction.z);
+			// 一定速度でプレイヤーに向かうベクトルで設定
+			velocity = toPlayer * kChaseSpeed;
 
-		// 一定速度でプレイヤーに向かうベクトルで設定
-		velocity = toPlayer * kChaseSpeed;
-
-		// Playerとの衝突判定
-		if (CheckCollisionWithPlayer()) {
-			// 衝突時の処理（移動を停止）
-			velocity.x = 0;
-			velocity.z = 0;
-		} else {
-			// 速度をそのまま適用
-			worldTransform_.translation_.x += velocity.x;
-			worldTransform_.translation_.z += velocity.z;
+			// Playerとの衝突判定
+			if (CheckCollisionWithPlayer()) {
+				// 衝突時の処理（移動を停止）
+				velocity.x = 0;
+				velocity.z = 0;
+			} else {
+				// 速度をそのまま適用
+				worldTransform_.translation_.x += velocity.x;
+				worldTransform_.translation_.z += velocity.z;
+			}
 		}
 
 		worldTransform_.translation_.y = position.y;
@@ -134,7 +135,7 @@ AABB Enemy::GetAABB() const {
 void Enemy::ContralPlayer() {
 	isPlayer = true;
 	worldTransform_.translation_ = {0, -2, 0};
-	worldTransform_.rotation_ = { 0, 3, 0 };
+	worldTransform_.rotation_ = {0, 3, 0};
 	if (player_) {
 		player_->SetState(Player::State::Ghost);
 	}
@@ -171,4 +172,14 @@ bool Enemy::CheckCollisionWithPlayer() {
 	AABB playerAABB = player_->GetAABB();
 	AABB enemyAABB = GetAABB();
 	return IsCollisionAABB(playerAABB, enemyAABB);
+}
+
+void Enemy::SetChaseRadius(float radius_) { chaseRadius_ = radius_; }
+
+// プレイヤーが追尾範囲内にいるかどうかを判定
+bool Enemy::IsPlayerInChaseRadius() {
+	Vector3 playerWorldPosition = player_->GetWorldPosition();
+	Vector3 enemyWorldPosition = GetWorldPosition();
+	float distance = Length(playerWorldPosition - enemyWorldPosition);
+	return distance <= chaseRadius_;
 }

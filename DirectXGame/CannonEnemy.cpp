@@ -83,7 +83,8 @@ void CannonEnemy::Update() {
 			AABB playerAABB = player_->GetAABB();
 
 			Vector3 closestPoint{
-			    std::clamp(position.x, playerAABB.min.x, playerAABB.max.x), std::clamp(position.y, playerAABB.min.y, playerAABB.max.y), std::clamp(position.z, playerAABB.min.z, playerAABB.max.z)};
+			    std::clamp(position.x, playerAABB.min.x, playerAABB.max.x), std::clamp(position.y, playerAABB.min.y, playerAABB.max.y), std::clamp(position.z, playerAABB.min.z, playerAABB.max.z)
+			};
 
 			float distance = Length(closestPoint - position);
 
