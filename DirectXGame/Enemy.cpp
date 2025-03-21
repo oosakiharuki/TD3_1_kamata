@@ -88,6 +88,13 @@ void Enemy::Update() {
 		Vector3 enemyWorldPosition = GetWorldPosition();
 		Vector3 toPlayer = Normalize(playerWorldPosition - enemyWorldPosition);
 
+		Vector3 direction = playerWorldPosition - enemyWorldPosition;
+		direction.y = 0; // Y軸回転のみなので高さは無視
+		direction = Normalize(direction);
+
+		// Y軸の回転角度を計算
+		worldTransform_.rotation_.y = atan2(direction.x, -direction.z);
+
 		// 一定速度でプレイヤーに向かうベクトルで設定
 		velocity = toPlayer * kChaseSpeed;
 

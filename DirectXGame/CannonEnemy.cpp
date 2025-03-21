@@ -111,6 +111,15 @@ void CannonEnemy::Update() {
 
 		/// ここまで
 
+		// プレイヤーの方向を向く処理
+		if (player_) {
+			Vector3 playerPosition = player_->GetWorldPosition();
+			Vector3 direction = playerPosition - position;
+
+			// atan2を使ってY軸の回転角度を計算
+			worldTransform_.rotation_.y = atan2(direction.x, -direction.z);
+		}
+
 		worldTransform_.translation_ = position;
 	}
 #ifdef _DEBUG
@@ -144,37 +153,30 @@ void CannonEnemy::Draw() {
 }
 
 void CannonEnemy::Fire() {
-
 	const float deltaTimer = 1.0f / 60.0f;
 	fireTimer -= deltaTimer;
 
 	if (fireTimer <= 0.0f) {
-
 		const float kSpeed = 0.5f;
 
-		Vector3 playerPostion = player_->GetWorldPosition();
-		Vector3 enemyPostion = worldTransform_.translation_;
+		// プレイヤーの位置を取得
+		Vector3 playerPosition = player_->GetWorldPosition();
+		Vector3 enemyPosition = worldTransform_.translation_;
 
-		Vector3 subtract = playerPostion - enemyPostion;
+		// プレイヤーへの方向ベクトルを計算（ワールド座標系）
+		Vector3 direction = playerPosition - enemyPosition;
+		Vector3 normalize = Normalize(direction); // 正規化
 
-		Vector3 normalize = Normalize(subtract);
+		// 速度ベクトルをプレイヤーの方向に設定
+		Vector3 velocity = normalize * kSpeed;
 
-		normalize.x *= kSpeed;
-		normalize.y *= kSpeed;
-		normalize.z *= kSpeed;
-
-		Vector3 velocity(normalize);
-
-		// const float kSpeed = 1.0f;
-		// Vector3 velocity(0, 0, -kSpeed);
-
-		velocity = TransformNormal(velocity, worldTransform_.matWorld_);
-
+		// 新しい弾を生成
 		Bom* newBullet = new Bom();
-		newBullet->Init(worldTransform_.translation_, velocity);
+		newBullet->Init(enemyPosition, velocity);
 
 		bullets_.push_back(newBullet);
 
+		// 次の発射までのクールダウン
 		fireTimer = 2.0f;
 	}
 }
