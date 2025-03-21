@@ -206,6 +206,7 @@ AABB CannonEnemy::GetAABB() {
 void CannonEnemy::ContralPlayer() {
 	isPlayer = true;
 	worldTransform_.translation_ = {0, -2, 0};
+	worldTransform_.rotation_ = { 0, 0, 0 };
 	if (player_) {
 		player_->SetState(Player::State::Bomb);
 	}
