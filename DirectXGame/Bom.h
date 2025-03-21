@@ -17,6 +17,7 @@ public:
 	bool IsDaed() { return isDead; }
 
 	AABB GetAABB();
+	void OnCollision();
 
 private:
 	WorldTransform worldTransform_;

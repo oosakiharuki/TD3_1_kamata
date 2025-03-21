@@ -187,9 +187,9 @@ void Player::Update() {
 
 	// キャノン敵との衝突処理
 	AABB cannonAABB = cannonEnemy->GetAABB();
-	if (IsCollisionAABB(playerAABB, cannonAABB) && !EnemyContral) {
+	if (IsCollisionAABB(playerAABB, cannonAABB)) {
 		ResolveAABBCollision(playerAABB, cannonAABB, velocityY_, onGround_);
-		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y)) {
+		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y) && !EnemyContral) {
 			cannonEnemy->ContralPlayer();
 			EnemyContral = true;
 			collisionEnemy = true;
@@ -209,12 +209,15 @@ void Player::Update() {
 
 	CheckCollision();
 
+	OnCollisions();
+
+
 	for (SpringEnemy* springEnemy : springEnemies_) {
 		AABB springAABB = springEnemy->GetAABB();
 
-		if (IsCollisionAABB(playerAABB, springAABB) && !EnemyContral) {
+		if (IsCollisionAABB(playerAABB, springAABB)) {
 			ResolveAABBCollision(playerAABB, springAABB, velocityY_, onGround_);
-			if (isTransfar && (playerAABB.min.y >= springAABB.max.y)) {
+			if (isTransfar && (playerAABB.min.y >= springAABB.max.y) && !EnemyContral) {
 				springEnemy->ContralPlayer();
 				EnemyContral = true;
 				collisionEnemy = true;
@@ -237,7 +240,7 @@ void Player::Update() {
 	// 敵との衝突処理
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
 		enemyAABB = (*it)->GetAABB();
-		if (IsCollisionAABB(playerAABB, enemyAABB) && !EnemyContral) {
+		if (IsCollisionAABB(playerAABB, enemyAABB)) {
 
 			//真上に乗れて、横は透ける
 			Vector3 overlap = GetOverlapAmount(playerAABB,enemyAABB);
@@ -254,7 +257,7 @@ void Player::Update() {
 				}
 			}
 
-			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y)) {
+			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y) && !EnemyContral) {
 				(*it)->ContralPlayer();
 				EnemyContral = true;
 				collisionEnemy = true;
@@ -346,6 +349,7 @@ void Player::DrawUI() {
 
 	const char* stateNames[] = {"Normal", "Bomb", "Ghost"};
 	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
+	ImGui::DragFloat("Hp", &hp);
 
 	ImGui::End();
 
@@ -353,7 +357,25 @@ void Player::DrawUI() {
   
 }
 
-void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); }
+void Player::OnCollisions() {
+
+	for (Bom* bom : cannonEnemy->GetBom()) {
+		AABB bomAABB = bom->GetAABB();
+
+		if (IsCollisionAABB(bomAABB, playerAABB) && !cannonEnemy->GetPlayerCtrl()) {
+			hp--;
+			bom->OnCollision();
+		}
+	}
+}
+
+
+void Player::Draw() { 
+	if (hp < 1)	
+		return;
+
+	PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); 
+}
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
 
@@ -371,7 +393,7 @@ void Player::CheckCollisionWithSprings() {
 	for (auto* springEnemy : springEnemies_) {
 		AABB springAABB = springEnemy->GetAABB();
 
-		if (IsCollisionAABB(playerAABB, springAABB) && !EnemyContral) {
+		if (IsCollisionAABB(playerAABB, springAABB)) {
 			// Resolve collision
 			ResolveAABBCollision(playerAABB, springAABB, velocityY_, onGround_);
 
