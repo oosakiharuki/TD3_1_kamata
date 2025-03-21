@@ -134,6 +134,7 @@ AABB Enemy::GetAABB() const {
 void Enemy::ContralPlayer() {
 	isPlayer = true;
 	worldTransform_.translation_ = {0, -2, 0};
+	worldTransform_.rotation_ = { 0, 3, 0 };
 	if (player_) {
 		player_->SetState(Player::State::Ghost);
 	}
