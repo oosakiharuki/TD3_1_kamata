@@ -73,6 +73,9 @@ public:
 
 	void SetState(State newState);
 
+	//ダメージをくらったクールタイム
+	void CheckDamage();
+
 private:
 ////<<<<<<< ステージギミック
 //    //WorldTransform worldTransform;
@@ -111,6 +114,8 @@ private:
 	AABB playerAABB;
 	Vector3 size = {2, 2, 2};
 	float hp = 3;
+	bool isDamage = false;
+	float coolTime = 0.0f;
 
 	AABB enemyAABB;
 

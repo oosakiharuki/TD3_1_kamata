@@ -255,6 +255,8 @@ void Player::Update() {
 					velocityY_ = 0.0f;
 					onGround_ = true;
 				}
+			} else { //　横に当たったらダメージ
+				isDamage = true;
 			}
 
 			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y) && !EnemyContral) {
@@ -291,6 +293,9 @@ void Player::Update() {
 
 	// ばね敵との衝突チェック
 	CheckCollisionWithSprings();
+
+	//　攻撃されたら
+	CheckDamage();
 
 #ifdef _DEBUG
 	ImGui::Begin("player");
@@ -363,18 +368,22 @@ void Player::OnCollisions() {
 		AABB bomAABB = bom->GetAABB();
 
 		if (IsCollisionAABB(bomAABB, playerAABB) && !cannonEnemy->GetPlayerCtrl()) {
-			hp--;
+			isDamage = true;
 			bom->OnCollision();
 		}
 	}
 }
 
 
-void Player::Draw() { 
-	if (hp < 1)	
-		return;
+void Player::Draw() {
+	//if (hp < 1)
+	//	return;
 
-	PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); 
+	if (coolTime > 0.0f) {
+		PlayerModel_->Draw(worldTransform_, *camera_);
+	} else {
+		PlayerModel_->Draw(worldTransform_, *camera_, textureHandle);
+	}
 }
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
@@ -410,4 +419,20 @@ void Player::CheckCollisionWithSprings() {
 
 void Player::SetState(State newState) {
 	currentState = newState;
+}
+
+void Player::CheckDamage() {
+
+	const float deltaTime = 1.0f / 60.0f;
+
+	coolTime -= deltaTime;
+
+	if (isDamage && coolTime < 0.0f) {
+		hp--;
+		isDamage = false;
+		coolTime = 3.0f;
+	} else {
+		isDamage = false;
+	}
+
 }
