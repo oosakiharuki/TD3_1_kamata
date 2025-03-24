@@ -50,6 +50,7 @@ private:
 	uint32_t textureHandle = 0;
 
 	Model* stage = nullptr;
+	Model* stage2 = nullptr;
 	std::stringstream Command;
 
 	// MapLoaderのインスタンス
@@ -64,4 +65,12 @@ private:
 	// 天球
 	Skydome* skydome_ = nullptr;
 	Model* modelSkydome_ = nullptr;
+
+	    // ステージ遷移用変数
+	float stageTransitionTimer = 5.0f; // 5秒のタイマー
+	int currentStage = 1;              // 現在のステージ番号
+	bool isTransitioning = false;      // 遷移中フラグ
+
+	// ステージ2への遷移処理
+	void TransitionToStage2();
 };

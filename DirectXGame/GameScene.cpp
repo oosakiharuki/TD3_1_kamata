@@ -16,8 +16,12 @@ GameScene::~GameScene() {
 	delete enemyLoader_;
 
 	delete stage;
+	delete stage2; // ステージ2のモデルも解放
 	delete block_;
 	delete modelBlock_;
+
+	delete skydome_;
+	delete modelSkydome_;
 }
 
 void GameScene::Initialize() {
@@ -38,7 +42,11 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_->Init(&camera_, textureHandle);
 
+	// ステージ1のモデルを読み込み
 	stage = Model::CreateFromOBJ("stage", true);
+
+	// ステージ2のモデルも事前に読み込み（まだ使わない）
+	stage2 = Model::CreateFromOBJ("stage2", true);
 
 	// 天球の生成
 	skydome_ = new Skydome();
@@ -47,7 +55,7 @@ void GameScene::Initialize() {
 	// 天球の初期化
 	skydome_->Initialize(modelSkydome_, &camera_);
 
-	// 障害物情報の読み込み
+	// 最初はステージ1の障害物情報を読み込み
 	LoadStage("Resources/stage/stage.obj");
 	UpdateStageAABB();
 
@@ -85,9 +93,25 @@ void GameScene::Initialize() {
 	for (const auto& obstacles : allObstacles_) {
 		player_->SetObstacleList(obstacles);
 	}
+
+	// ステージ遷移タイマーの初期化
+	stageTransitionTimer = 5.0f;
+	currentStage = 1;
+	isTransitioning = false;
 }
 
 void GameScene::Update() {
+	// ステージ遷移タイマー処理
+	if (currentStage == 1) {
+		stageTransitionTimer -= 1.0f / 60.0f; // 60FPSを想定
+
+		if (stageTransitionTimer <= 0 && !isTransitioning) {
+			isTransitioning = true;
+			TransitionToStage2();
+		}
+	}
+
+	// 元々の更新処理
 	player_->Update();
 
 	// EnemyLoaderの更新
@@ -103,6 +127,15 @@ void GameScene::Update() {
 	block_->Update();
 	player_->DrawUI();
 	skydome_->Update();
+
+	#ifdef _DEBUG
+	ImGui::Begin("Stage Info");
+	ImGui::Text("Current Stage: %d", currentStage);
+	if (currentStage == 1) {
+		ImGui::Text("Stage Transition in: %.1f seconds", stageTransitionTimer);
+	}
+	ImGui::End();
+#endif
 }
 
 void GameScene::Draw() {
@@ -115,7 +148,12 @@ void GameScene::Draw() {
 	// モデル描画
 	Model::PreDraw(commandList);
 
-	stage->Draw(worldTransform_, camera_, textureHandle);
+	// 現在のステージに応じたステージモデルを描画
+	if (currentStage == 1) {
+		stage->Draw(worldTransform_, camera_, textureHandle);
+	} else if (currentStage == 2) {
+		stage2->Draw(worldTransform_, camera_, textureHandle);
+	}
 
 	player_->Draw();
 
@@ -250,4 +288,68 @@ void GameScene::UpdateStageAABB() {
 			reverse = true;
 		}
 	}
+}
+
+// ステージ2への遷移処理
+void GameScene::TransitionToStage2() {
+	// 1. 古い当たり判定をクリア
+	allObstacles_.clear();
+	Command.str("");
+	Command.clear();
+
+	// 2. Stage2を読み込み
+	LoadStage("Resources/stage2/stage2.obj");
+	UpdateStageAABB();
+
+	// 3. 敵とオブジェクトの再配置
+	// MapLoaderをリセット
+	if (mapLoader_) {
+		delete mapLoader_;
+		mapLoader_ = new MapLoader();
+
+		// Stage2用のCSVを読み込み（ファイル名は適宜変更）
+		if (mapLoader_->LoadMapData("Resources/objects.csv")) {
+			mapLoader_->CreateObjects(&camera_, player_);
+		}
+	}
+
+	// EnemyLoaderをリセット
+	if (enemyLoader_) {
+		delete enemyLoader_;
+		enemyLoader_ = new EnemyLoader();
+
+		// Stage2用の敵配置を読み込み（ファイル名は適宜変更）
+		if (enemyLoader_->LoadEnemyData("Resources/enemies2.csv")) {
+			enemyLoader_->CreateEnemies(&camera_, player_, allObstacles_);
+		}
+
+		// 各種敵リストをプレイヤーに設定
+		player_->SetEnemyList(enemyLoader_->GetEnemyList());
+
+		// キャノン敵への参照をプレイヤーに設定
+		if (!enemyLoader_->GetCannonEnemyList().empty()) {
+			player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]);
+		}
+
+		// バネ敵への参照をプレイヤーに設定
+		player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
+	}
+
+	// プレイヤーの既存の障害物リストをクリア
+	player_->ClearObstacleList();
+
+	// プレイヤーに新しい障害物リストを設定
+	for (const auto& obstacles : allObstacles_) {
+		player_->SetObstacleList(obstacles);
+	}
+
+	// ブロックへの参照を再設定
+	player_->SetBlock(block_);
+
+	// ステージ番号を更新
+	currentStage = 2;
+	isTransitioning = false;
+
+	// プレイヤー位置のリセット（必要に応じて）
+	// player_->Reset();
 }
