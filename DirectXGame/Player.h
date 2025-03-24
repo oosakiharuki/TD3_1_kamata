@@ -49,6 +49,8 @@ public:
 
 
 	void SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
+	
+	void OnCollisions();
 
 	// ★ 新しく追加：ドアとの衝突を解決するメソッド
 	void ResolveCollisionWithDoor(const AABB& aabb) { doorAABB = aabb; }
@@ -108,6 +110,7 @@ private:
 
 	AABB playerAABB;
 	Vector3 size = {2, 2, 2};
+	float hp = 3;
 
 	AABB enemyAABB;
 

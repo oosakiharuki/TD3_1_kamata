@@ -18,6 +18,9 @@ GameScene::~GameScene() {
 	delete stage;
 	delete block_;
 	delete modelBlock_;
+
+	delete skydome_;
+	delete modelSkydome_;
 }
 
 void GameScene::Initialize() {
