@@ -297,6 +297,9 @@ void Player::Update() {
 	//　攻撃されたら
 	CheckDamage();
 
+	//ゴールの旗に当たったか
+	CheckCollisionWithGoal(); 
+
 #ifdef _DEBUG
 	ImGui::Begin("player");
 	ImGui::DragFloat3("translate", &worldTransform_.translation_.x);
@@ -416,6 +419,15 @@ void Player::CheckCollisionWithSprings() {
 		}
 	}
 }
+
+void Player::CheckCollisionWithGoal() {
+	AABB goalAABB = goal_->GetAABB();
+
+	if (IsCollisionAABB(playerAABB, goalAABB)) {
+		goal_->OnCollision();
+	}
+}
+
 
 void Player::SetState(State newState) {
 	currentState = newState;

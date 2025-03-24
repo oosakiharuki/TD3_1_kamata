@@ -21,6 +21,8 @@ GameScene::~GameScene() {
 
 	delete skydome_;
 	delete modelSkydome_;
+	delete goal;
+	delete modelGoal_;
 }
 
 void GameScene::Initialize() {
@@ -89,10 +91,19 @@ void GameScene::Initialize() {
 		player_->SetObstacleList(obstacles);
 	}
 
+	modelGoal_ = Model::CreateFromOBJ("goal", true);
+	goal = new Goal();
+	goal->Init(modelGoal_, &camera_, {-30.0f, 16.373f, 37.016f});
+	player_->SetGoal(goal);
 
 }
 
 void GameScene::Update() {
+	goal->Update();
+
+	if (goal->IsClear())
+		return;
+
 	player_->Update();
 
 	// EnemyLoaderの更新
@@ -136,11 +147,15 @@ void GameScene::Draw() {
 
 	block_->Draw();
 	skydome_->Draw();
+	goal->Draw();
 
 	Model::PostDraw();
 
 	// UI描画
 	Sprite::PreDraw(commandList);
+
+	goal->Text();
+
 	Sprite::PostDraw();
 }
 

@@ -9,6 +9,7 @@
 #include "Block.h"  // 衝突判定用にブロックをインクルード
 #include "SpringEnemy.h"
 #include <vector>
+#include "Goal.h"
 
 class Enemy;
 using namespace KamataEngine;
@@ -58,6 +59,9 @@ public:
 
 	void SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { springEnemies_ = springEnemies; }
 	void CheckCollisionWithSprings();
+
+	void SetGoal(Goal* goal) { goal_ = goal; }
+	void CheckCollisionWithGoal();
 
 	enum class State {
 		Normal, // 通常状態
@@ -139,4 +143,6 @@ private:
 	bool isOpenDoor = false;
 	AABB doorAABB;
 	std::vector<SpringEnemy*> springEnemies_;
+
+	Goal* goal_ = nullptr;
 };

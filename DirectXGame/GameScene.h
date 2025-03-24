@@ -11,6 +11,7 @@
 #include "Player.h"
 #include "Skydome.h"
 #include "SpringEnemy.h"
+#include "Goal.h"
 
 using namespace KamataEngine;
 
@@ -65,4 +66,7 @@ private:
 	// 天球
 	Skydome* skydome_ = nullptr;
 	Model* modelSkydome_ = nullptr;
+
+	Goal* goal = nullptr;
+	Model* modelGoal_ = nullptr;
 };
