@@ -311,37 +311,43 @@ void Player::Update() {
 	cameraController_.Update(camera_, position);
 }
 
-
 void Player::CheckCollision() {
-	if (!block_->IsActive()) {
+	if (!block_->IsActive() && !ghostBlock_->IsActive()) {
 		return;
 	}
 
 	AABB blockAABB = block_->GetAABB();
+	AABB ghostBlockAABB = ghostBlock_->GetAABB();
 
 	switch (currentState) {
 	case State::Normal:
-		if (IsCollisionAABB(playerAABB, blockAABB)) {
-			// worldTransform_.translation_ -= velocity; // 速度分だけ戻す
+		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+		}
+		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
+			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
 		}
 		break;
+
 	case State::Bomb:
-		if (IsCollisionAABB(playerAABB, blockAABB)) {
-			// worldTransform_.translation_ -= velocity; // 速度分だけ戻す
+		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
-
+		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
+			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
+		}
 		for (Bom* bom : cannonEnemy->GetBom()) {
-
 			AABB bomAABB = bom->GetAABB();
-
-			if (IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
+			if (block_->IsActive() && IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
 				block_->SetActive(false);
 			}
 		}
 		break;
+
 	case State::Ghost:
+		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+		}
 		break;
 	}
 }
@@ -373,7 +379,6 @@ void Player::OnCollisions() {
 		}
 	}
 }
-
 
 void Player::Draw() {
 	//if (hp < 1)
