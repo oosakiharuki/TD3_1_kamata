@@ -183,7 +183,7 @@ void GameScene::ChangeStage(int nextStage) {
 		player_->SetSpringEnemies({});
 
 		// player_->SetCannon(nullptr);
-		// delete enemyLoader_;
+		// delete enemyLoader_; 
 
 		enemyLoader_ = new EnemyLoader();
 
