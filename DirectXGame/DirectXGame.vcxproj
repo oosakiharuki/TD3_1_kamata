@@ -113,6 +113,7 @@
     <ClCompile Include="CannonEnemy.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="EnemyLoader.cpp" />
+    <ClCompile Include="Goal.cpp" />
     <ClCompile Include="GhostBlock.cpp" />
     <ClCompile Include="MapLoader.cpp" />
     <ClCompile Include="Door.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="CannonEnemy.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="EnemyLoader.h" />
+    <ClInclude Include="Goal.h" />
     <ClInclude Include="GhostBlock.h" />
     <ClInclude Include="MapLoader.h" />
     <ClInclude Include="Door.h" />
