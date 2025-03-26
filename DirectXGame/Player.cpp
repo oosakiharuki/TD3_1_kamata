@@ -15,7 +15,7 @@ void Player::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
-	PlayerModel_ = Model::CreateFromOBJ("cube", true);
+	PlayerModel_ = Model::CreateFromOBJ("player", true);
 	worldTransform_.translation_ = position;
 }
 
