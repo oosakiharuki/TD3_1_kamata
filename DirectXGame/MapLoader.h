@@ -49,6 +49,11 @@ public:
 	// ドアが開いたかどうかを確認
 	bool IsDoorOpened() const;
 
+	// ステージ切り替え
+	void ChangeStage(int stageNumber, Camera* camera, Player* player);
+
+	void GLoadStage(std::string objFile);
+
 private:
 	// 読み込んだマップオブジェクトデータのリスト
 	std::vector<MapObjectData> mapObjectsData_;

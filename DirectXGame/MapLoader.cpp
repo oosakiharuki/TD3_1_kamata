@@ -1,5 +1,6 @@
 #include "MapLoader.h"
 #include <algorithm>
+#include <iostream>
 
 MapLoader::MapLoader() {}
 
@@ -154,4 +155,20 @@ void MapLoader::ClearResources() {
 		delete door;
 	}
 	doors_.clear();
+}
+
+void MapLoader::ChangeStage(int stageNumber, Camera* camera, Player* player) {
+	// 既存のオブジェクトを削除
+	ClearResources();
+
+	// ステージ番号に応じたCSVファイル名を決定
+	std::string csvPath = "Resources/objects" + std::to_string(stageNumber) + ".csv";
+
+	// マップデータを読み込み
+	if (LoadMapData(csvPath)) {
+		// 新しいオブジェクトを作成
+		CreateObjects(camera, player);
+	} else {
+		std::cerr << "Failed to load map data: " << csvPath << std::endl;
+	}
 }

@@ -30,12 +30,18 @@ public:
 
 	void SpawnEnemy(const Vector3& position); // 新しいメソッドを追加
 
+	// ステージを変更する
+	void ChangeStage(int nextStage);
+
 private:
 	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
 
 	void LoadStage(std::string objFile);
 
 	void UpdateStageAABB();
+
+	// 現在のステージデータをロード
+	void LoadCurrentStage();
 
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -65,4 +71,8 @@ private:
 	// 天球
 	Skydome* skydome_ = nullptr;
 	Model* modelSkydome_ = nullptr;
+
+	// 現在のステージ番号
+	int currentStage_ = 1;
+
 };

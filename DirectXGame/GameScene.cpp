@@ -1,8 +1,9 @@
 #include "GameScene.h"
 #include "AABB.h"
-#include <fstream>
-#include <vector>
 #include <cassert>
+#include <fstream>
+#include <iostream>
+#include <vector>
 
 GameScene::GameScene() {}
 
@@ -38,7 +39,7 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	player_->Init(&camera_, textureHandle);
 
-	stage = Model::CreateFromOBJ("stage", true);
+	stage = Model::CreateFromOBJ("stage" + std::to_string(currentStage_), true);
 
 	// 天球の生成
 	skydome_ = new Skydome();
@@ -47,22 +48,21 @@ void GameScene::Initialize() {
 	// 天球の初期化
 	skydome_->Initialize(modelSkydome_, &camera_);
 
-	// 障害物情報の読み込み
-	LoadStage("Resources/stage/stage.obj");
-	UpdateStageAABB();
-
-	// MapLoaderの生成と初期化
+	// **MapLoader の初期化**
 	mapLoader_ = new MapLoader();
-	// CSVからマップオブジェクト（鍵とドア）を読み込み
-	if (mapLoader_->LoadMapData("Resources/objects.csv")) {
-		// オブジェクトを生成
+	std::string objectsFile = "Resources/objects" + std::to_string(currentStage_) + ".csv";
+	if (mapLoader_->LoadMapData(objectsFile)) {
 		mapLoader_->CreateObjects(&camera_, player_);
 	}
 
+	// 障害物情報の読み込み
+	LoadStage("Resources/stage1/stage1.obj");
+
 	// EnemyLoaderの生成と初期化
 	enemyLoader_ = new EnemyLoader();
+	std::string enemiesFile = "Resources/enemies" + std::to_string(currentStage_) + ".csv";
 	// CSVから敵の情報を読み込み
-	if (enemyLoader_->LoadEnemyData("Resources/enemies.csv")) {
+	if (enemyLoader_->LoadEnemyData(enemiesFile)) {
 		// 敵を生成
 		enemyLoader_->CreateEnemies(&camera_, player_, allObstacles_);
 	}
@@ -80,13 +80,6 @@ void GameScene::Initialize() {
 
 	// ブロックへの参照をプレイヤーに設定
 	player_->SetBlock(block_);
-
-	// 障害物リストを Player にセット
-	for (const auto& obstacles : allObstacles_) {
-		player_->SetObstacleList(obstacles);
-	}
-
-
 }
 
 void GameScene::Update() {
@@ -105,6 +98,22 @@ void GameScene::Update() {
 	block_->Update();
 	player_->DrawUI();
 	skydome_->Update();
+
+	// 　↓　ゴールしたら1と2ステージループするようになってる、切り替え処理2を消すとステージ3に進む
+
+	// ステージ切り替え処理
+	if (currentStage_ == 1) {
+		if (mapLoader_ && mapLoader_->IsDoorOpened()) {
+			ChangeStage(currentStage_ + 1);
+		}
+	}
+
+	// ステージ切り替え処理2
+	if (currentStage_ == 2) {
+		if (mapLoader_ && mapLoader_->IsDoorOpened()) {
+			ChangeStage(currentStage_ - 1);
+		}
+	}
 }
 
 void GameScene::Draw() {
@@ -141,6 +150,65 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 }
 
+void GameScene::ChangeStage(int nextStage) {
+	currentStage_ = nextStage;
+
+	stage = Model::CreateFromOBJ("stage" + std::to_string(currentStage_), true);
+
+	// 新しいオブジェクトデータをロード
+	if (mapLoader_) {
+		std::string objectsFile = "Resources/objects" + std::to_string(currentStage_) + ".csv";
+		mapLoader_->ChangeStage(currentStage_, &camera_, player_);
+
+		if (mapLoader_->LoadMapData(objectsFile)) {
+			mapLoader_->CreateObjects(&camera_, player_);
+		}
+	}
+
+	// プレイヤーの既存の障害物リストをクリア
+	player_->ClearObstacleList();
+
+	// プレイヤーに新しい障害物リストを設定
+	for (const auto& obstacles : allObstacles_) {
+		player_->SetObstacleList(obstacles);
+	}
+
+	// ブロックへの参照を再設定
+	player_->SetBlock(block_);
+
+	// EnemyLoaderをリセット
+	if (enemyLoader_) {
+		// プレイヤーの敵リストをクリア
+		player_->SetEnemyList({});
+		player_->SetSpringEnemies({});
+
+		// player_->SetCannon(nullptr);
+		// delete enemyLoader_;
+
+		enemyLoader_ = new EnemyLoader();
+
+		// ステージごとの敵配置を読み込み
+		std::string enemiesFile = "Resources/enemies" + std::to_string(currentStage_) + ".csv";
+		if (enemyLoader_->LoadEnemyData(enemiesFile)) {
+			enemyLoader_->CreateEnemies(&camera_, player_, allObstacles_);
+		}
+
+		// 各種敵リストをプレイヤーに設定
+		player_->SetEnemyList(enemyLoader_->GetEnemyList());
+
+		// キャノン敵への参照をプレイヤーに設定
+		if (!enemyLoader_->GetCannonEnemyList().empty()) {
+			player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]);
+		}
+
+		// バネ敵への参照をプレイヤーに設定
+		player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
+	}
+
+	std::string stageFile = "Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_) + ".obj";
+	LoadStage(stageFile);
+}
+
 // AddObstacle、LoadStage、UpdateStageAABBメソッドはそのまま以前の実装を使用
 void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max) {
 	AABB obstacle;
@@ -153,13 +221,28 @@ void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const 
 }
 
 void GameScene::LoadStage(std::string objFile) {
+	// ステージデータの読み込み
 	std::ifstream file;
 	file.open(objFile);
 	assert(file.is_open());
 
-	Command << file.rdbuf();
+	// Commandをリセット
+	Command.str("");
+	Command.clear();
 
+	Command << file.rdbuf();
 	file.close();
+
+	// 障害物データをクリア
+	allObstacles_.clear();
+
+	UpdateStageAABB();
+
+	player_->ClearObstacleList(); // 古い障害物リストを削除
+	// 新しい障害物リスト
+	for (const auto& obstacles : allObstacles_) {
+		player_->SetObstacleList(obstacles);
+	}
 }
 
 void GameScene::UpdateStageAABB() {

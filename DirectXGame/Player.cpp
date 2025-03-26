@@ -357,6 +357,10 @@ void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandl
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
 
+void Player::SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { springEnemies_ = springEnemies; }
+
+void Player::SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
+
 //// ★ 新しく追加：ドアとの衝突解決処理
 // void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
 //	AABB currentAABB = GetAABB();
@@ -388,4 +392,8 @@ void Player::CheckCollisionWithSprings() {
 
 void Player::SetState(State newState) {
 	currentState = newState;
+}
+
+void Player::ClearObstacleList() {
+	obstacleList_.clear(); // 当たり判定用の障害物リストをクリア
 }

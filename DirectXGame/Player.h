@@ -48,13 +48,13 @@ public:
 	void EnemyHead() { onEnemy = true; }
 
 
-	void SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
+	void SetCannon(CannonEnemy* cannon);
 
 	// ★ 新しく追加：ドアとの衝突を解決するメソッド
 	void ResolveCollisionWithDoor(const AABB& aabb) { doorAABB = aabb; }
 	void SetOpenDoor(bool isOpen) { isOpenDoor = isOpen; }
 
-	void SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { springEnemies_ = springEnemies; }
+	void SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies);
 	void CheckCollisionWithSprings();
 
 	enum class State {
@@ -70,6 +70,9 @@ public:
 	void CheckCollision(); // 衝突判定を追加
 
 	void SetState(State newState);
+
+	void ClearObstacleList();
+
 
 private:
 ////<<<<<<< ステージギミック
