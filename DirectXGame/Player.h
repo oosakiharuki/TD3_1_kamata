@@ -6,7 +6,8 @@
 #include "CannonEnemy.h"
 #include "Collision.h"
 #include "Enemy.h"
-#include "Block.h"  // 衝突判定用にブロックをインクルード
+#include "Block.h"  // 衝突判定用にブロックを
+#include "GhostBlock.h"
 #include "SpringEnemy.h"
 #include <vector>
 #include "Goal.h"
@@ -71,7 +72,10 @@ public:
 
 	void DrawUI(); // UI描画用の関数を追加
 
-	void SetBlock(Block* block) { block_ = block; }
+	void SetBlock(Block* block, GhostBlock* ghostBlock) { 
+		block_ = block; 
+		ghostBlock_ = ghostBlock;
+	}
 
 	void CheckCollision(); // 衝突判定を追加
 
@@ -145,4 +149,5 @@ private:
 	std::vector<SpringEnemy*> springEnemies_;
 
 	Goal* goal_ = nullptr;
+	GhostBlock* ghostBlock_ = nullptr;
 };

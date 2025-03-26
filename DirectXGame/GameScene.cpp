@@ -16,8 +16,12 @@ GameScene::~GameScene() {
 	delete enemyLoader_;
 
 	delete stage;
+
 	delete block_;
 	delete modelBlock_;
+
+	delete ghostBlock_;
+	delete modelGhostBlock_;
 
 	delete skydome_;
 	delete modelSkydome_;
@@ -37,6 +41,11 @@ void GameScene::Initialize() {
 	block_ = new Block();
 	modelBlock_ = Model::Create();
 	block_->Init(modelBlock_, &camera_, texturehandle2);
+
+	uint32_t texturehandle3 = TextureManager::GetInstance()->Load("Block.png");
+	ghostBlock_ = new GhostBlock();
+	modelGhostBlock_ = Model::Create();
+	ghostBlock_->Init(modelGhostBlock_, &camera_, texturehandle3);
 
 	// Player の生成と初期化
 	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
@@ -84,7 +93,7 @@ void GameScene::Initialize() {
 	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
 
 	// ブロックへの参照をプレイヤーに設定
-	player_->SetBlock(block_);
+	player_->SetBlock(block_, ghostBlock_);
 
 	// 障害物リストを Player にセット
 	for (const auto& obstacles : allObstacles_) {
@@ -117,6 +126,7 @@ void GameScene::Update() {
 	}
 
 	block_->Update();
+	ghostBlock_->Update();
 	player_->DrawUI();
 	skydome_->Update();
 }
@@ -146,6 +156,7 @@ void GameScene::Draw() {
 	}
 
 	block_->Draw();
+	ghostBlock_->Draw();
 	skydome_->Draw();
 	goal->Draw();
 
