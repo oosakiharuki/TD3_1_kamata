@@ -25,6 +25,7 @@ public:
 
 	// デストラクタ
 	~GameScene();
+	void Finalize();
 
 	void Initialize();
 	void Update();
@@ -70,6 +71,11 @@ private:
 	// 天球
 	Skydome* skydome_ = nullptr;
 	Model* modelSkydome_ = nullptr;
+
+	float longPress = 1.0f;
+	const float RestartTimer = 1.0f;
+	XINPUT_STATE state, preState;
+
 
 	Goal* goal = nullptr;
 	Model* modelGoal_ = nullptr;
