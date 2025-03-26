@@ -60,8 +60,12 @@ bool EnemyLoader::ParseCSVLine(const std::string& line, EnemyData& data) {
 
 	// 敵タイプを読み込む
 	if (std::getline(iss, token, ',')) {
-		if (token == "enemy") {
-			data.type = EnemyType::Normal;
+		if (token == "redGhost") {
+			data.type = EnemyType::RedGhost;
+		} else if (token == "blueGhost") {
+			data.type = EnemyType::BlueGhost;
+		} else if (token == "yellowGhost") {
+			data.type = EnemyType::YellowGhost;
 		} else if (token == "cannon") {
 			data.type = EnemyType::Cannon;
 		} else if (token == "spring") {
@@ -83,18 +87,46 @@ void EnemyLoader::CreateEnemies(Camera* camera, Player* player, const std::vecto
 	// 読み込んだデータに基づいて敵を生成
 	for (const auto& data : enemyData_) {
 		switch (data.type) {
-		case EnemyType::Normal: {
-			Enemy* enemy = new Enemy();
-			enemy->Init(camera);
-			enemy->SetPosition(data.position);
-			enemy->SetTarget(player);
+		case EnemyType::RedGhost: {
+			RedGhost* redGhost = new RedGhost();
+			redGhost->Init(camera);
+			redGhost->SetPosition(data.position);
+			redGhost->SetTarget(player);
 
 			// 障害物リストを設定
 			for (const auto& obstacleList : obstacles) {
-				enemy->SetObstacleList(obstacleList);
+				redGhost->SetObstacleList(obstacleList);
 			}
 
-			enemies_.push_back(enemy);
+			redGhosts_.push_back(redGhost);
+			break;
+		}
+		case EnemyType::BlueGhost: {
+			BlueGhost* blueGhost = new BlueGhost();
+			blueGhost->Init(camera);
+			blueGhost->SetPosition(data.position);
+			blueGhost->SetTarget(player);
+
+			// 障害物リストを設定
+			for (const auto& obstacleList : obstacles) {
+				blueGhost->SetObstacleList(obstacleList);
+			}
+
+			blueGhosts_.push_back(blueGhost);
+			break;
+		}
+		case EnemyType::YellowGhost: {
+			YellowGhost* yellowGhost = new YellowGhost();
+			yellowGhost->Init(camera);
+			yellowGhost->SetPosition(data.position);
+			yellowGhost->SetTarget(player);
+
+			// 障害物リストを設定
+			for (const auto& obstacleList : obstacles) {
+				yellowGhost->SetObstacleList(obstacleList);
+			}
+
+			yellowGhosts_.push_back(yellowGhost);
 			break;
 		}
 		case EnemyType::Cannon: {
@@ -131,15 +163,30 @@ void EnemyLoader::CreateEnemies(Camera* camera, Player* player, const std::vecto
 
 void EnemyLoader::Update() {
 	// 通常の敵の更新
-	for (auto it = enemies_.begin(); it != enemies_.end();) {
-		(*it)->Update();
-		// IsDestroyedメソッドがない場合は、下記の条件を適宜修正してください
-		if (false) { // 仮の条件
-			delete *it;
-			it = enemies_.erase(it);
-		} else {
-			++it;
-		}
+	//for (auto it = enemies_.begin(); it != enemies_.end();) {
+	//	(*it)->Update();
+	//	// IsDestroyedメソッドがない場合は、下記の条件を適宜修正してください
+	//	if (false) { // 仮の条件
+	//		delete *it;
+	//		it = enemies_.erase(it);
+	//	} else {
+	//		++it;
+	//	}
+	//}
+
+	// 赤いゴーストの更新
+	for (auto* redGhost : redGhosts_) {
+		redGhost->Update();
+	}
+
+	// 青いゴーストの更新
+	for (auto* blueGhost : blueGhosts_) {
+		blueGhost->Update();
+	}
+
+	// 黄色いゴーストの更新
+	for (auto* yellowGhost : yellowGhosts_) {
+		yellowGhost->Update();
 	}
 
 	// 大砲敵の更新
@@ -154,9 +201,19 @@ void EnemyLoader::Update() {
 }
 
 void EnemyLoader::Draw() {
-	// 通常の敵の描画
-	for (auto* enemy : enemies_) {
-		enemy->Draw();
+	// 赤いゴーストの描画
+	for (auto* redGhost : redGhosts_) {
+		redGhost->Draw();
+	}
+
+	// 青いゴーストの描画
+	for (auto* blueGhost : blueGhosts_) {
+		blueGhost->Draw();
+	}
+
+	// 黄色いゴーストの描画
+	for (auto* yellowGhost : yellowGhosts_) {
+		yellowGhost->Draw();
 	}
 
 	// 大砲敵の描画
@@ -171,11 +228,23 @@ void EnemyLoader::Draw() {
 }
 
 void EnemyLoader::ClearResources() {
-	// 通常の敵のリソースを解放
-	for (auto* enemy : enemies_) {
-		delete enemy;
+	// 赤いゴーストのリソースを解放
+	for (auto* redGhost : redGhosts_) {
+		delete redGhost;
 	}
-	enemies_.clear();
+	redGhosts_.clear();
+
+	// 青いゴーストのリソースを解放
+	for (auto* blueGhost : blueGhosts_) {
+		delete blueGhost;
+	}
+	blueGhosts_.clear();
+
+	// 黄色いゴーストのリソースを解放
+	for (auto* yellowGhost : yellowGhosts_) {
+		delete yellowGhost;
+	}
+	yellowGhosts_.clear();
 
 	// 大砲敵のリソースを解放
 	for (auto* cannon : cannonEnemies_) {
