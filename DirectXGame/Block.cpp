@@ -1,12 +1,11 @@
 #include "Block.h"
 
-void Block::Init(Model* model, Camera* viewProjection, uint32_t texturehandle) {
+void Block::Init(Model* model, Camera* viewProjection) {
     model_ = model;
     viewProjection_ = viewProjection;
 
     worldTransform.Initialize();
 	worldTransform.translation_ = {0, 2, 3};
-	texturehandle_ = texturehandle;
 }
 
 void Block::Update() { worldTransform.UpdateMatrix(); }

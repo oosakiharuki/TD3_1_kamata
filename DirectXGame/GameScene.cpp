@@ -32,15 +32,14 @@ void GameScene::Initialize() {
 	worldTransform_.Initialize();
 	camera_.Initialize();
 
-	uint32_t texturehandle2 = TextureManager::GetInstance()->Load("Block.png");
+	
 	block_ = new Block();
 	modelBlock_ = Model::Create();
-	block_->Init(modelBlock_, &camera_, texturehandle2);
+	block_->Init(modelBlock_, &camera_);
 
 	// Player の生成と初期化
-	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
 	player_ = new Player();
-	player_->Init(&camera_, textureHandle);
+	player_->Init(&camera_);
 
 	// ステージ1のモデルを読み込み
 	stage = Model::CreateFromOBJ("stage", true);

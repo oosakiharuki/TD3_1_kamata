@@ -11,13 +11,12 @@ Player::Player() {}
 
 Player::~Player() { delete PlayerModel_; }
 
-void Player::Init(Camera* camera, uint32_t texture) {
+void Player::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
-	PlayerModel_ = Model::CreateFromOBJ("cube", true);
+	PlayerModel_ = Model::CreateFromOBJ("player", true);
 	worldTransform_.translation_ = position;
-	textureHandle = texture;
 }
 
 void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
@@ -353,7 +352,7 @@ void Player::DrawUI() {
   
 }
 
-void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_, textureHandle); }
+void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
 

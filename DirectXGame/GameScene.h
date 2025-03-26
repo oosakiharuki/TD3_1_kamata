@@ -66,7 +66,7 @@ private:
 	Skydome* skydome_ = nullptr;
 	Model* modelSkydome_ = nullptr;
 
-	    // ステージ遷移用変数
+	// ステージ遷移用変数
 	float stageTransitionTimer = 5.0f; // 5秒のタイマー
 	int currentStage = 1;              // 現在のステージ番号
 	bool isTransitioning = false;      // 遷移中フラグ

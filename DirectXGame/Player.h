@@ -18,7 +18,7 @@ public:
 	Player();
 	~Player();
 
-	void Init(Camera* camera, uint32_t texture);
+	void Init(Camera* camera);
 	void Update();
 	void Draw();
 
@@ -114,7 +114,7 @@ private:
 
 	bool EnemyContral = false;
 
-	uint32_t textureHandle = 0;
+
 	bool collisionEnemy = false;
 
 	Vector3 stop = {0, 0, 0};

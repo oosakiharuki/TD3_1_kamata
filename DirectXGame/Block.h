@@ -5,8 +5,9 @@ using namespace KamataEngine;
 
 class Block {
 public:
-	void Init(Model* model, Camera* viewProjection, uint32_t texturehandle);
-    void Update();
+
+	void Init(Model* model, Camera* viewProjection);
+	void Update();
     void Draw();
 
     bool IsActive() const { return isActive_; } // アクティブ状態を取得
