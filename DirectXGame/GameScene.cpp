@@ -9,13 +9,8 @@ GameScene::GameScene() {}
 
 GameScene::~GameScene() {
 	delete player_;
-
-	// MapLoaderの解放
 	delete mapLoader_;
-
-	// EnemyLoaderの解放
 	delete enemyLoader_;
-
 	delete stage;
 	delete block_;
 	delete modelBlock_;
@@ -29,15 +24,15 @@ void GameScene::Initialize() {
 	worldTransform_.Initialize();
 	camera_.Initialize();
 
-	uint32_t texturehandle2 = TextureManager::GetInstance()->Load("Block.png");
+	uint32_t texturehandle2 = TextureManager::GetInstance()->Load("uvChecker.png");
 	block_ = new Block();
 	modelBlock_ = Model::Create();
 	block_->Init(modelBlock_, &camera_, texturehandle2);
 
 	// Player の生成と初期化
-	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
+	textureHandle = TextureManager::GetInstance()->Load("sample.png");
 	player_ = new Player();
-	player_->Init(&camera_, textureHandle);
+	player_->Init(&camera_);
 
 	stage = Model::CreateFromOBJ("stage" + std::to_string(currentStage_), true);
 
@@ -126,7 +121,7 @@ void GameScene::Draw() {
 	// モデル描画
 	Model::PreDraw(commandList);
 
-	stage->Draw(worldTransform_, camera_, textureHandle);
+	stage->Draw(worldTransform_, camera_);
 
 	player_->Draw();
 
