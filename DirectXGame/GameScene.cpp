@@ -6,7 +6,9 @@
 
 GameScene::GameScene() {}
 
-GameScene::~GameScene() {
+GameScene::~GameScene() { Finalize(); }
+
+void GameScene::Finalize() {
 	delete player_;
 
 	// MapLoaderの解放
@@ -108,11 +110,30 @@ void GameScene::Initialize() {
 }
 
 void GameScene::Update() {
+
+	Input::GetInstance()->GetJoystickState(0, state);
+	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
+	
+	
+	//リスタート処理
+	if (Input::GetInstance()->PushKey(DIK_R) || 
+		((state.Gamepad.wButtons & XINPUT_GAMEPAD_Y) && (preState.Gamepad.wButtons & XINPUT_GAMEPAD_Y))) {
+		longPress -= 1.0f / 60.0f;
+	}
+	else {
+		longPress = RestartTimer;
+	}
+	//0になった時リスタート / 押しなおさないと更新されなくする
+	if (longPress < 0 && longPress > -0.017f) {
+		Finalize();
+		Initialize();
+	}
+
 	goal->Update();
 
 	if (goal->IsClear())
 		return;
-
+	
 	player_->Update();
 
 	// EnemyLoaderの更新
