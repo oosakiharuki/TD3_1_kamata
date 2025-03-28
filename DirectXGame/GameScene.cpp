@@ -97,7 +97,7 @@ void GameScene::Update() {
 
 	if (mapLoader_ && mapLoader_->IsDoorOpened()) {
 		// プレイヤーの座標を変更
-		Vector3 newPosition = {0.0f, 10.0f, 0.0f}; // 新しい座標を設定
+		Vector3 newPosition = {-37.0f, -18.512f, -51.500f}; // 新しい座標を設定
 		player_->SetPosition(newPosition);
 
 		ChangeStage(currentStage_ + 1);
