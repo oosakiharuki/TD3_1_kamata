@@ -54,6 +54,8 @@ public:
 
 	void SetChaseRadius(float radius); // 追尾範囲を設定するメソッド
 
+	void ClearObstacleList();
+
 private:
 	WorldTransform worldTransform_; // Fix the error by ensuring the type is defined
 	Camera* camera_ = nullptr;

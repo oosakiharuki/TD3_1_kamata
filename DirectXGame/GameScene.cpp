@@ -92,19 +92,11 @@ void GameScene::Update() {
 
 	// 　↓　ゴールしたら1と2ステージループするようになってる、切り替え処理2を消すとステージ3に進む
 
-	// ステージ切り替え処理
-	if (currentStage_ == 1) {
+
 		if (mapLoader_ && mapLoader_->IsDoorOpened()) {
 			ChangeStage(currentStage_ + 1);
 		}
-	}
 
-	// ステージ切り替え処理2
-	if (currentStage_ == 2) {
-		if (mapLoader_ && mapLoader_->IsDoorOpened()) {
-			ChangeStage(currentStage_ - 1);
-		}
-	}
 }
 
 void GameScene::Draw() {
@@ -140,62 +132,65 @@ void GameScene::Draw() {
 }
 
 void GameScene::ChangeStage(int nextStage) {
-	currentStage_ = nextStage;
+	allObstacles_.clear();
+	Command.str("");
+	Command.clear();
 
+	currentStage_ = nextStage;
 	stage = Model::CreateFromOBJ("stage" + std::to_string(currentStage_), true);
+
+	// **プレイヤーと敵の障害物リストをクリア**
+	player_->ClearObstacleList();
+	if (enemyLoader_) {
+		for (auto& enemy : enemyLoader_->GetEnemyList()) {
+			enemy->ClearObstacleList();
+		}
+	}
 
 	// 新しいオブジェクトデータをロード
 	if (mapLoader_) {
 		std::string objectsFile = "Resources/objects" + std::to_string(currentStage_) + ".csv";
 		mapLoader_->ChangeStage(currentStage_, &camera_, player_);
-
 		if (mapLoader_->LoadMapData(objectsFile)) {
 			mapLoader_->CreateObjects(&camera_, player_);
 		}
 	}
 
-	// プレイヤーの既存の障害物リストをクリア
-	player_->ClearObstacleList();
+	// **新しい障害物データをロード**
+	std::string stageFile = "Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_) + ".obj";
+	LoadStage(stageFile);
 
-	// プレイヤーに新しい障害物リストを設定
+	// **プレイヤーに新しい障害物リストを設定**
 	for (const auto& obstacles : allObstacles_) {
 		player_->SetObstacleList(obstacles);
 	}
 
-	// ブロックへの参照を再設定
-	player_->SetBlock(block_);
-
-	// EnemyLoaderをリセット
+	// **敵の当たり判定も再設定**
 	if (enemyLoader_) {
-		// プレイヤーの敵リストをクリア
-		player_->SetEnemyList({});
-		player_->SetSpringEnemies({});
+		delete enemyLoader_;
+	}
+	enemyLoader_ = new EnemyLoader();
 
-		// player_->SetCannon(nullptr);
-		// delete enemyLoader_; 
-
-		enemyLoader_ = new EnemyLoader();
-
-		// ステージごとの敵配置を読み込み
-		std::string enemiesFile = "Resources/enemies" + std::to_string(currentStage_) + ".csv";
-		if (enemyLoader_->LoadEnemyData(enemiesFile)) {
-			enemyLoader_->CreateEnemies(&camera_, player_, allObstacles_);
-		}
-
-		// 各種敵リストをプレイヤーに設定
-		player_->SetEnemyList(enemyLoader_->GetEnemyList());
-
-		// キャノン敵への参照をプレイヤーに設定
-		if (!enemyLoader_->GetCannonEnemyList().empty()) {
-			player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]);
-		}
-
-		// バネ敵への参照をプレイヤーに設定
-		player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
+	std::string enemiesFile = "Resources/enemies" + std::to_string(currentStage_) + ".csv";
+	if (enemyLoader_->LoadEnemyData(enemiesFile)) {
+		enemyLoader_->CreateEnemies(&camera_, player_, allObstacles_);
 	}
 
-	std::string stageFile = "Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_) + ".obj";
-	LoadStage(stageFile);
+	// 敵の当たり判定リストを再設定
+	for (auto& enemy : enemyLoader_->GetEnemyList()) {
+		for (const auto& obstacles : allObstacles_) {
+			enemy->SetObstacleList(obstacles);
+		}
+	}
+
+	// プレイヤーに敵リストを設定
+	player_->SetEnemyList(enemyLoader_->GetEnemyList());
+	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
+
+	// キャノン敵への参照をプレイヤーに設定
+	if (!enemyLoader_->GetCannonEnemyList().empty()) {
+		player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]);
+	}
 }
 
 // AddObstacle、LoadStage、UpdateStageAABBメソッドはそのまま以前の実装を使用
@@ -203,7 +198,7 @@ void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const 
 	AABB obstacle;
 	obstacle.min = min;
 	obstacle.max = max;
-	if (allObstacles.empty() || allObstacles.back().size() >= 100) { // 100個の障害物を追加
+	if (allObstacles.empty() || allObstacles.back().size() >= 500) { // 100個の障害物を追加
 		allObstacles.emplace_back();
 	}
 	allObstacles.back().push_back(obstacle);
@@ -231,6 +226,15 @@ void GameScene::LoadStage(std::string objFile) {
 	// 新しい障害物リスト
 	for (const auto& obstacles : allObstacles_) {
 		player_->SetObstacleList(obstacles);
+	}
+
+	if (enemyLoader_) {
+		for (auto& enemy : enemyLoader_->GetEnemyList()) {
+			enemy->ClearObstacleList();
+			for (const auto& obstacles : allObstacles_) {
+				enemy->SetObstacleList(obstacles);
+			}
+		}
 	}
 }
 

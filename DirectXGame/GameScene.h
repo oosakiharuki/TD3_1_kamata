@@ -28,7 +28,7 @@ public:
 	void Update();
 	void Draw();
 
-	void SpawnEnemy(const Vector3& position); // 新しいメソッドを追加
+	//void SpawnEnemy(const Vector3& position); // 新しいメソッドを追加
 
 	// ステージを変更する
 	void ChangeStage(int nextStage);
