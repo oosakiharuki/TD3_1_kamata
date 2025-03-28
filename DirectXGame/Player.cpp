@@ -184,9 +184,9 @@ void Player::Update() {
 
 	// キャノン敵との衝突処理
 	AABB cannonAABB = cannonEnemy->GetAABB();
-	if (IsCollisionAABB(playerAABB, cannonAABB) && !EnemyContral) {
+	if (IsCollisionAABB(playerAABB, cannonAABB)) {
 		ResolveAABBCollision(playerAABB, cannonAABB, velocityY_, onGround_);
-		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y)) {
+		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y) && !EnemyContral) {
 			cannonEnemy->ContralPlayer();
 			EnemyContral = true;
 			collisionEnemy = true;
@@ -206,12 +206,15 @@ void Player::Update() {
 
 	CheckCollision();
 
+	OnCollisions();
+
+
 	for (SpringEnemy* springEnemy : springEnemies_) {
 		AABB springAABB = springEnemy->GetAABB();
 
-		if (IsCollisionAABB(playerAABB, springAABB) && !EnemyContral) {
+		if (IsCollisionAABB(playerAABB, springAABB)) {
 			ResolveAABBCollision(playerAABB, springAABB, velocityY_, onGround_);
-			if (isTransfar && (playerAABB.min.y >= springAABB.max.y)) {
+			if (isTransfar && (playerAABB.min.y >= springAABB.max.y) && !EnemyContral) {
 				springEnemy->ContralPlayer();
 				EnemyContral = true;
 				collisionEnemy = true;
@@ -233,7 +236,7 @@ void Player::Update() {
 	// 敵との衝突処理
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
 		enemyAABB = (*it)->GetAABB();
-		if (IsCollisionAABB(playerAABB, enemyAABB) && !EnemyContral) {
+		if (IsCollisionAABB(playerAABB, enemyAABB)) {
 
 			// 真上に乗れて、横は透ける
 			Vector3 overlap = GetOverlapAmount(playerAABB, enemyAABB);
@@ -248,9 +251,11 @@ void Player::Update() {
 					velocityY_ = 0.0f;
 					onGround_ = true;
 				}
+			} else { //　横に当たったらダメージ
+				isDamage = true;
 			}
 
-			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y)) {
+			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y) && !EnemyContral) {
 				(*it)->ContralPlayer();
 				EnemyContral = true;
 				collisionEnemy = true;
@@ -285,6 +290,12 @@ void Player::Update() {
 	// ばね敵との衝突チェック
 	CheckCollisionWithSprings();
 
+	//　攻撃されたら
+	CheckDamage();
+
+	//ゴールの旗に当たったか
+	CheckCollisionWithGoal(); 
+
 #ifdef _DEBUG
 	ImGui::Begin("player");
 	ImGui::DragFloat3("translate", &worldTransform_.translation_.x);
@@ -300,10 +311,19 @@ void Player::Update() {
 }
 
 void Player::CheckCollision() {
-	// ブロックリストが空の場合は処理を行わない
+  
+  // ブロックリストが空の場合は処理を行わない
 	if (blocks_.empty()) {
 		return;
 	}
+//   if (!block_->IsActive() && !ghostBlock_->IsActive()) {
+// 		return;
+// 	}
+
+	AABB blockAABB = block_->GetAABB();
+	AABB ghostBlockAABB = ghostBlock_->GetAABB();
+
+
 
 	// 現在の状態に応じて各ブロックとの衝突判定を行う
 	switch (currentState) {
@@ -316,10 +336,21 @@ void Player::CheckCollision() {
 					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 				}
 			}
+// =======
+
+// 	switch (currentState) {
+// 	case State::Normal:
+// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+// >>>>>>> DebugStart_Test
+		}
+		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
+			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
 		}
 		break;
 
 	case State::Bomb:
+
 		// 爆弾状態：衝突判定とブロック破壊
 		for (Block* block : blocks_) {
 			if (block && block->IsActive()) {
@@ -335,12 +366,30 @@ void Player::CheckCollision() {
 						block->SetActive(false);
 					}
 				}
+// =======
+// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+// 		}
+// 		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
+// 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
+// 		}
+// 		for (Bom* bom : cannonEnemy->GetBom()) {
+// 			AABB bomAABB = bom->GetAABB();
+// 			if (block_->IsActive() && IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
+// 				block_->SetActive(false);
+// >>>>>>> DebugStart_Test
 			}
 		}
 		break;
 
 	case State::Ghost:
-		// ゴースト状態：ブロックをすり抜ける（衝突判定なし）
+// <<<<<<< DebugStart_Test_map
+// 		// ゴースト状態：ブロックをすり抜ける（衝突判定なし）
+// =======
+// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+// 		}
+// >>>>>>> DebugStart_Test
 		break;
 	}
 }
@@ -353,13 +402,35 @@ void Player::DrawUI() {
 
 	const char* stateNames[] = {"Normal", "Bomb", "Ghost"};
 	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
+	ImGui::DragFloat("Hp", &hp);
 
 	ImGui::End();
 
 #endif // _DEBUG
 }
 
-void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
+void Player::OnCollisions() {
+
+	for (Bom* bom : cannonEnemy->GetBom()) {
+		AABB bomAABB = bom->GetAABB();
+
+		if (IsCollisionAABB(bomAABB, playerAABB) && !cannonEnemy->GetPlayerCtrl()) {
+			isDamage = true;
+			bom->OnCollision();
+		}
+	}
+}
+
+void Player::Draw() {
+	//if (hp < 1)
+	//	return;
+
+	if (coolTime > 0.0f) {
+		PlayerModel_->Draw(worldTransform_, *camera_);
+	} else {
+		PlayerModel_->Draw(worldTransform_, *camera_, textureHandle);
+	}
+}
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
 
@@ -381,7 +452,7 @@ void Player::CheckCollisionWithSprings() {
 	for (auto* springEnemy : springEnemies_) {
 		AABB springAABB = springEnemy->GetAABB();
 
-		if (IsCollisionAABB(playerAABB, springAABB) && !EnemyContral) {
+		if (IsCollisionAABB(playerAABB, springAABB)) {
 			// Resolve collision
 			ResolveAABBCollision(playerAABB, springAABB, velocityY_, onGround_);
 
@@ -396,6 +467,7 @@ void Player::CheckCollisionWithSprings() {
 	}
 }
 
+
 void Player::SetState(State newState) { currentState = newState; }
 
 void Player::ClearObstacleList() {
@@ -405,4 +477,29 @@ void Player::ClearObstacleList() {
 void Player::SetPosition(const Vector3& newPosition) {
 	position = newPosition;
 	worldTransform_.translation_ = position;
+}
+
+
+void Player::CheckCollisionWithGoal() {
+	AABB goalAABB = goal_->GetAABB();
+
+	if (IsCollisionAABB(playerAABB, goalAABB)) {
+		goal_->OnCollision();
+	}
+}
+
+void Player::CheckDamage() {
+
+	const float deltaTime = 1.0f / 60.0f;
+
+	coolTime -= deltaTime;
+
+	if (isDamage && coolTime < 0.0f) {
+		hp--;
+		isDamage = false;
+		coolTime = 3.0f;
+	} else {
+		isDamage = false;
+	}
+
 }

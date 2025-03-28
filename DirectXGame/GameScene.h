@@ -1,5 +1,6 @@
 #pragma once
 #include "Block.h"
+#include "GhostBlock.h"
 #include "CannonEnemy.h"
 #include "Door.h"
 #include "Enemy.h"
@@ -11,6 +12,7 @@
 #include "Player.h"
 #include "Skydome.h"
 #include "SpringEnemy.h"
+#include "Goal.h"
 
 using namespace KamataEngine;
 
@@ -23,6 +25,7 @@ public:
 
 	// デストラクタ
 	~GameScene();
+	void Finalize();
 
 	void Initialize();
 	void Update();
@@ -68,6 +71,9 @@ private:
 	Block* block_ = nullptr;
 	Model* modelBlock_ = nullptr;
 
+	GhostBlock* ghostBlock_ = nullptr;
+	Model* modelGhostBlock_ = nullptr;
+
 	// 天球
 	Skydome* skydome_ = nullptr;
 	Model* modelSkydome_ = nullptr;
@@ -75,4 +81,12 @@ private:
 	// 現在のステージ番号
 	int currentStage_ = 1;
 
+
+	float longPress = 1.0f;
+	const float RestartTimer = 1.0f;
+	XINPUT_STATE state, preState;
+
+
+	Goal* goal = nullptr;
+	Model* modelGoal_ = nullptr;
 };

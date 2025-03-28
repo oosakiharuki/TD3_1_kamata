@@ -46,4 +46,4 @@ AABB Bom::GetAABB() {
 	return bomAABB;
 }
 
-
+void Bom::OnCollision() { isDead = true; }

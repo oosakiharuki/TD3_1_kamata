@@ -5,10 +5,16 @@
 #include "CannonEnemy.h"
 #include "Collision.h"
 #include "Enemy.h"
+
 #include "KamataEngine.h"
 #include "Mymath.h"
+
+#include "Block.h"  // 衝突判定用にブロックを
+#include "GhostBlock.h"
+
 #include "SpringEnemy.h"
 #include <vector>
+#include "Goal.h"
 
 class Enemy;
 using namespace KamataEngine;
@@ -48,7 +54,13 @@ public:
 	void EnemyHead() { onEnemy = true; }
 
 
+
 	void SetPosition(const Vector3& position);
+
+	void SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
+	
+	void OnCollisions();
+
 
 	// ★ 新しく追加：ドアとの衝突を解決するメソッド
 	void ResolveCollisionWithDoor(const AABB& aabb) { doorAABB = aabb; }
@@ -59,6 +71,9 @@ public:
 	void CheckCollisionWithSprings();
 	void SetBlocks(const std::vector<Block*> blocks) { blocks_ = blocks; }
 
+	void SetGoal(Goal* goal) { goal_ = goal; }
+	void CheckCollisionWithGoal();
+
 	enum class State {
 		Normal, // 通常状態
 		Bomb,   // ブロックを壊せる状態
@@ -68,11 +83,20 @@ public:
 	void DrawUI(); // UI描画用の関数を追加
 
 
+	void SetBlock(Block* block, GhostBlock* ghostBlock) { 
+		block_ = block; 
+		ghostBlock_ = ghostBlock;
+	}
+
 	void CheckCollision(); // 衝突判定を追加
 
 	void SetState(State newState);
 
+
 	void ClearObstacleList();
+
+	//ダメージをくらったクールタイム
+	void CheckDamage();
 
 
 private:
@@ -112,6 +136,9 @@ private:
 
 	AABB playerAABB;
 	Vector3 size = {2, 2, 2};
+	float hp = 3;
+	bool isDamage = false;
+	float coolTime = 0.0f;
 
 	AABB enemyAABB;
 
@@ -124,7 +151,7 @@ private:
 
 	Enemy* enemy = nullptr;
 
-	Block* block_ = nullptr;            // 衝突判定用のブロックを保持
+	Block* block_ = nullptr;            // 衝突判定用のブロックを保持 <---消すべきかも
 	State currentState = State::Normal; // 初期状態をNormalに設定
 
 	CannonEnemy* cannonEnemy = nullptr;
@@ -136,6 +163,10 @@ private:
 	AABB doorAABB;
 	std::vector<SpringEnemy*> springEnemies_;
 
+
 	// ブロックリストへの参照を追加
 	std::vector<Block*> blocks_;
+
+	Goal* goal_ = nullptr;
+	GhostBlock* ghostBlock_ = nullptr;
 };
