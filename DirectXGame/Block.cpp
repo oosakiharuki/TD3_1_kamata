@@ -13,7 +13,7 @@ void Block::Update() { worldTransform.UpdateMatrix(); }
 
 void Block::Draw() {
     if (!isActive_) return; // 非アクティブなら描画しない
-    model_->Draw(worldTransform, *viewProjection_,texturehandle_);
+    model_->Draw(worldTransform, *viewProjection_);
 }
 
 AABB Block::GetAABB() const {
