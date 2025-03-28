@@ -85,7 +85,7 @@ bool MapLoader::ParseCSVLine(const std::string& line, MapObjectData& data) {
 
 	return true;
 }
-
+ 
 void MapLoader::CreateObjects(Camera* camera, Player* player) {
 	// 既存のオブジェクトをクリア
 	ClearResources();
