@@ -55,7 +55,9 @@ public:
 	void SetOpenDoor(bool isOpen) { isOpenDoor = isOpen; }
 
 	void SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies);
+	void SetCannon(CannonEnemy* cannon);
 	void CheckCollisionWithSprings();
+	void SetBlocks(const std::vector<Block*> blocks) { blocks_ = blocks; }
 
 	enum class State {
 		Normal, // 通常状態
