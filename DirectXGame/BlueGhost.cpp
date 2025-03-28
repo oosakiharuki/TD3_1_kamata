@@ -1,15 +1,15 @@
-#include "RedGhost.h"
+#include "BlueGhost.h"
 #include "AABB.h"
 #include "Collision.h"
 #include <KamataEngine.h>
 #include <algorithm>
 #include <iostream>
 
-RedGhost::RedGhost() {}
+BlueGhost::BlueGhost() {}
 
-RedGhost::~RedGhost() { delete PlayerModel_; }
+BlueGhost::~BlueGhost() { delete PlayerModel_; }
 
-void RedGhost::Init(Camera* camera) {
+void BlueGhost::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
@@ -17,20 +17,20 @@ void RedGhost::Init(Camera* camera) {
 	worldTransform_.translation_ = position;
 }
 
-void RedGhost::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
+void BlueGhost::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
 
-void RedGhost::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
+void BlueGhost::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
 
-void RedGhost::SetPosition(const Vector3& pos) {
+void BlueGhost::SetPosition(const Vector3& pos) {
 	position = pos;
 	worldTransform_.translation_ = position;
 }
 
-void RedGhost::SetTarget(Player* target) {
+void BlueGhost::SetTarget(Player* target) {
 	player_ = target; // プレイヤーをターゲットとして設定
 }
 
-void RedGhost::Update() {
+void BlueGhost::Update() {
 	// 入力による移動
 	// float moveSpeed = 0.0f;
 
@@ -55,8 +55,8 @@ void RedGhost::Update() {
 		// プレイヤーのAABB作成（例：幅1.0, 高さ2.0, 奥行1.0）
 		float halfW = 1.0f, halfH = 1.0f, halfD = 1.0f;
 		AABB enemyAABB;
-		enemyAABB.min = {position.x - halfW, position.y - halfH, position.z - halfD};
-		enemyAABB.max = {position.x + halfW, position.y + halfH, position.z + halfD};
+		enemyAABB.min = { position.x - halfW, position.y - halfH, position.z - halfD };
+		enemyAABB.max = { position.x + halfW, position.y + halfH, position.z + halfD };
 
 		// 反復的衝突解決（すり抜け防止のため、最大10回まで解決を試みる）
 		const int maxIterations = 10;
@@ -68,7 +68,8 @@ void RedGhost::Update() {
 				if (IsCollisionAABB(enemyAABB, obstacleAABB)) {
 					ResolveAABBCollision(enemyAABB, obstacleAABB, velocityY_, onGround_);
 					collisionOccurred = true;
-				} else {
+				}
+				else {
 					onGround_ = false;
 				}
 			}
@@ -103,17 +104,17 @@ void RedGhost::Update() {
 				// 衝突時の処理（移動を停止）
 				velocity.x = 0;
 				velocity.z = 0;
-			} else {
+			}
+			else {
 				// 速度をそのまま適用
 				worldTransform_.translation_.x += velocity.x;
 				worldTransform_.translation_.z += velocity.z;
 			}
 		}
-
 		worldTransform_.translation_.y = position.y;
 	}
 #ifdef _DEBUG
-	ImGui::Begin("RedGhost");
+	ImGui::Begin("BlueGhost");
 	ImGui::DragFloat3("translate", &position.x);
 	ImGui::End();
 #endif
@@ -121,27 +122,27 @@ void RedGhost::Update() {
 	worldTransform_.UpdateMatrix();
 }
 
-void RedGhost::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
+void BlueGhost::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
 
 // AABBを取得するメソッドを定義
-AABB RedGhost::GetAABB() const {
+AABB BlueGhost::GetAABB() const {
 	float halfW = 1.0f, halfH = 1.0f, halfD = 1.0f;
 	AABB enemyAABB;
-	enemyAABB.min = {worldTransform_.translation_.x - halfW, worldTransform_.translation_.y - halfH, worldTransform_.translation_.z - halfD};
-	enemyAABB.max = {worldTransform_.translation_.x + halfW, worldTransform_.translation_.y + halfH, worldTransform_.translation_.z + halfD};
+	enemyAABB.min = { worldTransform_.translation_.x - halfW, worldTransform_.translation_.y - halfH, worldTransform_.translation_.z - halfD };
+	enemyAABB.max = { worldTransform_.translation_.x + halfW, worldTransform_.translation_.y + halfH, worldTransform_.translation_.z + halfD };
 	return enemyAABB;
 }
 
-void RedGhost::ContralPlayer() {
+void BlueGhost::ContralPlayer() {
 	isPlayer = true;
-	worldTransform_.translation_ = {0, -2, 0};
-	worldTransform_.rotation_ = {0, 3, 0};
+	worldTransform_.translation_ = { 0, -2, 0 };
+	worldTransform_.rotation_ = { 0, 3, 0 };
 	if (player_) {
 		player_->SetState(Player::State::Ghost);
 	}
 }
 
-void RedGhost::ReMove(const Vector3& position_) {
+void BlueGhost::ReMove(const Vector3& position_) {
 	if (isPlayer) {
 		position.x = position_.x;
 		position.y = position_.y - 2;
@@ -156,7 +157,7 @@ void RedGhost::ReMove(const Vector3& position_) {
 	}
 }
 
-Vector3 RedGhost::GetWorldPosition() {
+Vector3 BlueGhost::GetWorldPosition() {
 
 	// ワールド座標を入れる変数
 	Vector3 worldPos;
@@ -168,16 +169,16 @@ Vector3 RedGhost::GetWorldPosition() {
 	return worldPos;
 }
 
-bool RedGhost::CheckCollisionWithPlayer() {
+bool BlueGhost::CheckCollisionWithPlayer() {
 	AABB playerAABB = player_->GetAABB();
 	AABB enemyAABB = GetAABB();
 	return IsCollisionAABB(playerAABB, enemyAABB);
 }
 
-void RedGhost::SetChaseRadius(float radius_) { chaseRadius_ = radius_; }
+void BlueGhost::SetChaseRadius(float radius_) { chaseRadius_ = radius_; }
 
 // プレイヤーが追尾範囲内にいるかどうかを判定
-bool RedGhost::IsPlayerInChaseRadius() {
+bool BlueGhost::IsPlayerInChaseRadius() {
 	Vector3 playerWorldPosition = player_->GetWorldPosition();
 	Vector3 enemyWorldPosition = GetWorldPosition();
 	float distance = Length(playerWorldPosition - enemyWorldPosition);

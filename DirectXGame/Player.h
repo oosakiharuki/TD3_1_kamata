@@ -7,15 +7,17 @@
 #include "Collision.h"
 #include "Enemy.h"
 #include "RedGhost.h"
+#include "BlueGhost.h"
 #include "Block.h"  // 衝突判定用にブロックを
 #include "GhostBlock.h"
 #include "SpringEnemy.h"
 #include <vector>
 #include "Goal.h"
 
-class RedGhost;
 using namespace KamataEngine;
 
+class RedGhost;
+class BlueGhost;
 class Player {
 public:
 	Player();
@@ -44,10 +46,12 @@ public:
 	void SetObstacleList(const std::vector<AABB>& obstacles);
 	void AddObstacle(const AABB& obstacle);
 
-	void SetEnemyList(const std::vector<RedGhost*>& enemies);
+	void SetRedGhostList(const std::vector<RedGhost*>& redGhosts);
+	void SetBlueGhostList(const std::vector<BlueGhost*>& blueGhosts);
 
 	//std::vector<Enemy*> enemyList_;
 	std::vector<RedGhost*> redGhostList_;
+	std::vector<BlueGhost*> blueGhostList_;
 
 	void EnemyHead() { onEnemy = true; }
 
@@ -137,6 +141,7 @@ private:
 	Vector3 stop = {0, 0, 0};
 
 	RedGhost* redGhost = nullptr;
+	BlueGhost* blueGhost = nullptr;
 
 	Block* block_ = nullptr; // 衝突判定用のブロックを保持
 	State currentState = State::Normal; // 初期状態をNormalに設定

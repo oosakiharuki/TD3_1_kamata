@@ -274,6 +274,44 @@ void Player::Update() {
 		++it;
 	}
 
+	for (auto it = blueGhostList_.begin(); it != blueGhostList_.end();) {
+		enemyAABB = (*it)->GetAABB();
+		if (IsCollisionAABB(playerAABB, enemyAABB)) {
+
+			//真上に乗れて、横は透ける
+			Vector3 overlap = GetOverlapAmount(playerAABB, enemyAABB);
+			if (overlap.y < overlap.x && overlap.y < overlap.z) {
+				float playerCenterY = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
+				float obstacleCenterY = (enemyAABB.min.y + enemyAABB.max.y) * 0.5f;
+				float push = (playerCenterY < obstacleCenterY) ? -overlap.y : overlap.y;
+				playerAABB.min.y += push;
+				playerAABB.max.y += push;
+				// 上向きの押し戻しなら着地判定を立てる
+				if (push > 0.0f) {
+					velocityY_ = 0.0f;
+					onGround_ = true;
+				}
+			}
+			else { //　横に当たったらダメージ
+				isDamage = true;
+			}
+
+			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y) && !EnemyContral) {
+				(*it)->ContralPlayer();
+				EnemyContral = true;
+				collisionEnemy = true;
+			}
+		}
+
+		if (EnemyContral && (*it)->GetPlayerCtrl()) {
+			(*it)->SetParent(&worldTransform_);
+		}
+		else {
+			(*it)->ReMove(worldTransform_.translation_);
+		}
+		++it;
+	}
+
 	// AABBの中心を基に位置を更新
 	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
@@ -394,7 +432,13 @@ void Player::Draw() {
 	}
 }
 
-void Player::SetEnemyList(const std::vector<RedGhost*>& enemies) { redGhostList_ = enemies; }
+void Player::SetRedGhostList(const std::vector<RedGhost*>& redGhosts) {
+	redGhostList_ = redGhosts;
+}
+
+void Player::SetBlueGhostList(const std::vector<BlueGhost*>& blueGhosts) {
+	blueGhostList_ = blueGhosts;
+}
 
 //// ★ 新しく追加：ドアとの衝突解決処理
 // void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {

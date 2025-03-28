@@ -108,6 +108,7 @@
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Block.cpp" />
+    <ClCompile Include="BlueGhost.cpp" />
     <ClCompile Include="Bom.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="CannonEnemy.cpp" />
@@ -208,6 +209,7 @@
   <ItemGroup>
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Block.h" />
+    <ClInclude Include="BlueGhost.h" />
     <ClInclude Include="Bom.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="CannonEnemy.h" />

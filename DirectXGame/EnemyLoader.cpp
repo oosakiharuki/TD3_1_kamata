@@ -62,6 +62,8 @@ bool EnemyLoader::ParseCSVLine(const std::string& line, EnemyData& data) {
 	if (std::getline(iss, token, ',')) {
 		if (token == "redGhost") {
 			data.type = EnemyType::RedGhost;
+		} else if (token == "blueGhost") {
+			data.type = EnemyType::BlueGhost;
 		} else if (token == "cannon") {
 			data.type = EnemyType::Cannon;
 		} else if (token == "spring") {
@@ -97,6 +99,19 @@ void EnemyLoader::CreateEnemies(Camera* camera, Player* player, const std::vecto
 			redGhosts_.push_back(redGhost);
 			break;
 		}
+		case EnemyType::BlueGhost: {
+			BlueGhost* blueGhost = new BlueGhost();
+			blueGhost->Init(camera);
+			blueGhost->SetPosition(data.position);
+			blueGhost->SetTarget(player);
+
+			// 障害物リストを設定
+			for (const auto& obstacleList : obstacles) {
+				blueGhost->SetObstacleList(obstacleList);
+			}
+			blueGhosts_.push_back(blueGhost);
+			break;
+		}
 		case EnemyType::Cannon: {
 			CannonEnemy* cannon = new CannonEnemy();
 			cannon->Init(camera);
@@ -130,7 +145,7 @@ void EnemyLoader::CreateEnemies(Camera* camera, Player* player, const std::vecto
 }
 
 void EnemyLoader::Update() {
-	// 通常の敵の更新
+	// 赤い幽霊の更新
 	for (auto it = redGhosts_.begin(); it != redGhosts_.end();) {
 		(*it)->Update();
 		// IsDestroyedメソッドがない場合は、下記の条件を適宜修正してください
@@ -138,6 +153,19 @@ void EnemyLoader::Update() {
 			delete *it;
 			it = redGhosts_.erase(it);
 		} else {
+			++it;
+		}
+	}
+
+	// 青い幽霊の更新
+	for (auto it = blueGhosts_.begin(); it != blueGhosts_.end();) {
+		(*it)->Update();
+		// IsDestroyedメソッドがない場合は、下記の条件を適宜修正してください
+		if (false) { // 仮の条件
+			delete* it;
+			it = blueGhosts_.erase(it);
+		}
+		else {
 			++it;
 		}
 	}
@@ -154,9 +182,14 @@ void EnemyLoader::Update() {
 }
 
 void EnemyLoader::Draw() {
-	// 通常の敵の描画
+	// 赤い敵の描画
 	for (auto* redGhost : redGhosts_) {
 		redGhost->Draw();
+	}
+
+	// 青い敵の描画
+	for (auto* blueGhost : blueGhosts_) {
+		blueGhost->Draw();
 	}
 
 	// 大砲敵の描画
@@ -171,11 +204,17 @@ void EnemyLoader::Draw() {
 }
 
 void EnemyLoader::ClearResources() {
-	// 通常の敵のリソースを解放
+	// 赤い敵のリソースを解放
 	for (auto* redGhost : redGhosts_) {
 		delete redGhost;
 	}
 	redGhosts_.clear();
+
+	// 青い敵のリソースを解放
+	for (auto* blueGhost : blueGhosts_) {
+		delete blueGhost;
+	}
+	blueGhosts_.clear();
 
 	// 大砲敵のリソースを解放
 	for (auto* cannon : cannonEnemies_) {
