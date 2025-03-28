@@ -5,7 +5,7 @@ void BlueBlock::Init(Model* model, Camera* viewProjection, uint32_t texturehandl
     viewProjection_ = viewProjection;
 
     worldTransform.Initialize();
-    worldTransform.translation_ = { 5, 2, 3 };
+    worldTransform.translation_ = { 4, 2, 0 };
     texturehandle_ = texturehandle;
 }
 

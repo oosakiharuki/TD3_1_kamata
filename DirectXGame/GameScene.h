@@ -1,17 +1,23 @@
 #pragma once
 #include "Block.h"
 #include "RedBlock.h"
+#include "BlueBlock.h"
+#include "GreenBlock.h"
+
+#include "EnemyLoader.h"
 #include "CannonEnemy.h"
-#include "Door.h"
-#include "EnemyLoader.h" // EnemyLoaderをインクルード
+#include "SpringEnemy.h"
+
 #include "Ground.h"
-#include "KamataEngine.h"
+#include "Door.h"
 #include "Key.h"
+#include "Goal.h"
+
 #include "MapLoader.h" // MapLoaderをインクルード
 #include "Player.h"
 #include "Skydome.h"
-#include "SpringEnemy.h"
-#include "Goal.h"
+
+#include "KamataEngine.h"
 
 using namespace KamataEngine;
 
@@ -66,6 +72,12 @@ private:
 
 	RedBlock* redBlock_ = nullptr;
 	Model* modelRedBlock_ = nullptr;
+
+	BlueBlock* blueBlock_ = nullptr;
+	Model* modelBlueBlock_ = nullptr;
+
+	GreenBlock* greenBlock_ = nullptr;
+	Model* modelGreenBlock_ = nullptr;
 
 	// 天球
 	Skydome* skydome_ = nullptr;

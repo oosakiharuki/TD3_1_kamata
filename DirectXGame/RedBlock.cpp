@@ -5,7 +5,7 @@ void RedBlock::Init(Model* model, Camera* viewProjection, uint32_t texturehandle
     viewProjection_ = viewProjection;
 
     worldTransform.Initialize();
-    worldTransform.translation_ = { 5, 2, 3 };
+    worldTransform.translation_ = { 4, 2, 4 };
     texturehandle_ = texturehandle;
 }
 

@@ -397,20 +397,28 @@ void Player::Update() {
 }
 
 void Player::CheckCollision() {
-	if (!block_->IsActive() && !redBlock_->IsActive()) {
+	if (!block_->IsActive() && !redBlock_->IsActive() && !blueBlock_->IsActive() && !greenBlock_->IsActive()) {
 		return;
 	}
 
 	AABB blockAABB = block_->GetAABB();
-	AABB ghostBlockAABB = redBlock_->GetAABB();
+	AABB redBlockAABB = redBlock_->GetAABB();
+	AABB blueBlock = blueBlock_->GetAABB();
+	AABB greenBlock = greenBlock_->GetAABB();
 
 	switch (currentState) {
 	case State::Normal:
 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
-		if (redBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
-			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
+		if (redBlock_->IsActive() && IsCollisionAABB(playerAABB, redBlockAABB)) {
+			ResolveAABBCollision(playerAABB, redBlockAABB, velocityY_, onGround_);
+		}
+		if (blueBlock_->IsActive() && IsCollisionAABB(playerAABB, blueBlock)) {
+			ResolveAABBCollision(playerAABB, blueBlock, velocityY_, onGround_);
+		}
+		if (greenBlock_->IsActive() && IsCollisionAABB(playerAABB, greenBlock)) {
+			ResolveAABBCollision(playerAABB, greenBlock, velocityY_, onGround_);
 		}
 		break;
 
@@ -418,8 +426,14 @@ void Player::CheckCollision() {
 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
-		if (redBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
-			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
+		if (redBlock_->IsActive() && IsCollisionAABB(playerAABB, redBlockAABB)) {
+			ResolveAABBCollision(playerAABB, redBlockAABB, velocityY_, onGround_);
+		}
+		if (blueBlock_->IsActive() && IsCollisionAABB(playerAABB, blueBlock)) {
+			ResolveAABBCollision(playerAABB, blueBlock, velocityY_, onGround_);
+		}
+		if (greenBlock_->IsActive() && IsCollisionAABB(playerAABB, greenBlock)) {
+			ResolveAABBCollision(playerAABB, greenBlock, velocityY_, onGround_);
 		}
 		for (Bom* bom : cannonEnemy->GetBom()) {
 			AABB bomAABB = bom->GetAABB();
@@ -433,17 +447,35 @@ void Player::CheckCollision() {
 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
+		if (blueBlock_->IsActive() && IsCollisionAABB(playerAABB, blueBlock)) {
+			ResolveAABBCollision(playerAABB, blueBlock, velocityY_, onGround_);
+		}
+		if (greenBlock_->IsActive() && IsCollisionAABB(playerAABB, greenBlock)) {
+			ResolveAABBCollision(playerAABB, greenBlock, velocityY_, onGround_);
+		}
 		break;
 
 	case State::BlueGhost:
 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
+		if (redBlock_->IsActive() && IsCollisionAABB(playerAABB, redBlockAABB)) {
+			ResolveAABBCollision(playerAABB, redBlockAABB, velocityY_, onGround_);
+		}
+		if (greenBlock_->IsActive() && IsCollisionAABB(playerAABB, greenBlock)) {
+			ResolveAABBCollision(playerAABB, greenBlock, velocityY_, onGround_);
+		}
 		break;
 
 	case State::GreenGhost:
 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+		}
+		if (redBlock_->IsActive() && IsCollisionAABB(playerAABB, redBlockAABB)) {
+			ResolveAABBCollision(playerAABB, redBlockAABB, velocityY_, onGround_);
+		}
+		if (blueBlock_->IsActive() && IsCollisionAABB(playerAABB, blueBlock)) {
+			ResolveAABBCollision(playerAABB, blueBlock, velocityY_, onGround_);
 		}
 		break;
 	}

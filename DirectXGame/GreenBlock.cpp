@@ -5,7 +5,7 @@ void GreenBlock::Init(Model* model, Camera* viewProjection, uint32_t texturehand
     viewProjection_ = viewProjection;
 
     worldTransform.Initialize();
-    worldTransform.translation_ = { 5, 2, 3 };
+    worldTransform.translation_ = { 4, 2, -4 };
     texturehandle_ = texturehandle;
 }
 

@@ -25,6 +25,12 @@ void GameScene::Finalize() {
 	delete redBlock_;
 	delete modelRedBlock_;
 
+	delete blueBlock_;
+	delete modelBlueBlock_;
+
+	delete greenBlock_;
+	delete modelGreenBlock_;
+
 	delete skydome_;
 	delete modelSkydome_;
 	delete goal;
@@ -44,10 +50,20 @@ void GameScene::Initialize() {
 	modelBlock_ = Model::Create();
 	block_->Init(modelBlock_, &camera_, texturehandle2);
 
-	uint32_t texturehandle3 = TextureManager::GetInstance()->Load("Block.png");
+	uint32_t redBlockTexture = TextureManager::GetInstance()->Load("red1x1.png");
 	redBlock_ = new RedBlock();
 	modelRedBlock_ = Model::Create();
-	redBlock_->Init(modelRedBlock_, &camera_, texturehandle3);
+	redBlock_->Init(modelRedBlock_, &camera_, redBlockTexture);
+
+	uint32_t blueBlockTexture = TextureManager::GetInstance()->Load("blue1x1.png");
+	blueBlock_ = new BlueBlock();
+	modelBlueBlock_ = Model::Create();
+	blueBlock_->Init(modelBlueBlock_, &camera_, blueBlockTexture);
+
+	uint32_t greenBlockTexture = TextureManager::GetInstance()->Load("green1x1.png");
+	greenBlock_ = new GreenBlock();
+	modelGreenBlock_ = Model::Create();
+	greenBlock_->Init(modelGreenBlock_, &camera_, greenBlockTexture);
 
 	// Player の生成と初期化
 	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
@@ -97,7 +113,7 @@ void GameScene::Initialize() {
 	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
 
 	// ブロックへの参照をプレイヤーに設定
-	player_->SetBlock(block_, redBlock_);
+	player_->SetBlock(block_, redBlock_, blueBlock_, greenBlock_);
 
 	// 障害物リストを Player にセット
 	for (const auto& obstacles : allObstacles_) {
@@ -150,6 +166,8 @@ void GameScene::Update() {
 
 	block_->Update();
 	redBlock_->Update();
+	blueBlock_->Update();
+	greenBlock_->Update();
 	player_->DrawUI();
 	skydome_->Update();
 }
@@ -180,6 +198,8 @@ void GameScene::Draw() {
 
 	block_->Draw();
 	redBlock_->Draw();
+	blueBlock_->Draw();
+	greenBlock_->Draw();
 	skydome_->Draw();
 	goal->Draw();
 

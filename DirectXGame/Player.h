@@ -13,6 +13,8 @@
 
 #include "Block.h"
 #include "RedBlock.h"
+#include "BlueBlock.h"
+#include "GreenBlock.h"
 
 #include <vector>
 #include "Goal.h"
@@ -86,9 +88,11 @@ public:
 
 	void DrawUI(); // UI描画用の関数を追加
 
-	void SetBlock(Block* block, RedBlock* ghostBlock) { 
+	void SetBlock(Block* block, RedBlock* redBlock, BlueBlock* blueBlock, GreenBlock* greenBlock) { 
 		block_ = block; 
-		redBlock_ = ghostBlock;
+		redBlock_ = redBlock;
+		blueBlock_ = blueBlock;
+		greenBlock_ = greenBlock;
 	}
 
 	void CheckCollision(); // 衝突判定を追加
@@ -165,5 +169,8 @@ private:
 	std::vector<SpringEnemy*> springEnemies_;
 
 	Goal* goal_ = nullptr;
+
 	RedBlock* redBlock_ = nullptr;
+	BlueBlock* blueBlock_ = nullptr;
+	GreenBlock* greenBlock_ = nullptr;
 };
