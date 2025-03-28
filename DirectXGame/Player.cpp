@@ -16,6 +16,8 @@ void Player::Init(Camera* camera) {
 	// "cube" モデルを読み込み
 	PlayerModel_ = Model::CreateFromOBJ("player", true);
 	worldTransform_.translation_ = position;
+	block_ = new Block;
+	ghostBlock_ = new GhostBlock;
 }
 
 void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
@@ -311,19 +313,14 @@ void Player::Update() {
 }
 
 void Player::CheckCollision() {
-  
-  // ブロックリストが空の場合は処理を行わない
+	// ブロックリストが空の場合は処理を行わない
 	if (blocks_.empty()) {
 		return;
 	}
-//   if (!block_->IsActive() && !ghostBlock_->IsActive()) {
-// 		return;
-// 	}
 
-	AABB blockAABB = block_->GetAABB();
+	// 重複宣言を避けるため、1回だけ宣言する
+	AABB mainBlockAABB = block_->GetAABB();
 	AABB ghostBlockAABB = ghostBlock_->GetAABB();
-
-
 
 	// 現在の状態に応じて各ブロックとの衝突判定を行う
 	switch (currentState) {
@@ -331,18 +328,12 @@ void Player::CheckCollision() {
 		// 通常状態：すべてのブロックと衝突判定
 		for (Block* block : blocks_) {
 			if (block && block->IsActive()) {
-				AABB blockAABB = block->GetAABB();
-				if (IsCollisionAABB(playerAABB, blockAABB)) {
-					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+				// 変数名を変えて、重複を回避
+				AABB currentBlockAABB = block->GetAABB();
+				if (IsCollisionAABB(playerAABB, currentBlockAABB)) {
+					ResolveAABBCollision(playerAABB, currentBlockAABB, velocityY_, onGround_);
 				}
 			}
-// =======
-
-// 	switch (currentState) {
-// 	case State::Normal:
-// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-// >>>>>>> DebugStart_Test
 		}
 		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
@@ -350,46 +341,28 @@ void Player::CheckCollision() {
 		break;
 
 	case State::Bomb:
-
 		// 爆弾状態：衝突判定とブロック破壊
 		for (Block* block : blocks_) {
 			if (block && block->IsActive()) {
-				AABB blockAABB = block->GetAABB();
-				if (IsCollisionAABB(playerAABB, blockAABB)) {
-					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+				// 変数名を変えて、重複を回避
+				AABB currentBlockAABB = block->GetAABB();
+				if (IsCollisionAABB(playerAABB, currentBlockAABB)) {
+					ResolveAABBCollision(playerAABB, currentBlockAABB, velocityY_, onGround_);
 				}
 
 				// キャノン敵の弾との衝突判定
 				for (Bom* bom : cannonEnemy->GetBom()) {
 					AABB bomAABB = bom->GetAABB();
-					if (IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
+					if (IsCollisionAABB(bomAABB, currentBlockAABB) && cannonEnemy->GetPlayerCtrl()) {
 						block->SetActive(false);
 					}
 				}
-// =======
-// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-// 		}
-// 		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
-// 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
-// 		}
-// 		for (Bom* bom : cannonEnemy->GetBom()) {
-// 			AABB bomAABB = bom->GetAABB();
-// 			if (block_->IsActive() && IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
-// 				block_->SetActive(false);
-// >>>>>>> DebugStart_Test
 			}
 		}
 		break;
 
 	case State::Ghost:
-// <<<<<<< DebugStart_Test_map
-// 		// ゴースト状態：ブロックをすり抜ける（衝突判定なし）
-// =======
-// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-// 		}
-// >>>>>>> DebugStart_Test
+		// ゴースト状態：衝突判定なし
 		break;
 	}
 }

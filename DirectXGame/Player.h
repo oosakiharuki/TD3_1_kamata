@@ -1,20 +1,16 @@
 #pragma once
 #include "AABB.h"
-#include "Block.h" // 衝突判定用にブロックをインクルード
+#include "Block.h"
 #include "CameraController.h"
 #include "CannonEnemy.h"
 #include "Collision.h"
 #include "Enemy.h"
-
+#include "GhostBlock.h"
+#include "Goal.h"
 #include "KamataEngine.h"
 #include "Mymath.h"
-
-#include "Block.h"  // 衝突判定用にブロックを
-#include "GhostBlock.h"
-
 #include "SpringEnemy.h"
 #include <vector>
-#include "Goal.h"
 
 class Enemy;
 using namespace KamataEngine;
@@ -53,21 +49,18 @@ public:
 
 	void EnemyHead() { onEnemy = true; }
 
-
-
 	void SetPosition(const Vector3& position);
 
-	void SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
-	
+	// 重複宣言を削除し、ここに1つだけ残す
+	void SetCannon(CannonEnemy* cannon);
+
 	void OnCollisions();
 
-
-	// ★ 新しく追加：ドアとの衝突を解決するメソッド
 	void ResolveCollisionWithDoor(const AABB& aabb) { doorAABB = aabb; }
 	void SetOpenDoor(bool isOpen) { isOpenDoor = isOpen; }
 
 	void SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies);
-	void SetCannon(CannonEnemy* cannon);
+	// ここに重複していた宣言を削除
 	void CheckCollisionWithSprings();
 	void SetBlocks(const std::vector<Block*> blocks) { blocks_ = blocks; }
 
@@ -80,93 +73,57 @@ public:
 		Ghost   // ブロックをすり抜ける状態
 	};
 
-	void DrawUI(); // UI描画用の関数を追加
-
-
-	void SetBlock(Block* block, GhostBlock* ghostBlock) { 
-		block_ = block; 
+	void DrawUI();
+	void SetBlock(Block* block, GhostBlock* ghostBlock) {
+		block_ = block;
 		ghostBlock_ = ghostBlock;
 	}
 
-	void CheckCollision(); // 衝突判定を追加
-
+	void CheckCollision();
 	void SetState(State newState);
-
-
 	void ClearObstacleList();
-
-	//ダメージをくらったクールタイム
 	void CheckDamage();
 
-
 private:
-	////<<<<<<< ステージギミック
-	//    //WorldTransform worldTransform;
-	//    //Camera* viewProjection_ = nullptr;
-	//    //Model* model_ = nullptr;
-	//    Block* block_ = nullptr;  // 衝突判定用のブロックを保持
-	//
-	//    State currentState = State::Normal; // 初期状態をNormalに設定
-	//
-	//   // Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度ベクトル
-	//    //Vector3 position;                      // 現在の位置
-	//    //bool IsJump = false;
-	//
-	//   //XINPUT_STATE state, preState;
-	//   // const float speed = 0.2f; // 移動速度
-	////};
-	////=======
+	Vector3 position = {0, 10, -10};
+	Vector3 velocity;
+	Vector3 size = {2, 2, 2};
+	Vector3 stop = {0, 0, 0};
+
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
 	Model* PlayerModel_ = nullptr;
-	Vector3 position = {0, 10, -10};
-	bool onGround_ = true;
-	float velocityY_ = 0.0f;
 	CameraController cameraController_;
-
-	// 障害物リスト
-	std::vector<AABB> obstacleList_;
-
-	Vector3 velocity;
+	
+	bool onGround_ = true;
 	bool onEnemy;
 	bool isTransfar = false;
-
-	XINPUT_STATE state, preState;
-	const float speed = 0.2f;
-
-	AABB playerAABB;
-	Vector3 size = {2, 2, 2};
-	float hp = 3;
 	bool isDamage = false;
-	float coolTime = 0.0f;
-
-	AABB enemyAABB;
-
 	bool EnemyContral = false;
-
-	uint32_t textureHandle = 0;
 	bool collisionEnemy = false;
-
-	Vector3 stop = {0, 0, 0};
-
-	Enemy* enemy = nullptr;
-
-	Block* block_ = nullptr;            // 衝突判定用のブロックを保持 <---消すべきかも
-	State currentState = State::Normal; // 初期状態をNormalに設定
-
-	CannonEnemy* cannonEnemy = nullptr;
-
+	bool isOpenDoor = false;
+	
+	float velocityY_ = 0.0f;
+	float hp = 3;
+	float coolTime = 0.0f;
 	float cameraPitch = 5.0f;
 	float cameraYaw = 0.0f;
-
-	bool isOpenDoor = false;
+	const float speed = 0.2f;
+	XINPUT_STATE state, preState;
+	AABB playerAABB;
+	AABB enemyAABB;
 	AABB doorAABB;
-	std::vector<SpringEnemy*> springEnemies_;
-
-
-	// ブロックリストへの参照を追加
-	std::vector<Block*> blocks_;
-
-	Goal* goal_ = nullptr;
+	
+	
+	uint32_t textureHandle = 0;
+	Enemy* enemy = nullptr;
+	Block* block_ = nullptr;
+	State currentState = State::Normal;
+	CannonEnemy* cannonEnemy = nullptr;
 	GhostBlock* ghostBlock_ = nullptr;
+	Goal* goal_ = nullptr;
+
+	std::vector<AABB> obstacleList_;
+	std::vector<SpringEnemy*> springEnemies_;
+	std::vector<Block*> blocks_;
 };

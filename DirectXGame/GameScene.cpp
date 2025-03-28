@@ -34,20 +34,18 @@ void GameScene::Initialize() {
 
 	worldTransform_.Initialize();
 	camera_.Initialize();
-  
 
-	uint32_t texturehandle2 = TextureManager::GetInstance()->Load("Block.png");
+
 	block_ = new Block();
 	modelBlock_ = Model::Create();
-	block_->Init(modelBlock_, &camera_, texturehandle2);
+	// 引数の順序を修正して、Block::Initの定義に合わせる
+	block_->Init(&camera_);
 
-	uint32_t texturehandle3 = TextureManager::GetInstance()->Load("Block.png");
 	ghostBlock_ = new GhostBlock();
 	modelGhostBlock_ = Model::Create();
-	ghostBlock_->Init(modelGhostBlock_, &camera_, texturehandle3);
+	ghostBlock_->Init(&camera_);
 
 	// Playerの生成と初期化
-	textureHandle = TextureManager::GetInstance()->Load("sample.png");
 	player_ = new Player();
 	player_->Init(&camera_);
 
