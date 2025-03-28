@@ -96,11 +96,24 @@ void GameScene::Update() {
 	// 　↓　ゴールしたら1と2ステージループするようになってる、切り替え処理2を消すとステージ3に進む
 
 	if (mapLoader_ && mapLoader_->IsDoorOpened()) {
+		// 次のステージ番号を計算
+		int nextStage = currentStage_ + 1;
+
+		// 次のステージに応じてプレイヤーの座標を設定
+		Vector3 newPosition;
+		if (nextStage == 2) {
+			// Stage 2への移行時の座標
+			newPosition = {-55.070f, 1.649f, -68.019f};
+		} else if (nextStage == 3) {
+			// Stage 3への移行時の座標
+			newPosition = {-37.0f, -18.512f, -51.500f};
+		}
+
 		// プレイヤーの座標を変更
-		Vector3 newPosition = {-37.0f, -18.512f, -51.500f}; // 新しい座標を設定
 		player_->SetPosition(newPosition);
 
-		ChangeStage(currentStage_ + 1);
+		// ステージを切り替え
+		ChangeStage(nextStage);
 	}
 }
 
