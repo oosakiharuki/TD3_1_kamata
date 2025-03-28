@@ -25,6 +25,10 @@ public:
 	// キーが取得されたかどうか
 	bool IsKeyObtained() const { return isObtained_; }
 
+	// キーのID（複数キーの識別用）
+	void SetKeyID(int id) { keyID_ = id; }
+	int GetKeyID() const { return keyID_; }
+
 	// AABBを取得
 	AABB GetAABB() const;
 
@@ -45,6 +49,12 @@ private:
 
 	// 鍵取得フラグ
 	bool isObtained_ = false;
+
+	// 鍵のID（複数の鍵を区別するため）
+	int keyID_ = 0;
+	Audio* keyGTAudio_ = nullptr;
+	int KeyAudioHandle_ = 0;
+	int KeyGetAudio_ = -1;
 
 	// 回転アニメーション用
 	float rotationY_ = 0.0f;

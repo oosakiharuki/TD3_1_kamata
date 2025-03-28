@@ -1,6 +1,6 @@
 # Blender 4.1.1
 # www.blender.org
-mtllib space.mtl
+mtllib sky.mtl
 o 球
 v -0.000014 154.465286 103.210312
 v -0.000014 103.210426 154.465164

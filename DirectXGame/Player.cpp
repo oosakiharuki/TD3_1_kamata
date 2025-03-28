@@ -3,7 +3,6 @@
 #include "imgui.h"
 #endif
 
-
 #include <algorithm>
 #include <iostream>
 
@@ -11,13 +10,12 @@ Player::Player() {}
 
 Player::~Player() { delete PlayerModel_; }
 
-void Player::Init(Camera* camera, uint32_t texture) {
+void Player::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
-	PlayerModel_ = Model::CreateFromOBJ("cube", true);
+	PlayerModel_ = Model::CreateFromOBJ("player", true);
 	worldTransform_.translation_ = position;
-	textureHandle = texture;
 }
 
 void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
@@ -74,8 +72,8 @@ void Player::Update() {
 	if (Input::GetInstance()->TriggerKey(DIK_3)) {
 		currentState = State::Ghost;
 	}
-	
-	//コントローラとキーボード両方で回さないようにするフラグ
+
+	// コントローラとキーボード両方で回さないようにするフラグ
 	bool isKeyBorad = false;
 
 	// キーボードによるカメラ回転X
@@ -86,7 +84,7 @@ void Player::Update() {
 	if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
 		cameraYaw += 2.5f;
 		isKeyBorad = true;
-	} 
+	}
 
 	// キーボードによるカメラ回転Y
 	if (Input::GetInstance()->PushKey(DIK_DOWN)) {
@@ -104,25 +102,24 @@ void Player::Update() {
 
 		// 右スティックの入力
 		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f; // -1.0f～1.0f
-		 zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
+		zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
 
 		// デッドゾーン処理
 		if (abs(xCamera) < deadZone) {
 			xCamera = 0.0f;
-		if (fabs(zCamera) < deadZone)
-			zCamera = 0.0f;
+			if (fabs(zCamera) < deadZone)
+				zCamera = 0.0f;
 		}
 
-		//カメラ向き
-		//Y軸
+		// カメラ向き
+		// Y軸
 		cameraYaw += xCamera * 2.5f;
-		//X軸
+		// X軸
 		cameraPitch += zCamera * 2.5f;
-	
 	}
 
 	cameraPitch = std::clamp(cameraPitch, 10.0f, 60.0f);
-	
+
 	cameraController_.SetPitch(cameraPitch);
 	cameraController_.SetYaw(cameraYaw);
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
@@ -231,7 +228,6 @@ void Player::Update() {
 		}
 	}
 
-
 	// ドアとの衝突処理
 	if (IsCollisionAABB(playerAABB, doorAABB) && !isOpenDoor) {
 		ResolveAABBCollision(playerAABB, doorAABB, velocityY_, onGround_);
@@ -242,8 +238,8 @@ void Player::Update() {
 		enemyAABB = (*it)->GetAABB();
 		if (IsCollisionAABB(playerAABB, enemyAABB)) {
 
-			//真上に乗れて、横は透ける
-			Vector3 overlap = GetOverlapAmount(playerAABB,enemyAABB);
+			// 真上に乗れて、横は透ける
+			Vector3 overlap = GetOverlapAmount(playerAABB, enemyAABB);
 			if (overlap.y < overlap.x && overlap.y < overlap.z) {
 				float playerCenterY = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 				float obstacleCenterY = (enemyAABB.min.y + enemyAABB.max.y) * 0.5f;
@@ -315,17 +311,38 @@ void Player::Update() {
 }
 
 void Player::CheckCollision() {
-	if (!block_->IsActive() && !ghostBlock_->IsActive()) {
+  
+  // ブロックリストが空の場合は処理を行わない
+	if (blocks_.empty()) {
 		return;
 	}
+//   if (!block_->IsActive() && !ghostBlock_->IsActive()) {
+// 		return;
+// 	}
 
 	AABB blockAABB = block_->GetAABB();
 	AABB ghostBlockAABB = ghostBlock_->GetAABB();
 
+
+
+	// 現在の状態に応じて各ブロックとの衝突判定を行う
 	switch (currentState) {
 	case State::Normal:
-		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+		// 通常状態：すべてのブロックと衝突判定
+		for (Block* block : blocks_) {
+			if (block && block->IsActive()) {
+				AABB blockAABB = block->GetAABB();
+				if (IsCollisionAABB(playerAABB, blockAABB)) {
+					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+				}
+			}
+// =======
+
+// 	switch (currentState) {
+// 	case State::Normal:
+// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+// >>>>>>> DebugStart_Test
 		}
 		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
@@ -333,24 +350,46 @@ void Player::CheckCollision() {
 		break;
 
 	case State::Bomb:
-		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-		}
-		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
-			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
-		}
-		for (Bom* bom : cannonEnemy->GetBom()) {
-			AABB bomAABB = bom->GetAABB();
-			if (block_->IsActive() && IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
-				block_->SetActive(false);
+
+		// 爆弾状態：衝突判定とブロック破壊
+		for (Block* block : blocks_) {
+			if (block && block->IsActive()) {
+				AABB blockAABB = block->GetAABB();
+				if (IsCollisionAABB(playerAABB, blockAABB)) {
+					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+				}
+
+				// キャノン敵の弾との衝突判定
+				for (Bom* bom : cannonEnemy->GetBom()) {
+					AABB bomAABB = bom->GetAABB();
+					if (IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
+						block->SetActive(false);
+					}
+				}
+// =======
+// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+// 		}
+// 		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
+// 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
+// 		}
+// 		for (Bom* bom : cannonEnemy->GetBom()) {
+// 			AABB bomAABB = bom->GetAABB();
+// 			if (block_->IsActive() && IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
+// 				block_->SetActive(false);
+// >>>>>>> DebugStart_Test
 			}
 		}
 		break;
 
 	case State::Ghost:
-		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-		}
+// <<<<<<< DebugStart_Test_map
+// 		// ゴースト状態：ブロックをすり抜ける（衝突判定なし）
+// =======
+// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+// 		}
+// >>>>>>> DebugStart_Test
 		break;
 	}
 }
@@ -368,7 +407,6 @@ void Player::DrawUI() {
 	ImGui::End();
 
 #endif // _DEBUG
-  
 }
 
 void Player::OnCollisions() {
@@ -395,6 +433,10 @@ void Player::Draw() {
 }
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
+
+void Player::SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { springEnemies_ = springEnemies; }
+
+void Player::SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
 
 //// ★ 新しく追加：ドアとの衝突解決処理
 // void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
@@ -425,17 +467,25 @@ void Player::CheckCollisionWithSprings() {
 	}
 }
 
+
+void Player::SetState(State newState) { currentState = newState; }
+
+void Player::ClearObstacleList() {
+	obstacleList_.clear(); // 当たり判定用の障害物リストをクリア
+}
+
+void Player::SetPosition(const Vector3& newPosition) {
+	position = newPosition;
+	worldTransform_.translation_ = position;
+}
+
+
 void Player::CheckCollisionWithGoal() {
 	AABB goalAABB = goal_->GetAABB();
 
 	if (IsCollisionAABB(playerAABB, goalAABB)) {
 		goal_->OnCollision();
 	}
-}
-
-
-void Player::SetState(State newState) {
-	currentState = newState;
 }
 
 void Player::CheckDamage() {

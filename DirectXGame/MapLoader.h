@@ -1,4 +1,6 @@
+// DirectXGame/MapLoader.h に追加/修正
 #pragma once
+#include "Block.h" // Blockをインクルード
 #include "Door.h"
 #include "KamataEngine.h"
 #include "Key.h"
@@ -14,13 +16,15 @@ using namespace KamataEngine;
 enum class MapObjectType {
 	Key,
 	Door,
-	// 将来的に他のオブジェクトタイプを追加可能
+	Block, // Blockタイプを追加
+	       // 将来的に他のオブジェクトタイプを追加可能
 };
 
 // CSVから読み込んだオブジェクトデータの構造体
 struct MapObjectData {
 	Vector3 position;
 	MapObjectType type;
+	int id = 0; // 追加: オブジェクトのID（キーの識別などに使用）
 };
 
 class MapLoader {
@@ -49,6 +53,14 @@ public:
 	// ドアが開いたかどうかを確認
 	bool IsDoorOpened() const;
 
+	// ステージ切り替え
+	void ChangeStage(int stageNumber, Camera* camera, Player* player);
+
+	void GLoadStage(std::string objFile);
+
+	// ブロックリストへのアクセス
+	const std::vector<Block*>& GetBlockList() const { return blocks_; }
+
 private:
 	// 読み込んだマップオブジェクトデータのリスト
 	std::vector<MapObjectData> mapObjectsData_;
@@ -58,6 +70,9 @@ private:
 
 	// 生成されたドアのリスト
 	std::vector<Door*> doors_;
+
+	// 生成されたブロックのリスト
+	std::vector<Block*> blocks_;
 
 	// CSVから座標とオブジェクトタイプを解析
 	bool ParseCSVLine(const std::string& line, MapObjectData& data);

@@ -21,6 +21,7 @@ public:
 	// 障害物処理
 	void SetObstacleList(const std::vector<AABB>& obstacles);
 	void AddObstacle(const AABB& obstacle);
+	void ClearObstacleList();
 
 	// 位置設定
 	void SetPosition(const Vector3& pos);

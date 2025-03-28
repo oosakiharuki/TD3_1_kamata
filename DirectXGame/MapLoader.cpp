@@ -1,5 +1,6 @@
 #include "MapLoader.h"
 #include <algorithm>
+#include <iostream>
 
 MapLoader::MapLoader() {}
 
@@ -64,6 +65,8 @@ bool MapLoader::ParseCSVLine(const std::string& line, MapObjectData& data) {
 			data.type = MapObjectType::Key;
 		} else if (token == "door") {
 			data.type = MapObjectType::Door;
+		} else if (token == "block") { // ブロックタイプの追加
+			data.type = MapObjectType::Block;
 		} else {
 			return false; // 未知のオブジェクトタイプ
 		}
@@ -71,12 +74,24 @@ bool MapLoader::ParseCSVLine(const std::string& line, MapObjectData& data) {
 		return false;
 	}
 
+	// オプションのIDフィールドを読み込む
+	if (std::getline(iss, token, ',')) {
+		// ID値が存在する場合、読み込む
+		data.id = std::stoi(token);
+	} else {
+		// IDが指定されていない場合はデフォルト値0
+		data.id = 0;
+	}
+
 	return true;
 }
-
+ 
 void MapLoader::CreateObjects(Camera* camera, Player* player) {
 	// 既存のオブジェクトをクリア
 	ClearResources();
+
+	// キーのIDカウンターを初期化
+	int keyIdCounter = 0;
 
 	// 読み込んだデータに基づいてオブジェクトを生成
 	for (const auto& objectData : mapObjectsData_) {
@@ -85,6 +100,14 @@ void MapLoader::CreateObjects(Camera* camera, Player* player) {
 			key->Init(camera);
 			key->SetPosition(objectData.position);
 			key->SetPlayer(player);
+
+			// CSVからIDが指定されている場合はそれを使用、そうでなければ自動採番
+			if (objectData.id > 0) {
+				key->SetKeyID(objectData.id);
+			} else {
+				key->SetKeyID(++keyIdCounter);
+			}
+
 			keys_.push_back(key);
 		} else if (objectData.type == MapObjectType::Door) {
 			Door* door = new Door();
@@ -92,6 +115,13 @@ void MapLoader::CreateObjects(Camera* camera, Player* player) {
 			door->SetPosition(objectData.position);
 			door->SetPlayer(player);
 			doors_.push_back(door);
+		} else if (objectData.type == MapObjectType::Block) {
+			Block* block = new Block();
+			// 先に初期化して、その後で位置を設定
+			block->Init(camera);
+			// 初期化後に位置を設定
+			block->SetPosition(objectData.position);
+			blocks_.push_back(block);
 		}
 	}
 
@@ -102,9 +132,11 @@ void MapLoader::CreateObjects(Camera* camera, Player* player) {
 void MapLoader::SetupObjectReferences() {
 	// すべてのドアに対して、すべての鍵への参照を設定
 	for (auto* door : doors_) {
-		for (auto* key : keys_) {
-			door->SetKey(key);
-		}
+		// 鍵のリストを設定
+		door->SetKeys(keys_);
+
+		// 必要なキーの数をセット（デフォルトではすべてのキーが必要）
+		door->SetRequiredKeyCount(static_cast<int>(keys_.size()));
 	}
 }
 
@@ -118,6 +150,11 @@ void MapLoader::Update() {
 	for (auto* door : doors_) {
 		door->Update();
 	}
+
+	// すべてのブロックを更新
+	for (auto* block : blocks_) {
+		block->Update();
+	}
 }
 
 void MapLoader::Draw() {
@@ -129,6 +166,11 @@ void MapLoader::Draw() {
 	// すべてのドアを描画
 	for (auto* door : doors_) {
 		door->Draw();
+	}
+
+	// すべてのブロックを描画
+	for (auto* block : blocks_) {
+		block->Draw();
 	}
 }
 
@@ -154,4 +196,26 @@ void MapLoader::ClearResources() {
 		delete door;
 	}
 	doors_.clear();
+
+	// ブロックのリソースを解放
+	for (auto* block : blocks_) {
+		delete block;
+	}
+	blocks_.clear();
+}
+
+void MapLoader::ChangeStage(int stageNumber, Camera* camera, Player* player) {
+	// 既存のオブジェクトを削除
+	ClearResources();
+
+	// ステージ番号に応じたCSVファイル名を決定
+	std::string csvPath = "Resources/objects" + std::to_string(stageNumber) + ".csv";
+
+	// マップデータを読み込み
+	if (LoadMapData(csvPath)) {
+		// 新しいオブジェクトを作成
+		CreateObjects(camera, player);
+	} else {
+		std::cerr << "Failed to load map data: " << csvPath << std::endl;
+	}
 }

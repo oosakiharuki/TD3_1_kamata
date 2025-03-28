@@ -1,3 +1,4 @@
+
 #include "Key.h"
 
 #ifdef _DEBUG
@@ -11,7 +12,7 @@ Key::~Key() { delete model_; }
 void Key::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
-
+	keyGTAudio_= Audio::GetInstance();
 	// "cube" モデルを読み込み
 	model_ = Model::CreateFromOBJ("key", true);
 
@@ -23,6 +24,10 @@ void Key::Init(Camera* camera) {
 
 	// 行列を更新
 	worldTransform_.UpdateMatrix();
+
+	// 鍵取得音の読み込み
+	KeyAudioHandle_ = keyGTAudio_->LoadWave("./sound/key_get.wav");
+
 }
 
 void Key::Update() {
@@ -39,6 +44,9 @@ void Key::Update() {
 		if (IsCollisionAABB(playerAABB, keyAABB)) {
 			// 衝突したら鍵を取得
 			isObtained_ = true;
+
+			// 鍵取得音を再生
+			keyGTAudio_->playAudio(KeyGetAudio_, KeyAudioHandle_, false, 0.5);
 		}
 	}
 
@@ -54,6 +62,7 @@ void Key::Update() {
 	// ImGuiデバッグ表示
 #ifdef _DEBUG
 	ImGui::Begin("Key Status");
+	ImGui::Text("Key ID: %d", keyID_);
 	ImGui::Checkbox("KeyFlg", &isObtained_);
 	ImGui::End();
 #endif
@@ -78,4 +87,3 @@ AABB Key::GetAABB() const {
 
 	return keyAABB;
 }
-

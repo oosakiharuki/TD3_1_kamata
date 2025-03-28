@@ -26,6 +26,10 @@ void Enemy::SetPosition(const Vector3& pos) {
 	worldTransform_.translation_ = position;
 }
 
+void Enemy::ClearObstacleList() {
+	obstacleList_.clear(); // ✅ 障害物リストをクリア
+}
+
 void Enemy::SetTarget(Player* target) {
 	player_ = target; // プレイヤーをターゲットとして設定
 }

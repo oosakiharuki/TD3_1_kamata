@@ -2,6 +2,7 @@
 #ifdef _DEBUG
 #include "imgui.h"
 #endif
+
 Door::Door() {}
 
 Door::~Door() { delete model_; }
@@ -13,9 +14,30 @@ void Door::Init(Camera* camera) {
 	// "cube" モデルを読み込み
 	model_ = Model::CreateFromOBJ("door", true);
 
-
 	// 行列を更新
 	worldTransform_.UpdateMatrix();
+}
+
+// すべてのキーが取得されているかチェックするヘルパーメソッド
+bool Door::AreAllKeysObtained() const {
+	// キーが設定されていない場合は開かない
+	if (keys_.empty()) {
+		return false;
+	}
+
+	// 取得済みのキーの数をカウント
+	int obtainedCount = 0;
+	for (const auto* key : keys_) {
+		if (key && key->IsKeyObtained()) {
+			obtainedCount++;
+		}
+	}
+
+	// 指定された数以上のキーが取得されているかチェック
+	// requiredKeyCount_が設定されていれば、その数を使用
+	// そうでなければ、すべてのキーが必要
+	int required = (requiredKeyCount_ > 0) ? requiredKeyCount_ : static_cast<int>(keys_.size());
+	return obtainedCount >= required;
 }
 
 void Door::Update() {
@@ -23,13 +45,13 @@ void Door::Update() {
 	if (player_) {
 		AABB playerAABB = player_->GetAABB();
 		AABB doorAABB = GetAABB();
-	
-		//プレイヤーにもAABBを渡す
+
+		// プレイヤーにもAABBを渡す
 		player_->ResolveCollisionWithDoor(doorAABB);
 
 		if (IsCollisionAABB(playerAABB, doorAABB) && !isDoorOpened_) {
-			// 鍵を持っている場合、ドアに触れたフラグを立ててアニメーション開始
-			if (key_ && key_->IsKeyObtained() && !isDoorTouched_) {
+			// すべてのキーが取得されている場合、ドアに触れたフラグを立ててアニメーション開始
+			if (AreAllKeysObtained() && !isDoorTouched_) {
 				isDoorTouched_ = true;
 				isAnimating_ = true;
 			}
@@ -58,6 +80,17 @@ void Door::Update() {
 	ImGui::Begin("Door Status");
 	ImGui::Checkbox("Door Touch", &isDoorTouched_);
 	ImGui::Checkbox("Door Opened", &isDoorOpened_);
+
+	// キーの状態も表示
+	int totalKeys = static_cast<int>(keys_.size());
+	int obtainedKeys = 0;
+	for (const auto* key : keys_) {
+		if (key && key->IsKeyObtained()) {
+			obtainedKeys++;
+		}
+	}
+
+	ImGui::Text("Keys: %d/%d (Required: %d)", obtainedKeys, totalKeys, requiredKeyCount_);
 	ImGui::End();
 #endif
 }
@@ -86,4 +119,3 @@ AABB Door::GetAABB() const {
 	doorAABB.max = {doorCenter.x + scaledHalfExtents.x, doorCenter.y + scaledHalfExtents.y, doorCenter.z + scaledHalfExtents.z};
 	return doorAABB;
 }
-

@@ -9,6 +9,7 @@ bool EnemyLoader::LoadEnemyData(const std::string& csvPath) {
 	// 以前のデータをクリア
 	enemyData_.clear();
 
+
 	// CSVファイルを開く
 	std::ifstream file(csvPath);
 	if (!file.is_open()) {
