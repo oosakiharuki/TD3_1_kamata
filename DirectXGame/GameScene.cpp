@@ -24,12 +24,7 @@ void GameScene::Initialize() {
 	worldTransform_.Initialize();
 	camera_.Initialize();
 
-	uint32_t texturehandle2 = TextureManager::GetInstance()->Load("uvChecker.png");
-	block_ = new Block();
-	modelBlock_ = Model::Create();
-	block_->Init(modelBlock_, &camera_, texturehandle2);
-
-	// Player の生成と初期化
+	// Playerの生成と初期化
 	textureHandle = TextureManager::GetInstance()->Load("sample.png");
 	player_ = new Player();
 	player_->Init(&camera_);
@@ -43,7 +38,7 @@ void GameScene::Initialize() {
 	// 天球の初期化
 	skydome_->Initialize(modelSkydome_, &camera_);
 
-	// **MapLoader の初期化**
+	// MapLoaderの初期化
 	mapLoader_ = new MapLoader();
 	std::string objectsFile = "Resources/objects" + std::to_string(currentStage_) + ".csv";
 	if (mapLoader_->LoadMapData(objectsFile)) {
@@ -73,8 +68,11 @@ void GameScene::Initialize() {
 	// バネ敵への参照をプレイヤーに設定
 	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
 
-	// ブロックへの参照をプレイヤーに設定
-	player_->SetBlock(block_);
+	// プレイヤーにブロックリストを設定
+	const std::vector<Block*>& blocks = mapLoader_->GetBlockList();
+	for (auto* block : blocks) {
+		player_->SetBlock(block);
+	}
 }
 
 void GameScene::Update() {
@@ -89,8 +87,6 @@ void GameScene::Update() {
 	if (mapLoader_) {
 		mapLoader_->Update();
 	}
-
-	block_->Update();
 	player_->DrawUI();
 	skydome_->Update();
 
@@ -134,8 +130,6 @@ void GameScene::Draw() {
 	if (mapLoader_) {
 		mapLoader_->Draw();
 	}
-
-	block_->Draw();
 	skydome_->Draw();
 
 	Model::PostDraw();

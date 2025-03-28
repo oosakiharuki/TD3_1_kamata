@@ -304,6 +304,11 @@ void Player::Update() {
 
 
 void Player::CheckCollision() {
+	if (!block_) {
+		return;
+	}
+
+	// 現在は一つのブロックのみ対応
 	if (!block_->IsActive()) {
 		return;
 	}
@@ -313,26 +318,23 @@ void Player::CheckCollision() {
 	switch (currentState) {
 	case State::Normal:
 		if (IsCollisionAABB(playerAABB, blockAABB)) {
-			// worldTransform_.translation_ -= velocity; // 速度分だけ戻す
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
 		break;
 	case State::Bomb:
 		if (IsCollisionAABB(playerAABB, blockAABB)) {
-			// worldTransform_.translation_ -= velocity; // 速度分だけ戻す
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
 
 		for (Bom* bom : cannonEnemy->GetBom()) {
-
 			AABB bomAABB = bom->GetAABB();
-
 			if (IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
 				block_->SetActive(false);
 			}
 		}
 		break;
 	case State::Ghost:
+		// ゴースト状態ではブロックをすり抜ける
 		break;
 	}
 }

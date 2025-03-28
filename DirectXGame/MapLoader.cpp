@@ -65,6 +65,8 @@ bool MapLoader::ParseCSVLine(const std::string& line, MapObjectData& data) {
 			data.type = MapObjectType::Key;
 		} else if (token == "door") {
 			data.type = MapObjectType::Door;
+		} else if (token == "block") { // ブロックタイプの追加
+			data.type = MapObjectType::Block;
 		} else {
 			return false; // 未知のオブジェクトタイプ
 		}
@@ -78,6 +80,7 @@ bool MapLoader::ParseCSVLine(const std::string& line, MapObjectData& data) {
 void MapLoader::CreateObjects(Camera* camera, Player* player) {
 	// 既存のオブジェクトをクリア
 	ClearResources();
+
 
 	// 読み込んだデータに基づいてオブジェクトを生成
 	for (const auto& objectData : mapObjectsData_) {
@@ -93,6 +96,13 @@ void MapLoader::CreateObjects(Camera* camera, Player* player) {
 			door->SetPosition(objectData.position);
 			door->SetPlayer(player);
 			doors_.push_back(door);
+		} else if (objectData.type == MapObjectType::Block) {
+			Block* block = new Block();
+			// 先に初期化して、その後で位置を設定
+			block->Init(camera);
+			// 初期化後に位置を設定
+			block->SetPosition(objectData.position);
+			blocks_.push_back(block);
 		}
 	}
 
@@ -119,6 +129,11 @@ void MapLoader::Update() {
 	for (auto* door : doors_) {
 		door->Update();
 	}
+
+	// すべてのブロックを更新
+	for (auto* block : blocks_) {
+		block->Update();
+	}
 }
 
 void MapLoader::Draw() {
@@ -130,6 +145,11 @@ void MapLoader::Draw() {
 	// すべてのドアを描画
 	for (auto* door : doors_) {
 		door->Draw();
+	}
+
+	// すべてのブロックを描画
+	for (auto* block : blocks_) {
+		block->Draw();
 	}
 }
 
@@ -155,6 +175,12 @@ void MapLoader::ClearResources() {
 		delete door;
 	}
 	doors_.clear();
+
+	// ブロックのリソースを解放
+	for (auto* block : blocks_) {
+		delete block;
+	}
+	blocks_.clear();
 }
 
 void MapLoader::ChangeStage(int stageNumber, Camera* camera, Player* player) {
