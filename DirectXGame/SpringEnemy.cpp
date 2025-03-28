@@ -136,3 +136,7 @@ void SpringEnemy::ReMove(const Vector3& position_) {
 		worldTransform_.parent_ = nullptr;
 	}
 }
+
+void SpringEnemy::ClearObstacleList() {
+	obstacleList_.clear(); // ✅ クリア
+}

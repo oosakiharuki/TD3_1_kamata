@@ -87,16 +87,19 @@ void GameScene::Update() {
 	if (mapLoader_) {
 		mapLoader_->Update();
 	}
+
+	for (auto& springEnemy : enemyLoader_->GetSpringEnemyList()) {
+		springEnemy->Update();
+	}
+
 	player_->DrawUI();
 	skydome_->Update();
 
 	// 　↓　ゴールしたら1と2ステージループするようになってる、切り替え処理2を消すとステージ3に進む
 
-
-		if (mapLoader_ && mapLoader_->IsDoorOpened()) {
-			ChangeStage(currentStage_ + 1);
-		}
-
+	if (mapLoader_ && mapLoader_->IsDoorOpened()) {
+		ChangeStage(currentStage_ + 1);
+	}
 }
 
 void GameScene::Draw() {
@@ -159,6 +162,11 @@ void GameScene::ChangeStage(int nextStage) {
 	// **新しい障害物データをロード**
 	std::string stageFile = "Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_) + ".obj";
 	LoadStage(stageFile);
+   
+	// バネ
+	for (auto& springEnemy : enemyLoader_->GetSpringEnemyList()) {
+		springEnemy->ClearObstacleList();
+	}
 
 	// **プレイヤーに新しい障害物リストを設定**
 	for (const auto& obstacles : allObstacles_) {
