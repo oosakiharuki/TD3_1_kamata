@@ -126,4 +126,11 @@ private:
 	std::vector<AABB> obstacleList_;
 	std::vector<SpringEnemy*> springEnemies_;
 	std::vector<Block*> blocks_;
+
+	 // 点滅関連の追加変数
+	bool isFlashing = false;          // 点滅中かどうか
+	float flashTimer = 0.0f;          // 点滅用タイマー
+	bool isVisible = true;            // 現在表示中かどうか
+	const float flashInterval = 0.1f; // 点滅間隔（秒）
+	const float flashDuration = 1.0f; // 点滅継続時間（秒）
 };

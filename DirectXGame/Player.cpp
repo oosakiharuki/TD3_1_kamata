@@ -395,14 +395,13 @@ void Player::OnCollisions() {
 }
 
 void Player::Draw() {
-	//if (hp < 1)
-	//	return;
-
-	if (coolTime > 0.0f) {
-		PlayerModel_->Draw(worldTransform_, *camera_);
-	} else {
-		PlayerModel_->Draw(worldTransform_, *camera_, textureHandle);
+	// 点滅中で非表示の場合は描画しない
+	if (isFlashing && !isVisible) {
+		return;
 	}
+
+	// 通常の描画（テクスチャハンドルは使わない）
+	PlayerModel_->Draw(worldTransform_, *camera_);
 }
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
@@ -462,17 +461,36 @@ void Player::CheckCollisionWithGoal() {
 }
 
 void Player::CheckDamage() {
-
 	const float deltaTime = 1.0f / 60.0f;
 
-	coolTime -= deltaTime;
+	// 点滅処理の更新
+	if (isFlashing) {
+		flashTimer += deltaTime;
 
-	if (isDamage && coolTime < 0.0f) {
+		// 0.3秒ごとに表示/非表示を切り替え
+		if (flashTimer >= flashInterval) {
+			isVisible = !isVisible; // 表示状態を反転
+			flashTimer = 0.0f;      // タイマーリセット
+		}
+
+		// 点滅の継続時間（1.5秒）が終了したら
+		coolTime -= deltaTime;
+		if (coolTime <= 0.0f) {
+			isFlashing = false;
+			isVisible = true; // 必ず表示状態に戻す
+			coolTime = 0.0f;
+		}
+	}
+
+	// ダメージを受けたときの処理
+	if (isDamage && !isFlashing) {
 		hp--;
 		isDamage = false;
-		coolTime = 3.0f;
+		coolTime = flashDuration; // 1.5秒間の点滅時間
+		isFlashing = true;
+		flashTimer = 0.0f;
+		isVisible = true;
 	} else {
 		isDamage = false;
 	}
-
 }
