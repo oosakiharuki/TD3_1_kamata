@@ -1,3 +1,4 @@
+
 #include "Key.h"
 
 #ifdef _DEBUG
@@ -54,6 +55,7 @@ void Key::Update() {
 	// ImGuiデバッグ表示
 #ifdef _DEBUG
 	ImGui::Begin("Key Status");
+	ImGui::Text("Key ID: %d", keyID_);
 	ImGui::Checkbox("KeyFlg", &isObtained_);
 	ImGui::End();
 #endif
@@ -78,4 +80,3 @@ AABB Key::GetAABB() const {
 
 	return keyAABB;
 }
-

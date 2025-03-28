@@ -74,6 +74,15 @@ bool MapLoader::ParseCSVLine(const std::string& line, MapObjectData& data) {
 		return false;
 	}
 
+	// オプションのIDフィールドを読み込む
+	if (std::getline(iss, token, ',')) {
+		// ID値が存在する場合、読み込む
+		data.id = std::stoi(token);
+	} else {
+		// IDが指定されていない場合はデフォルト値0
+		data.id = 0;
+	}
+
 	return true;
 }
 
@@ -81,6 +90,8 @@ void MapLoader::CreateObjects(Camera* camera, Player* player) {
 	// 既存のオブジェクトをクリア
 	ClearResources();
 
+	// キーのIDカウンターを初期化
+	int keyIdCounter = 0;
 
 	// 読み込んだデータに基づいてオブジェクトを生成
 	for (const auto& objectData : mapObjectsData_) {
@@ -89,6 +100,14 @@ void MapLoader::CreateObjects(Camera* camera, Player* player) {
 			key->Init(camera);
 			key->SetPosition(objectData.position);
 			key->SetPlayer(player);
+
+			// CSVからIDが指定されている場合はそれを使用、そうでなければ自動採番
+			if (objectData.id > 0) {
+				key->SetKeyID(objectData.id);
+			} else {
+				key->SetKeyID(++keyIdCounter);
+			}
+
 			keys_.push_back(key);
 		} else if (objectData.type == MapObjectType::Door) {
 			Door* door = new Door();
@@ -113,9 +132,11 @@ void MapLoader::CreateObjects(Camera* camera, Player* player) {
 void MapLoader::SetupObjectReferences() {
 	// すべてのドアに対して、すべての鍵への参照を設定
 	for (auto* door : doors_) {
-		for (auto* key : keys_) {
-			door->SetKey(key);
-		}
+		// 鍵のリストを設定
+		door->SetKeys(keys_);
+
+		// 必要なキーの数をセット（デフォルトではすべてのキーが必要）
+		door->SetRequiredKeyCount(static_cast<int>(keys_.size()));
 	}
 }
 

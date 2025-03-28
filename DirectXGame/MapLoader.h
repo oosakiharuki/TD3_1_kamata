@@ -17,13 +17,14 @@ enum class MapObjectType {
 	Key,
 	Door,
 	Block, // Blockタイプを追加
-	// 将来的に他のオブジェクトタイプを追加可能
+	       // 将来的に他のオブジェクトタイプを追加可能
 };
 
 // CSVから読み込んだオブジェクトデータの構造体
 struct MapObjectData {
 	Vector3 position;
 	MapObjectType type;
+	int id = 0; // 追加: オブジェクトのID（キーの識別などに使用）
 };
 
 class MapLoader {
