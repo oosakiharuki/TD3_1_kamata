@@ -72,7 +72,13 @@ void Player::Update() {
 		currentState = State::Bomb;
 	}
 	if (Input::GetInstance()->TriggerKey(DIK_3)) {
-		currentState = State::Ghost;
+		currentState = State::RedGhost;
+	}
+	if (Input::GetInstance()->TriggerKey(DIK_4)) {
+		currentState = State::BlueGhost;
+	}
+	if (Input::GetInstance()->TriggerKey(DIK_5)) {
+		currentState = State::GreenGhost;
 	}
 	
 	//コントローラとキーボード両方で回さないようにするフラグ
@@ -391,19 +397,19 @@ void Player::Update() {
 }
 
 void Player::CheckCollision() {
-	if (!block_->IsActive() && !ghostBlock_->IsActive()) {
+	if (!block_->IsActive() && !redBlock_->IsActive()) {
 		return;
 	}
 
 	AABB blockAABB = block_->GetAABB();
-	AABB ghostBlockAABB = ghostBlock_->GetAABB();
+	AABB ghostBlockAABB = redBlock_->GetAABB();
 
 	switch (currentState) {
 	case State::Normal:
 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
-		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
+		if (redBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
 		}
 		break;
@@ -412,7 +418,7 @@ void Player::CheckCollision() {
 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
-		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
+		if (redBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
 		}
 		for (Bom* bom : cannonEnemy->GetBom()) {
@@ -423,7 +429,19 @@ void Player::CheckCollision() {
 		}
 		break;
 
-	case State::Ghost:
+	case State::RedGhost:
+		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+		}
+		break;
+
+	case State::BlueGhost:
+		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
+			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+		}
+		break;
+
+	case State::GreenGhost:
 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
 		}
@@ -437,7 +455,7 @@ void Player::DrawUI() {
 
 	ImGui::Begin("Player State");
 
-	const char* stateNames[] = {"Normal", "Bomb", "Ghost"};
+	const char* stateNames[] = {"Normal", "Bomb", "RedGhost", "BlueGhost", "GreenGhost"};
 	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
 	ImGui::DragFloat("Hp", &hp);
 

@@ -13,7 +13,7 @@ void BlueGhost::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
-	PlayerModel_ = Model::CreateFromOBJ("EnemyGhost", true);
+	PlayerModel_ = Model::CreateFromOBJ("BlueGhost", true);
 	worldTransform_.translation_ = position;
 }
 
@@ -138,7 +138,7 @@ void BlueGhost::ContralPlayer() {
 	worldTransform_.translation_ = { 0, -2, 0 };
 	worldTransform_.rotation_ = { 0, 3, 0 };
 	if (player_) {
-		player_->SetState(Player::State::Ghost);
+		player_->SetState(Player::State::BlueGhost);
 	}
 }
 

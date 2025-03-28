@@ -1,9 +1,8 @@
 #pragma once
 #include "Block.h"
-#include "GhostBlock.h"
+#include "RedBlock.h"
 #include "CannonEnemy.h"
 #include "Door.h"
-#include "Enemy.h"
 #include "EnemyLoader.h" // EnemyLoaderをインクルード
 #include "Ground.h"
 #include "KamataEngine.h"
@@ -65,8 +64,8 @@ private:
 	Block* block_ = nullptr;
 	Model* modelBlock_ = nullptr;
 
-	GhostBlock* ghostBlock_ = nullptr;
-	Model* modelGhostBlock_ = nullptr;
+	RedBlock* redBlock_ = nullptr;
+	Model* modelRedBlock_ = nullptr;
 
 	// 天球
 	Skydome* skydome_ = nullptr;

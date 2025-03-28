@@ -1,6 +1,5 @@
 #pragma once
 #include "CannonEnemy.h"
-#include "Enemy.h"
 #include "RedGhost.h"
 #include "BlueGhost.h"
 #include "GreenGhost.h"

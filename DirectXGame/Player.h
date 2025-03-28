@@ -3,15 +3,17 @@
 #include "Mymath.h"
 #include "AABB.h"
 #include "CameraController.h"
-#include "CannonEnemy.h"
 #include "Collision.h"
-#include "Enemy.h"
+
 #include "RedGhost.h"
 #include "BlueGhost.h"
 #include "GreenGhost.h"
-#include "Block.h"  // 衝突判定用にブロックを
-#include "GhostBlock.h"
+#include "CannonEnemy.h"
 #include "SpringEnemy.h"
+
+#include "Block.h"
+#include "RedBlock.h"
+
 #include <vector>
 #include "Goal.h"
 
@@ -22,6 +24,14 @@ class BlueGhost;
 class GreenGhost;
 class Player {
 public:
+	enum class State {
+		Normal, // 通常状態
+		Bomb,   // ブロックを壊せる状態
+		RedGhost, // 赤い幽霊になる状態
+		BlueGhost, // 青い幽霊になる状態
+		GreenGhost, // 緑の幽霊になる状態
+	};
+
 	Player();
 	~Player();
 
@@ -74,17 +84,11 @@ public:
 	void SetGoal(Goal* goal) { goal_ = goal; }
 	void CheckCollisionWithGoal();
 
-	enum class State {
-		Normal, // 通常状態
-		Bomb,   // ブロックを壊せる状態
-		Ghost   // ブロックをすり抜ける状態
-	};
-
 	void DrawUI(); // UI描画用の関数を追加
 
-	void SetBlock(Block* block, GhostBlock* ghostBlock) { 
+	void SetBlock(Block* block, RedBlock* ghostBlock) { 
 		block_ = block; 
-		ghostBlock_ = ghostBlock;
+		redBlock_ = ghostBlock;
 	}
 
 	void CheckCollision(); // 衝突判定を追加
@@ -161,5 +165,5 @@ private:
 	std::vector<SpringEnemy*> springEnemies_;
 
 	Goal* goal_ = nullptr;
-	GhostBlock* ghostBlock_ = nullptr;
+	RedBlock* redBlock_ = nullptr;
 };

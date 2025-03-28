@@ -3,7 +3,7 @@
 #include "AABB.h"
 using namespace KamataEngine;
 
-class GhostBlock {
+class BlueBlock {
 public:
     void Init(Model* model, Camera* viewProjection, uint32_t texturehandle);
     void Update();

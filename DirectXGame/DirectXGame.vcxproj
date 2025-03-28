@@ -108,6 +108,7 @@
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Block.cpp" />
+    <ClCompile Include="BlueBlock.cpp" />
     <ClCompile Include="BlueGhost.cpp" />
     <ClCompile Include="Bom.cpp" />
     <ClCompile Include="CameraController.cpp" />
@@ -115,17 +116,17 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="EnemyLoader.cpp" />
     <ClCompile Include="Goal.cpp" />
-    <ClCompile Include="GhostBlock.cpp" />
+    <ClCompile Include="GreenBlock.cpp" />
     <ClCompile Include="GreenGhost.cpp" />
     <ClCompile Include="MapLoader.cpp" />
     <ClCompile Include="Door.cpp" />
-    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="Ground.cpp" />
     <ClCompile Include="key.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mymath.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="RedBlock.cpp" />
     <ClCompile Include="RedGhost.cpp" />
     <ClCompile Include="SkyDome.cpp" />
     <ClCompile Include="SpringEnemy.cpp" />
@@ -210,6 +211,7 @@
   <ItemGroup>
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Block.h" />
+    <ClInclude Include="BlueBlock.h" />
     <ClInclude Include="BlueGhost.h" />
     <ClInclude Include="Bom.h" />
     <ClInclude Include="CameraController.h" />
@@ -217,16 +219,16 @@
     <ClInclude Include="Collision.h" />
     <ClInclude Include="EnemyLoader.h" />
     <ClInclude Include="Goal.h" />
-    <ClInclude Include="GhostBlock.h" />
+    <ClInclude Include="GreenBlock.h" />
     <ClInclude Include="GreenGhost.h" />
     <ClInclude Include="MapLoader.h" />
     <ClInclude Include="Door.h" />
-    <ClInclude Include="Enemy.h" />
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Ground.h" />
     <ClInclude Include="key.h" />
     <ClInclude Include="Mymath.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="RedBlock.h" />
     <ClInclude Include="RedGhost.h" />
     <ClInclude Include="SkyDome.h" />
     <ClInclude Include="SpringEnemy.h" />
