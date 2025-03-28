@@ -163,21 +163,21 @@ void EnemyLoader::CreateEnemies(Camera* camera, Player* player, const std::vecto
 
 void EnemyLoader::Update() {
 	// 通常の敵の更新
-	//for (auto it = enemies_.begin(); it != enemies_.end();) {
-	//	(*it)->Update();
-	//	// IsDestroyedメソッドがない場合は、下記の条件を適宜修正してください
-	//	if (false) { // 仮の条件
-	//		delete *it;
-	//		it = enemies_.erase(it);
-	//	} else {
-	//		++it;
-	//	}
-	//}
-
-	// 赤いゴーストの更新
-	for (auto* redGhost : redGhosts_) {
-		redGhost->Update();
+	for (auto it = redGhosts_.begin(); it != redGhosts_.end();) {
+		(*it)->Update();
+		// IsDestroyedメソッドがない場合は、下記の条件を適宜修正してください
+		if (false) { // 仮の条件
+			delete *it;
+			it = redGhosts_.erase(it);
+		} else {
+			++it;
+		}
 	}
+
+	//// 赤いゴーストの更新
+	//for (auto* redGhost : redGhosts_) {
+	//	redGhost->Update();
+	//}
 
 	// 青いゴーストの更新
 	for (auto* blueGhost : blueGhosts_) {

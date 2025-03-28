@@ -394,7 +394,7 @@ void Player::Draw() {
 	}
 }
 
-void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
+void Player::SetEnemyList(const std::vector<RedGhost*>& enemies) { enemyList_ = enemies; }
 
 //// ★ 新しく追加：ドアとの衝突解決処理
 // void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {

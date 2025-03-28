@@ -11,8 +11,12 @@
 #include "SpringEnemy.h"
 #include <vector>
 #include "Goal.h"
+#include "RedGhost.h"
+#include "BlueGhost.h"
+#include "YellowGhost.h"
 
-class Enemy;
+//class Enemy;
+class RedGhost;
 using namespace KamataEngine;
 
 class Player {
@@ -43,9 +47,10 @@ public:
 	void SetObstacleList(const std::vector<AABB>& obstacles);
 	void AddObstacle(const AABB& obstacle);
 
-	void SetEnemyList(const std::vector<Enemy*>& enemies);
+	void SetEnemyList(const std::vector<RedGhost*>& enemies);
 
-	std::vector<Enemy*> enemyList_;
+	//std::vector<Enemy*> enemyList_;
+	std::vector<RedGhost*> enemyList_;
 
 	void EnemyHead() { onEnemy = true; }
 
@@ -134,7 +139,7 @@ private:
 
 	Vector3 stop = {0, 0, 0};
 
-	Enemy* enemy = nullptr;
+	RedGhost* enemy = nullptr;
 
 	Block* block_ = nullptr; // 衝突判定用のブロックを保持
 	State currentState = State::Normal; // 初期状態をNormalに設定
