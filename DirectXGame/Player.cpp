@@ -453,6 +453,11 @@ void Player::SetPosition(const Vector3& newPosition) {
 
 
 void Player::CheckCollisionWithGoal() {
+	// ゴールが設定されていない場合は何もしない
+	if (!goal_) {
+		return;
+	}
+
 	AABB goalAABB = goal_->GetAABB();
 
 	if (IsCollisionAABB(playerAABB, goalAABB)) {

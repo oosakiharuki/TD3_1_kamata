@@ -5,6 +5,7 @@ void GhostBlock::Init(Camera* camera_) {
 	model_ = Model::CreateFromOBJ("cube", true);
     worldTransform.Initialize();
     worldTransform.translation_ = { 5, 2, 3 };
+	worldTransform.TransferMatrix();
 }
 
 void GhostBlock::Update() {

@@ -65,8 +65,10 @@ bool MapLoader::ParseCSVLine(const std::string& line, MapObjectData& data) {
 			data.type = MapObjectType::Key;
 		} else if (token == "door") {
 			data.type = MapObjectType::Door;
-		} else if (token == "block") { // ブロックタイプの追加
+		} else if (token == "block") {
 			data.type = MapObjectType::Block;
+		} else if (token == "goal") { // goalタイプを追加
+			data.type = MapObjectType::Goal;
 		} else {
 			return false; // 未知のオブジェクトタイプ
 		}
@@ -85,13 +87,16 @@ bool MapLoader::ParseCSVLine(const std::string& line, MapObjectData& data) {
 
 	return true;
 }
- 
+
 void MapLoader::CreateObjects(Camera* camera, Player* player) {
 	// 既存のオブジェクトをクリア
 	ClearResources();
 
 	// キーのIDカウンターを初期化
 	int keyIdCounter = 0;
+
+	// ゴールを見つけたかどうかのフラグ
+	bool foundGoal = false;
 
 	// 読み込んだデータに基づいてオブジェクトを生成
 	for (const auto& objectData : mapObjectsData_) {
@@ -117,11 +122,19 @@ void MapLoader::CreateObjects(Camera* camera, Player* player) {
 			doors_.push_back(door);
 		} else if (objectData.type == MapObjectType::Block) {
 			Block* block = new Block();
-			// 先に初期化して、その後で位置を設定
 			block->Init(camera);
-			// 初期化後に位置を設定
 			block->SetPosition(objectData.position);
 			blocks_.push_back(block);
+		} else if (objectData.type == MapObjectType::Goal) {
+			// Goalの生成
+			if (goal_) {
+				delete goal_;
+				goal_ = nullptr;
+			}
+			goal_ = new Goal();
+			goal_->Init(camera);
+			goal_->SetPosition(objectData.position);
+			foundGoal = true;
 		}
 	}
 
@@ -155,6 +168,11 @@ void MapLoader::Update() {
 	for (auto* block : blocks_) {
 		block->Update();
 	}
+
+	// Goalの更新
+	if (goal_) {
+		goal_->Update();
+	}
 }
 
 void MapLoader::Draw() {
@@ -171,6 +189,20 @@ void MapLoader::Draw() {
 	// すべてのブロックを描画
 	for (auto* block : blocks_) {
 		block->Draw();
+	}
+
+	// Goalを描画（存在する場合のみ）
+	if (goal_) {
+		goal_->Draw();
+		
+	}
+}
+
+// スプライトの描画
+void MapLoader::DrawSprites([[maybe_unused]] ID3D12GraphicsCommandList* commandList) {
+	// Goalのスプライト描画（ゴールクリア表示）
+	if (goal_ && goal_->IsClear()) {
+		goal_->Text();
 	}
 }
 
@@ -202,6 +234,12 @@ void MapLoader::ClearResources() {
 		delete block;
 	}
 	blocks_.clear();
+
+	// Goalのリソースを解放
+	if (goal_) {
+		delete goal_;
+		goal_ = nullptr;
+	}
 }
 
 void MapLoader::ChangeStage(int stageNumber, Camera* camera, Player* player) {
