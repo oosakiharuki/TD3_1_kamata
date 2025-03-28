@@ -304,37 +304,47 @@ void Player::Update() {
 
 
 void Player::CheckCollision() {
-	if (!block_) {
+	// ブロックリストが空の場合は処理を行わない
+	if (blocks_.empty()) {
 		return;
 	}
 
-	// 現在は一つのブロックのみ対応
-	if (!block_->IsActive()) {
-		return;
-	}
-
-	AABB blockAABB = block_->GetAABB();
-
+	// 現在の状態に応じて各ブロックとの衝突判定を行う
 	switch (currentState) {
 	case State::Normal:
-		if (IsCollisionAABB(playerAABB, blockAABB)) {
-			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-		}
-		break;
-	case State::Bomb:
-		if (IsCollisionAABB(playerAABB, blockAABB)) {
-			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-		}
-
-		for (Bom* bom : cannonEnemy->GetBom()) {
-			AABB bomAABB = bom->GetAABB();
-			if (IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
-				block_->SetActive(false);
+		// 通常状態：すべてのブロックと衝突判定
+		for (Block* block : blocks_) {
+			if (block && block->IsActive()) {
+				AABB blockAABB = block->GetAABB();
+				if (IsCollisionAABB(playerAABB, blockAABB)) {
+					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+				}
 			}
 		}
 		break;
+
+	case State::Bomb:
+		// 爆弾状態：衝突判定とブロック破壊
+		for (Block* block : blocks_) {
+			if (block && block->IsActive()) {
+				AABB blockAABB = block->GetAABB();
+				if (IsCollisionAABB(playerAABB, blockAABB)) {
+					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+				}
+
+				// キャノン敵の弾との衝突判定
+				for (Bom* bom : cannonEnemy->GetBom()) {
+					AABB bomAABB = bom->GetAABB();
+					if (IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
+						block->SetActive(false);
+					}
+				}
+			}
+		}
+		break;
+
 	case State::Ghost:
-		// ゴースト状態ではブロックをすり抜ける
+		// ゴースト状態：ブロックをすり抜ける（衝突判定なし）
 		break;
 	}
 }

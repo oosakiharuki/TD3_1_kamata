@@ -68,11 +68,9 @@ void GameScene::Initialize() {
 	// バネ敵への参照をプレイヤーに設定
 	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
 
-	// プレイヤーにブロックリストを設定
+	// プレイヤーにブロックリストを設定（更新: 単一ブロックではなくリスト全体を渡す）
 	const std::vector<Block*>& blocks = mapLoader_->GetBlockList();
-	for (auto* block : blocks) {
-		player_->SetBlock(block);
-	}
+	player_->SetBlocks(blocks);
 }
 
 void GameScene::Update() {
@@ -199,6 +197,10 @@ void GameScene::ChangeStage(int nextStage) {
 	if (!enemyLoader_->GetCannonEnemyList().empty()) {
 		player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]);
 	}
+
+	// プレイヤーにブロックリストを設定（更新：単一ブロックではなくリスト全体を渡す）
+	const std::vector<Block*>& blocks = mapLoader_->GetBlockList();
+	player_->SetBlocks(blocks);
 }
 
 // AddObstacle、LoadStage、UpdateStageAABBメソッドはそのまま以前の実装を使用

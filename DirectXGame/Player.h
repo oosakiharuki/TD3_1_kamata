@@ -1,12 +1,12 @@
 #pragma once
-#include"KamataEngine.h"
-#include "Mymath.h"
 #include "AABB.h"
+#include "Block.h" // 衝突判定用にブロックをインクルード
 #include "CameraController.h"
 #include "CannonEnemy.h"
 #include "Collision.h"
 #include "Enemy.h"
-#include "Block.h"  // 衝突判定用にブロックをインクルード
+#include "KamataEngine.h"
+#include "Mymath.h"
 #include "SpringEnemy.h"
 #include <vector>
 
@@ -47,7 +47,6 @@ public:
 
 	void EnemyHead() { onEnemy = true; }
 
-
 	void SetCannon(CannonEnemy* cannon);
 
 	// ★ 新しく追加：ドアとの衝突を解決するメソッド
@@ -65,7 +64,6 @@ public:
 
 	void DrawUI(); // UI描画用の関数を追加
 
-	void SetBlock(Block* block) { block_ = block; }
 
 	void CheckCollision(); // 衝突判定を追加
 
@@ -74,23 +72,41 @@ public:
 	void ClearObstacleList();
 
 
+	 // ブロックリストを設定するメソッド（既存のSetBlock()を置き換え）
+	void SetBlocks(const std::vector<Block*>& blocks) { blocks_ = blocks; }
+
+	// 1つのブロックを設定するメソッド（後方互換性のため）
+	void SetBlock(Block* block) {
+		if (block) {
+			blocks_.clear();
+			blocks_.push_back(block);
+		}
+	}
+
+	// 1つのブロックを追加するメソッド
+	void AddBlock(Block* block) {
+		if (block) {
+			blocks_.push_back(block);
+		}
+	}
+
 private:
-////<<<<<<< ステージギミック
-//    //WorldTransform worldTransform;
-//    //Camera* viewProjection_ = nullptr;
-//    //Model* model_ = nullptr;
-//    Block* block_ = nullptr;  // 衝突判定用のブロックを保持
-//
-//    State currentState = State::Normal; // 初期状態をNormalに設定
-//
-//   // Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度ベクトル
-//    //Vector3 position;                      // 現在の位置
-//    //bool IsJump = false;
-//
-//   //XINPUT_STATE state, preState;
-//   // const float speed = 0.2f; // 移動速度
-////};
-////=======
+	////<<<<<<< ステージギミック
+	//    //WorldTransform worldTransform;
+	//    //Camera* viewProjection_ = nullptr;
+	//    //Model* model_ = nullptr;
+	//    Block* block_ = nullptr;  // 衝突判定用のブロックを保持
+	//
+	//    State currentState = State::Normal; // 初期状態をNormalに設定
+	//
+	//   // Vector3 velocity = { 0.0f, 0.0f, 0.0f }; // 速度ベクトル
+	//    //Vector3 position;                      // 現在の位置
+	//    //bool IsJump = false;
+	//
+	//   //XINPUT_STATE state, preState;
+	//   // const float speed = 0.2f; // 移動速度
+	////};
+	////=======
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
 	Model* PlayerModel_ = nullptr;
@@ -123,10 +139,10 @@ private:
 
 	Enemy* enemy = nullptr;
 
-	Block* block_ = nullptr; // 衝突判定用のブロックを保持
+	Block* block_ = nullptr;            // 衝突判定用のブロックを保持
 	State currentState = State::Normal; // 初期状態をNormalに設定
 
-	CannonEnemy* cannonEnemy = nullptr;	
+	CannonEnemy* cannonEnemy = nullptr;
 
 	float cameraPitch = 5.0f;
 	float cameraYaw = 0.0f;
@@ -134,4 +150,7 @@ private:
 	bool isOpenDoor = false;
 	AABB doorAABB;
 	std::vector<SpringEnemy*> springEnemies_;
+
+	// ブロックリストへの参照を追加
+	std::vector<Block*> blocks_;
 };
