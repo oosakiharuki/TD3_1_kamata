@@ -238,7 +238,7 @@ void Player::Update() {
 	}
 
 	// 敵との衝突処理
-	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
+	for (auto it = redGhostList_.begin(); it != redGhostList_.end();) {
 		enemyAABB = (*it)->GetAABB();
 		if (IsCollisionAABB(playerAABB, enemyAABB)) {
 
@@ -394,7 +394,7 @@ void Player::Draw() {
 	}
 }
 
-void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
+void Player::SetEnemyList(const std::vector<RedGhost*>& enemies) { redGhostList_ = enemies; }
 
 //// ★ 新しく追加：ドアとの衝突解決処理
 // void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
@@ -451,5 +451,4 @@ void Player::CheckDamage() {
 	} else {
 		isDamage = false;
 	}
-
 }

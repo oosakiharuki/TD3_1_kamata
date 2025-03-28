@@ -124,6 +124,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mymath.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="RedGhost.cpp" />
     <ClCompile Include="SkyDome.cpp" />
     <ClCompile Include="SpringEnemy.cpp" />
     <ClCompile Include="WorldTransform.cpp" />
@@ -222,6 +223,7 @@
     <ClInclude Include="key.h" />
     <ClInclude Include="Mymath.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="RedGhost.h" />
     <ClInclude Include="SkyDome.h" />
     <ClInclude Include="SpringEnemy.h" />
     <ClInclude Include="Vector3.h" />

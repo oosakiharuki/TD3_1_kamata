@@ -60,8 +60,8 @@ bool EnemyLoader::ParseCSVLine(const std::string& line, EnemyData& data) {
 
 	// 敵タイプを読み込む
 	if (std::getline(iss, token, ',')) {
-		if (token == "enemy") {
-			data.type = EnemyType::Normal;
+		if (token == "redGhost") {
+			data.type = EnemyType::RedGhost;
 		} else if (token == "cannon") {
 			data.type = EnemyType::Cannon;
 		} else if (token == "spring") {
@@ -83,18 +83,18 @@ void EnemyLoader::CreateEnemies(Camera* camera, Player* player, const std::vecto
 	// 読み込んだデータに基づいて敵を生成
 	for (const auto& data : enemyData_) {
 		switch (data.type) {
-		case EnemyType::Normal: {
-			Enemy* enemy = new Enemy();
-			enemy->Init(camera);
-			enemy->SetPosition(data.position);
-			enemy->SetTarget(player);
+		case EnemyType::RedGhost: {
+			RedGhost* redGhost = new RedGhost();
+			redGhost->Init(camera);
+			redGhost->SetPosition(data.position);
+			redGhost->SetTarget(player);
 
 			// 障害物リストを設定
 			for (const auto& obstacleList : obstacles) {
-				enemy->SetObstacleList(obstacleList);
+				redGhost->SetObstacleList(obstacleList);
 			}
 
-			enemies_.push_back(enemy);
+			redGhosts_.push_back(redGhost);
 			break;
 		}
 		case EnemyType::Cannon: {
@@ -131,12 +131,12 @@ void EnemyLoader::CreateEnemies(Camera* camera, Player* player, const std::vecto
 
 void EnemyLoader::Update() {
 	// 通常の敵の更新
-	for (auto it = enemies_.begin(); it != enemies_.end();) {
+	for (auto it = redGhosts_.begin(); it != redGhosts_.end();) {
 		(*it)->Update();
 		// IsDestroyedメソッドがない場合は、下記の条件を適宜修正してください
 		if (false) { // 仮の条件
 			delete *it;
-			it = enemies_.erase(it);
+			it = redGhosts_.erase(it);
 		} else {
 			++it;
 		}
@@ -155,8 +155,8 @@ void EnemyLoader::Update() {
 
 void EnemyLoader::Draw() {
 	// 通常の敵の描画
-	for (auto* enemy : enemies_) {
-		enemy->Draw();
+	for (auto* redGhost : redGhosts_) {
+		redGhost->Draw();
 	}
 
 	// 大砲敵の描画
@@ -172,10 +172,10 @@ void EnemyLoader::Draw() {
 
 void EnemyLoader::ClearResources() {
 	// 通常の敵のリソースを解放
-	for (auto* enemy : enemies_) {
-		delete enemy;
+	for (auto* redGhost : redGhosts_) {
+		delete redGhost;
 	}
-	enemies_.clear();
+	redGhosts_.clear();
 
 	// 大砲敵のリソースを解放
 	for (auto* cannon : cannonEnemies_) {
