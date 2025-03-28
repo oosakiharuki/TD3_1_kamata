@@ -62,13 +62,20 @@ bool EnemyLoader::ParseCSVLine(const std::string& line, EnemyData& data) {
 	if (std::getline(iss, token, ',')) {
 		if (token == "redGhost") {
 			data.type = EnemyType::RedGhost;
-		} else if (token == "blueGhost") {
+		} 
+		else if (token == "blueGhost") {
 			data.type = EnemyType::BlueGhost;
-		} else if (token == "cannon") {
+		} 
+		else if (token == "greenGhost") {
+			data.type = EnemyType::GreenGhost;
+		} 
+		else if (token == "cannon") {
 			data.type = EnemyType::Cannon;
-		} else if (token == "spring") {
+		} 
+		else if (token == "spring") {
 			data.type = EnemyType::Spring;
-		} else {
+		} 
+		else {
 			return false; // 未知の敵タイプ
 		}
 	} else {
@@ -110,6 +117,19 @@ void EnemyLoader::CreateEnemies(Camera* camera, Player* player, const std::vecto
 				blueGhost->SetObstacleList(obstacleList);
 			}
 			blueGhosts_.push_back(blueGhost);
+			break;
+		}
+		case EnemyType::GreenGhost: {
+			GreenGhost* greenGhost = new GreenGhost();
+			greenGhost->Init(camera);
+			greenGhost->SetPosition(data.position);
+			greenGhost->SetTarget(player);
+
+			// 障害物リストを設定
+			for (const auto& obstacleList : obstacles) {
+				greenGhost->SetObstacleList(obstacleList);
+			}
+			greenGhosts_.push_back(greenGhost);
 			break;
 		}
 		case EnemyType::Cannon: {
@@ -170,6 +190,19 @@ void EnemyLoader::Update() {
 		}
 	}
 
+	// 緑の幽霊の更新
+	for (auto it = greenGhosts_.begin(); it != greenGhosts_.end();) {
+		(*it)->Update();
+		// IsDestroyedメソッドがない場合は、下記の条件を適宜修正してください
+		if (false) { // 仮の条件
+			delete* it;
+			it = greenGhosts_.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+
 	// 大砲敵の更新
 	for (auto* cannon : cannonEnemies_) {
 		cannon->Update();
@@ -190,6 +223,11 @@ void EnemyLoader::Draw() {
 	// 青い敵の描画
 	for (auto* blueGhost : blueGhosts_) {
 		blueGhost->Draw();
+	}
+
+	// 緑の敵の描画
+	for (auto* greenGhost : greenGhosts_) {
+		greenGhost->Draw();
 	}
 
 	// 大砲敵の描画
@@ -215,6 +253,12 @@ void EnemyLoader::ClearResources() {
 		delete blueGhost;
 	}
 	blueGhosts_.clear();
+
+	// 緑の敵のリソースを解放
+	for (auto* greenGhost : greenGhosts_) {
+		delete greenGhost;
+	}
+	greenGhosts_.clear();
 
 	// 大砲敵のリソースを解放
 	for (auto* cannon : cannonEnemies_) {

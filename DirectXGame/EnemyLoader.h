@@ -3,6 +3,7 @@
 #include "Enemy.h"
 #include "RedGhost.h"
 #include "BlueGhost.h"
+#include "GreenGhost.h"
 #include "KamataEngine.h"
 #include "Player.h"
 #include "SpringEnemy.h"
@@ -15,11 +16,11 @@ using namespace KamataEngine;
 
 // 敵オブジェクトの種類を表す列挙型
 enum class EnemyType {
-	//Normal,  // 通常の敵
-	RedGhost,  // 赤い幽霊
-	BlueGhost, // 青い幽霊
-	Cannon,    // 大砲敵
-	Spring     // バネ敵
+	RedGhost,   // 赤い幽霊
+	BlueGhost,  // 青い幽霊
+	GreenGhost, // 緑の幽霊
+	Cannon,     // 大砲敵
+	Spring      // バネ敵
 };
 
 // CSVから読み込んだ敵データの構造体
@@ -46,9 +47,9 @@ public:
 	void Draw();
 
 	// 各種敵リストへのアクセッサ
-	//const std::vector<Enemy*>& GetEnemyList() const { return enemies_; }
 	const std::vector<RedGhost*>& GetRedGhostList() const { return redGhosts_; }
 	const std::vector<BlueGhost*>& GetBlueGhostList() const { return blueGhosts_; }
+	const std::vector<GreenGhost*>& GetGreenGhostList() const { return greenGhosts_; }
 	const std::vector<CannonEnemy*>& GetCannonEnemyList() const { return cannonEnemies_; }
 	const std::vector<SpringEnemy*>& GetSpringEnemyList() const { return springEnemies_; }
 
@@ -60,6 +61,7 @@ private:
 	//std::vector<Enemy*> enemies_;
 	std::vector<RedGhost*> redGhosts_;
 	std::vector<BlueGhost*> blueGhosts_;
+	std::vector<GreenGhost*> greenGhosts_;
 	std::vector<CannonEnemy*> cannonEnemies_;
 	std::vector<SpringEnemy*> springEnemies_;
 

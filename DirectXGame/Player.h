@@ -8,6 +8,7 @@
 #include "Enemy.h"
 #include "RedGhost.h"
 #include "BlueGhost.h"
+#include "GreenGhost.h"
 #include "Block.h"  // 衝突判定用にブロックを
 #include "GhostBlock.h"
 #include "SpringEnemy.h"
@@ -18,6 +19,7 @@ using namespace KamataEngine;
 
 class RedGhost;
 class BlueGhost;
+class GreenGhost;
 class Player {
 public:
 	Player();
@@ -48,10 +50,12 @@ public:
 
 	void SetRedGhostList(const std::vector<RedGhost*>& redGhosts);
 	void SetBlueGhostList(const std::vector<BlueGhost*>& blueGhosts);
+	void SetGreenGhostList(const std::vector<GreenGhost*>& greenGhosts);
 
 	//std::vector<Enemy*> enemyList_;
 	std::vector<RedGhost*> redGhostList_;
 	std::vector<BlueGhost*> blueGhostList_;
+	std::vector<GreenGhost*> greenGhostList_;
 
 	void EnemyHead() { onEnemy = true; }
 
@@ -142,6 +146,7 @@ private:
 
 	RedGhost* redGhost = nullptr;
 	BlueGhost* blueGhost = nullptr;
+	GreenGhost* greenGhost = nullptr;
 
 	Block* block_ = nullptr; // 衝突判定用のブロックを保持
 	State currentState = State::Normal; // 初期状態をNormalに設定

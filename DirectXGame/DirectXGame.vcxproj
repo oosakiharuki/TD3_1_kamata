@@ -116,6 +116,7 @@
     <ClCompile Include="EnemyLoader.cpp" />
     <ClCompile Include="Goal.cpp" />
     <ClCompile Include="GhostBlock.cpp" />
+    <ClCompile Include="GreenGhost.cpp" />
     <ClCompile Include="MapLoader.cpp" />
     <ClCompile Include="Door.cpp" />
     <ClCompile Include="Enemy.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="EnemyLoader.h" />
     <ClInclude Include="Goal.h" />
     <ClInclude Include="GhostBlock.h" />
+    <ClInclude Include="GreenGhost.h" />
     <ClInclude Include="MapLoader.h" />
     <ClInclude Include="Door.h" />
     <ClInclude Include="Enemy.h" />

@@ -86,6 +86,7 @@ void GameScene::Initialize() {
 	// 各種敵リストをプレイヤーに設定
 	player_->SetRedGhostList(enemyLoader_->GetRedGhostList());
 	player_->SetBlueGhostList(enemyLoader_->GetBlueGhostList());
+	player_->SetGreenGhostList(enemyLoader_->GetGreenGhostList());
 
 	// キャノン敵への参照をプレイヤーに設定
 	if (!enemyLoader_->GetCannonEnemyList().empty()) {
