@@ -96,6 +96,10 @@ void GameScene::Update() {
 	// 　↓　ゴールしたら1と2ステージループするようになってる、切り替え処理2を消すとステージ3に進む
 
 	if (mapLoader_ && mapLoader_->IsDoorOpened()) {
+		// プレイヤーの座標を変更
+		Vector3 newPosition = {0.0f, 10.0f, 0.0f}; // 新しい座標を設定
+		player_->SetPosition(newPosition);
+
 		ChangeStage(currentStage_ + 1);
 	}
 }

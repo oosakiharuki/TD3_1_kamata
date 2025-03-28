@@ -47,7 +47,8 @@ public:
 
 	void EnemyHead() { onEnemy = true; }
 
-	void SetCannon(CannonEnemy* cannon);
+
+	void SetPosition(const Vector3& position);
 
 	// ★ 新しく追加：ドアとの衝突を解決するメソッド
 	void ResolveCollisionWithDoor(const AABB& aabb) { doorAABB = aabb; }
@@ -71,24 +72,6 @@ public:
 
 	void ClearObstacleList();
 
-
-	 // ブロックリストを設定するメソッド（既存のSetBlock()を置き換え）
-	void SetBlocks(const std::vector<Block*>& blocks) { blocks_ = blocks; }
-
-	// 1つのブロックを設定するメソッド（後方互換性のため）
-	void SetBlock(Block* block) {
-		if (block) {
-			blocks_.clear();
-			blocks_.push_back(block);
-		}
-	}
-
-	// 1つのブロックを追加するメソッド
-	void AddBlock(Block* block) {
-		if (block) {
-			blocks_.push_back(block);
-		}
-	}
 
 private:
 	////<<<<<<< ステージギミック

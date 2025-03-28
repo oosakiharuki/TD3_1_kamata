@@ -3,7 +3,6 @@
 #include "imgui.h"
 #endif
 
-
 #include <algorithm>
 #include <iostream>
 
@@ -73,8 +72,8 @@ void Player::Update() {
 	if (Input::GetInstance()->TriggerKey(DIK_3)) {
 		currentState = State::Ghost;
 	}
-	
-	//コントローラとキーボード両方で回さないようにするフラグ
+
+	// コントローラとキーボード両方で回さないようにするフラグ
 	bool isKeyBorad = false;
 
 	// キーボードによるカメラ回転X
@@ -85,7 +84,7 @@ void Player::Update() {
 	if (Input::GetInstance()->PushKey(DIK_RIGHT)) {
 		cameraYaw += 2.5f;
 		isKeyBorad = true;
-	} 
+	}
 
 	// キーボードによるカメラ回転Y
 	if (Input::GetInstance()->PushKey(DIK_DOWN)) {
@@ -103,25 +102,24 @@ void Player::Update() {
 
 		// 右スティックの入力
 		xCamera = static_cast<float>(state.Gamepad.sThumbRX) / 32768.0f; // -1.0f～1.0f
-		 zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
+		zCamera = static_cast<float>(state.Gamepad.sThumbRY) / 32768.0f; // -1.0f～1.0f
 
 		// デッドゾーン処理
 		if (abs(xCamera) < deadZone) {
 			xCamera = 0.0f;
-		if (fabs(zCamera) < deadZone)
-			zCamera = 0.0f;
+			if (fabs(zCamera) < deadZone)
+				zCamera = 0.0f;
 		}
 
-		//カメラ向き
-		//Y軸
+		// カメラ向き
+		// Y軸
 		cameraYaw += xCamera * 2.5f;
-		//X軸
+		// X軸
 		cameraPitch += zCamera * 2.5f;
-	
 	}
 
 	cameraPitch = std::clamp(cameraPitch, 10.0f, 60.0f);
-	
+
 	cameraController_.SetPitch(cameraPitch);
 	cameraController_.SetYaw(cameraYaw);
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
@@ -227,7 +225,6 @@ void Player::Update() {
 		}
 	}
 
-
 	// ドアとの衝突処理
 	if (IsCollisionAABB(playerAABB, doorAABB) && !isOpenDoor) {
 		ResolveAABBCollision(playerAABB, doorAABB, velocityY_, onGround_);
@@ -238,8 +235,8 @@ void Player::Update() {
 		enemyAABB = (*it)->GetAABB();
 		if (IsCollisionAABB(playerAABB, enemyAABB) && !EnemyContral) {
 
-			//真上に乗れて、横は透ける
-			Vector3 overlap = GetOverlapAmount(playerAABB,enemyAABB);
+			// 真上に乗れて、横は透ける
+			Vector3 overlap = GetOverlapAmount(playerAABB, enemyAABB);
 			if (overlap.y < overlap.x && overlap.y < overlap.z) {
 				float playerCenterY = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
 				float obstacleCenterY = (enemyAABB.min.y + enemyAABB.max.y) * 0.5f;
@@ -302,7 +299,6 @@ void Player::Update() {
 	cameraController_.Update(camera_, position);
 }
 
-
 void Player::CheckCollision() {
 	// ブロックリストが空の場合は処理を行わない
 	if (blocks_.empty()) {
@@ -361,7 +357,6 @@ void Player::DrawUI() {
 	ImGui::End();
 
 #endif // _DEBUG
-  
 }
 
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
@@ -401,10 +396,13 @@ void Player::CheckCollisionWithSprings() {
 	}
 }
 
-void Player::SetState(State newState) {
-	currentState = newState;
-}
+void Player::SetState(State newState) { currentState = newState; }
 
 void Player::ClearObstacleList() {
 	obstacleList_.clear(); // 当たり判定用の障害物リストをクリア
+}
+
+void Player::SetPosition(const Vector3& newPosition) {
+	position = newPosition;
+	worldTransform_.translation_ = position;
 }
