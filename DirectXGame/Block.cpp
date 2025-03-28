@@ -28,8 +28,8 @@ void Block::Draw() {
 
 AABB Block::GetAABB() const {
 	AABB aabb;
-	aabb.min = worldTransform.translation_ - Vector3(1.0f, 1.0f, 1.0f);
-	aabb.max = worldTransform.translation_ + Vector3(1.0f, 1.0f, 1.0f);
+	aabb.min = worldTransform.translation_ - Vector3(12.0f, 1.0f, 2.0f);
+	aabb.max = worldTransform.translation_ + Vector3(12.0f, 15.0f, 2.0f);
 	return aabb;
 }
 
