@@ -1,25 +1,23 @@
 #pragma once
 #include "Block.h"
-#include "GhostBlock.h"
 #include "CannonEnemy.h"
 #include "Door.h"
 #include "Enemy.h"
-#include "EnemyLoader.h" // EnemyLoaderをインクルード
+#include "EnemyLoader.h"
+#include "GhostBlock.h"
+#include "Goal.h"
 #include "Ground.h"
 #include "KamataEngine.h"
 #include "Key.h"
-#include "MapLoader.h" // MapLoaderをインクルード
+#include "MapLoader.h"
 #include "Player.h"
 #include "Skydome.h"
 #include "SpringEnemy.h"
-#include "Goal.h"
 
 using namespace KamataEngine;
 
 class GameScene {
 public:
-	// ゲームシーン
-
 	// コンストラクタ
 	GameScene();
 
@@ -31,20 +29,13 @@ public:
 	void Update();
 	void Draw();
 
-	//void SpawnEnemy(const Vector3& position); // 新しいメソッドを追加
-
 	// ステージを変更する
 	void ChangeStage(int nextStage);
 
 private:
 	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
-
 	void LoadStage(std::string objFile);
-
 	void UpdateStageAABB();
-
-	// 現在のステージデータをロード
-	void LoadCurrentStage();
 
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -52,7 +43,6 @@ private:
 	WorldTransform worldTransform_;
 	Camera camera_;
 	Player* player_ = nullptr;
-
 
 	// 障害物リスト
 	std::vector<std::vector<AABB>> allObstacles_;
@@ -81,12 +71,7 @@ private:
 	// 現在のステージ番号
 	int currentStage_ = 1;
 
-
 	float longPress = 1.0f;
 	const float RestartTimer = 1.0f;
-	XINPUT_STATE state, preState;
-
-
-	Goal* goal = nullptr;
-	Model* modelGoal_ = nullptr;
+	XINPUT_STATE state = {}, preState = {}; // 初期化を追加
 };

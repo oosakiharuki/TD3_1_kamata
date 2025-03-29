@@ -1,20 +1,36 @@
 #include "Goal.h"
+#include "Mymath.h"
 #include <base/TextureManager.h>
 #include <numbers>
-#include "Mymath.h"
 
 Goal::Goal() {}
-Goal::~Goal() { delete sprite; }
+Goal::~Goal() {
+	delete sprite;
+	delete model_;
+}
 
-void Goal::Init(Model* model, Camera* camera, Vector3 position) {
-	model_ = model;
+void Goal::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
-	worldTransform_.translation_ = position;
 
+	// モデルの読み込み
+	model_ = Model::CreateFromOBJ("goal", true);
+
+	// 勝利画面用テクスチャの読み込み
 	textureHandle = TextureManager::Load("winScene.png");
-	sprite  =Sprite::Create(textureHandle, {0, 0});
+
+	// スプライトの作成 - nullチェックを追加
+	if (textureHandle != 0) {
+		sprite = Sprite::Create(textureHandle, {0, 0});
+	} else {
+		sprite = nullptr; // 明示的にnullに設定
+	}
+
+	// 行列を更新
+	worldTransform_.TransferMatrix();
+	worldTransform_.UpdateMatrix();
 }
+
 
 void Goal::Update() {
 	if (isClear) {
@@ -22,23 +38,26 @@ void Goal::Update() {
 		if (Input::GetInstance()->TriggerKey(DIK_R)) {
 			isClear = false;
 		}
+#ifdef _DEBUG
 		ImGui::Begin("Restart");
 		ImGui::Text("keyBorad 'R' Restart");
 		ImGui::End();
+#endif // _DEBUG
 	}
+	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
 }
 
 void Goal::Draw() { model_->Draw(worldTransform_, *camera_); }
 
-void Goal::Text() { 
-	if (isClear)
-	sprite->Draw(); 
+void Goal::Text() {
+	// isClearがtrueでスプライトが正常に初期化されている場合のみ描画
+	if (isClear && sprite != nullptr) {
+		sprite->Draw();
+	}
 }
 
-void Goal::OnCollision() {
-	isClear = true;
-}
+void Goal::OnCollision() { isClear = true; }
 
 AABB Goal::GetAABB() {
 	float halfW = 2.0f, halfH = 2.0f, halfD = 2.0f;

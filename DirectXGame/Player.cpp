@@ -16,6 +16,8 @@ void Player::Init(Camera* camera) {
 	// "cube" モデルを読み込み
 	PlayerModel_ = Model::CreateFromOBJ("player", true);
 	worldTransform_.translation_ = position;
+	block_ = new Block;
+	ghostBlock_ = new GhostBlock;
 }
 
 void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
@@ -311,19 +313,14 @@ void Player::Update() {
 }
 
 void Player::CheckCollision() {
-  
-  // ブロックリストが空の場合は処理を行わない
+	// ブロックリストが空の場合は処理を行わない
 	if (blocks_.empty()) {
 		return;
 	}
-//   if (!block_->IsActive() && !ghostBlock_->IsActive()) {
-// 		return;
-// 	}
 
-	AABB blockAABB = block_->GetAABB();
+	// 重複宣言を避けるため、1回だけ宣言する
+	AABB mainBlockAABB = block_->GetAABB();
 	AABB ghostBlockAABB = ghostBlock_->GetAABB();
-
-
 
 	// 現在の状態に応じて各ブロックとの衝突判定を行う
 	switch (currentState) {
@@ -331,18 +328,12 @@ void Player::CheckCollision() {
 		// 通常状態：すべてのブロックと衝突判定
 		for (Block* block : blocks_) {
 			if (block && block->IsActive()) {
-				AABB blockAABB = block->GetAABB();
-				if (IsCollisionAABB(playerAABB, blockAABB)) {
-					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+				// 変数名を変えて、重複を回避
+				AABB currentBlockAABB = block->GetAABB();
+				if (IsCollisionAABB(playerAABB, currentBlockAABB)) {
+					ResolveAABBCollision(playerAABB, currentBlockAABB, velocityY_, onGround_);
 				}
 			}
-// =======
-
-// 	switch (currentState) {
-// 	case State::Normal:
-// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-// >>>>>>> DebugStart_Test
 		}
 		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
@@ -350,46 +341,28 @@ void Player::CheckCollision() {
 		break;
 
 	case State::Bomb:
-
 		// 爆弾状態：衝突判定とブロック破壊
 		for (Block* block : blocks_) {
 			if (block && block->IsActive()) {
-				AABB blockAABB = block->GetAABB();
-				if (IsCollisionAABB(playerAABB, blockAABB)) {
-					ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
+				// 変数名を変えて、重複を回避
+				AABB currentBlockAABB = block->GetAABB();
+				if (IsCollisionAABB(playerAABB, currentBlockAABB)) {
+					ResolveAABBCollision(playerAABB, currentBlockAABB, velocityY_, onGround_);
 				}
 
 				// キャノン敵の弾との衝突判定
 				for (Bom* bom : cannonEnemy->GetBom()) {
 					AABB bomAABB = bom->GetAABB();
-					if (IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
+					if (IsCollisionAABB(bomAABB, currentBlockAABB) && cannonEnemy->GetPlayerCtrl()) {
 						block->SetActive(false);
 					}
 				}
-// =======
-// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-// 		}
-// 		if (ghostBlock_->IsActive() && IsCollisionAABB(playerAABB, ghostBlockAABB)) {
-// 			ResolveAABBCollision(playerAABB, ghostBlockAABB, velocityY_, onGround_);
-// 		}
-// 		for (Bom* bom : cannonEnemy->GetBom()) {
-// 			AABB bomAABB = bom->GetAABB();
-// 			if (block_->IsActive() && IsCollisionAABB(bomAABB, blockAABB) && cannonEnemy->GetPlayerCtrl()) {
-// 				block_->SetActive(false);
-// >>>>>>> DebugStart_Test
 			}
 		}
 		break;
 
 	case State::Ghost:
-// <<<<<<< DebugStart_Test_map
-// 		// ゴースト状態：ブロックをすり抜ける（衝突判定なし）
-// =======
-// 		if (block_->IsActive() && IsCollisionAABB(playerAABB, blockAABB)) {
-// 			ResolveAABBCollision(playerAABB, blockAABB, velocityY_, onGround_);
-// 		}
-// >>>>>>> DebugStart_Test
+		// ゴースト状態：衝突判定なし
 		break;
 	}
 }
@@ -422,14 +395,13 @@ void Player::OnCollisions() {
 }
 
 void Player::Draw() {
-	//if (hp < 1)
-	//	return;
-
-	if (coolTime > 0.0f) {
-		PlayerModel_->Draw(worldTransform_, *camera_);
-	} else {
-		PlayerModel_->Draw(worldTransform_, *camera_, textureHandle);
+	// 点滅中で非表示の場合は描画しない
+	if (isFlashing && !isVisible) {
+		return;
 	}
+
+	// 通常の描画（テクスチャハンドルは使わない）
+	PlayerModel_->Draw(worldTransform_, *camera_);
 }
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
@@ -481,6 +453,11 @@ void Player::SetPosition(const Vector3& newPosition) {
 
 
 void Player::CheckCollisionWithGoal() {
+	// ゴールが設定されていない場合は何もしない
+	if (!goal_) {
+		return;
+	}
+
 	AABB goalAABB = goal_->GetAABB();
 
 	if (IsCollisionAABB(playerAABB, goalAABB)) {
@@ -489,17 +466,36 @@ void Player::CheckCollisionWithGoal() {
 }
 
 void Player::CheckDamage() {
-
 	const float deltaTime = 1.0f / 60.0f;
 
-	coolTime -= deltaTime;
+	// 点滅処理の更新
+	if (isFlashing) {
+		flashTimer += deltaTime;
 
-	if (isDamage && coolTime < 0.0f) {
+		// 0.3秒ごとに表示/非表示を切り替え
+		if (flashTimer >= flashInterval) {
+			isVisible = !isVisible; // 表示状態を反転
+			flashTimer = 0.0f;      // タイマーリセット
+		}
+
+		// 点滅の継続時間（1.5秒）が終了したら
+		coolTime -= deltaTime;
+		if (coolTime <= 0.0f) {
+			isFlashing = false;
+			isVisible = true; // 必ず表示状態に戻す
+			coolTime = 0.0f;
+		}
+	}
+
+	// ダメージを受けたときの処理
+	if (isDamage && !isFlashing) {
 		hp--;
 		isDamage = false;
-		coolTime = 3.0f;
+		coolTime = flashDuration; // 1.5秒間の点滅時間
+		isFlashing = true;
+		flashTimer = 0.0f;
+		isVisible = true;
 	} else {
 		isDamage = false;
 	}
-
 }

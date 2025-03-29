@@ -1,7 +1,7 @@
-// DirectXGame/MapLoader.h に追加/修正
 #pragma once
-#include "Block.h" // Blockをインクルード
+#include "Block.h"
 #include "Door.h"
+#include "Goal.h" 
 #include "KamataEngine.h"
 #include "Key.h"
 #include "Player.h"
@@ -16,15 +16,15 @@ using namespace KamataEngine;
 enum class MapObjectType {
 	Key,
 	Door,
-	Block, // Blockタイプを追加
-	       // 将来的に他のオブジェクトタイプを追加可能
+	Block,
+	Goal // Goalタイプを追加
 };
 
 // CSVから読み込んだオブジェクトデータの構造体
 struct MapObjectData {
 	Vector3 position;
 	MapObjectType type;
-	int id = 0; // 追加: オブジェクトのID（キーの識別などに使用）
+	int id = 0;
 };
 
 class MapLoader {
@@ -44,6 +44,8 @@ public:
 	// オブジェクトの描画
 	void Draw();
 
+	void DrawSprites(ID3D12GraphicsCommandList* commandList);
+
 	// 鍵とドアの相互参照を設定
 	void SetupObjectReferences();
 
@@ -61,7 +63,12 @@ public:
 	// ブロックリストへのアクセス
 	const std::vector<Block*>& GetBlockList() const { return blocks_; }
 
+	// Goalへのアクセス（追加）
+	Goal* GetGoal() const { return goal_ ? goal_ : nullptr; }
+
 private:
+	DirectXCommon* dxCommon_ = nullptr;
+
 	// 読み込んだマップオブジェクトデータのリスト
 	std::vector<MapObjectData> mapObjectsData_;
 
@@ -73,6 +80,10 @@ private:
 
 	// 生成されたブロックのリスト
 	std::vector<Block*> blocks_;
+
+	// Goal（追加）
+	Goal* goal_ = nullptr;
+	Model* goalModel_ = nullptr;
 
 	// CSVから座標とオブジェクトタイプを解析
 	bool ParseCSVLine(const std::string& line, MapObjectData& data);

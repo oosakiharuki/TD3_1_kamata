@@ -23,8 +23,6 @@ void GameScene::Finalize() {
 
 	delete skydome_;
 	delete modelSkydome_;
-	delete goal;
-	delete modelGoal_;
 }
 
 void GameScene::Initialize() {
@@ -34,20 +32,17 @@ void GameScene::Initialize() {
 
 	worldTransform_.Initialize();
 	camera_.Initialize();
-  
 
-	uint32_t texturehandle2 = TextureManager::GetInstance()->Load("Block.png");
 	block_ = new Block();
 	modelBlock_ = Model::Create();
-	block_->Init(modelBlock_, &camera_, texturehandle2);
+	// 引数の順序を修正して、Block::Initの定義に合わせる
+	block_->Init(&camera_);
 
-	uint32_t texturehandle3 = TextureManager::GetInstance()->Load("Block.png");
 	ghostBlock_ = new GhostBlock();
 	modelGhostBlock_ = Model::Create();
-	ghostBlock_->Init(modelGhostBlock_, &camera_, texturehandle3);
+	ghostBlock_->Init(&camera_);
 
 	// Playerの生成と初期化
-	textureHandle = TextureManager::GetInstance()->Load("sample.png");
 	player_ = new Player();
 	player_->Init(&camera_);
 
@@ -90,7 +85,6 @@ void GameScene::Initialize() {
 	// バネ敵への参照をプレイヤーに設定
 	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
 
-
 	// プレイヤーにブロックリストを設定（更新: 単一ブロックではなくリスト全体を渡す）
 	const std::vector<Block*>& blocks = mapLoader_->GetBlockList();
 	player_->SetBlocks(blocks);
@@ -100,38 +94,34 @@ void GameScene::Initialize() {
 		player_->SetObstacleList(obstacles);
 	}
 
-	modelGoal_ = Model::CreateFromOBJ("goal", true);
-	goal = new Goal();
-	goal->Init(modelGoal_, &camera_, {-30.0f, 16.373f, 37.016f});
-	player_->SetGoal(goal);
-
+	// プレイヤーにGoalへの参照を設定
+	if (mapLoader_ && mapLoader_->GetGoal()) {
+		player_->SetGoal(mapLoader_->GetGoal());
+	}
 }
 
 void GameScene::Update() {
 
 	Input::GetInstance()->GetJoystickState(0, state);
 	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
-	
-	
-	//リスタート処理
-	if (Input::GetInstance()->PushKey(DIK_R) || 
-		((state.Gamepad.wButtons & XINPUT_GAMEPAD_Y) && (preState.Gamepad.wButtons & XINPUT_GAMEPAD_Y))) {
+
+	// リスタート処理
+	if (Input::GetInstance()->PushKey(DIK_R) || ((state.Gamepad.wButtons & XINPUT_GAMEPAD_Y) && (preState.Gamepad.wButtons & XINPUT_GAMEPAD_Y))) {
 		longPress -= 1.0f / 60.0f;
-	}
-	else {
+	} else {
 		longPress = RestartTimer;
 	}
-	//0になった時リスタート / 押しなおさないと更新されなくする
+	// 0になった時リスタート / 押しなおさないと更新されなくする
 	if (longPress < 0 && longPress > -0.017f) {
 		Finalize();
 		Initialize();
 	}
 
-	goal->Update();
+	// MapLoaderが管理するGoalの状態をチェック
+	if (mapLoader_ && mapLoader_->GetGoal() && mapLoader_->GetGoal()->IsClear()) {
+		return; // ゴールクリア状態なら更新処理をスキップ
+	}
 
-	if (goal->IsClear())
-		return;
-	
 	player_->Update();
 
 	// EnemyLoaderの更新
@@ -144,15 +134,13 @@ void GameScene::Update() {
 		mapLoader_->Update();
 	}
 
-
 	for (auto& springEnemy : enemyLoader_->GetSpringEnemyList()) {
 		springEnemy->Update();
 	}
 
-
 	block_->Update();
 	ghostBlock_->Update();
-  
+
 	player_->DrawUI();
 	skydome_->Update();
 
@@ -199,7 +187,7 @@ void GameScene::Draw() {
 		enemyLoader_->Draw();
 	}
 
-	// MapLoaderで読み込んだオブジェクト（鍵とドア）の描画
+	// MapLoaderで読み込んだオブジェクト（鍵、ドア、ブロック、ゴール）の描画
 	if (mapLoader_) {
 		mapLoader_->Draw();
 	}
@@ -208,14 +196,16 @@ void GameScene::Draw() {
 	ghostBlock_->Draw();
 
 	skydome_->Draw();
-	goal->Draw();
 
 	Model::PostDraw();
 
-	// UI描画
+	// UIスプライト描画 - ここでゴールクリアテキストも描画
 	Sprite::PreDraw(commandList);
 
-	goal->Text();
+	// MapLoaderのスプライト描画処理を呼び出す
+	if (mapLoader_) {
+		mapLoader_->DrawSprites(commandList);
+	}
 
 	Sprite::PostDraw();
 }
@@ -248,7 +238,7 @@ void GameScene::ChangeStage(int nextStage) {
 	// **新しい障害物データをロード**
 	std::string stageFile = "Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_) + ".obj";
 	LoadStage(stageFile);
-   
+
 	// バネ
 	for (auto& springEnemy : enemyLoader_->GetSpringEnemyList()) {
 		springEnemy->ClearObstacleList();
@@ -289,6 +279,11 @@ void GameScene::ChangeStage(int nextStage) {
 	// プレイヤーにブロックリストを設定（更新：単一ブロックではなくリスト全体を渡す）
 	const std::vector<Block*>& blocks = mapLoader_->GetBlockList();
 	player_->SetBlocks(blocks);
+
+	// プレイヤーにGoalへの参照を再設定
+	if (mapLoader_ && mapLoader_->GetGoal()) {
+		player_->SetGoal(mapLoader_->GetGoal());
+	}
 }
 
 // AddObstacle、LoadStage、UpdateStageAABBメソッドはそのまま以前の実装を使用

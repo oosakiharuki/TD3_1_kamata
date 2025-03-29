@@ -5,8 +5,8 @@ using namespace KamataEngine;
 
 class GhostBlock {
 public:
-    void Init(Model* model, Camera* viewProjection, uint32_t texturehandle);
-    void Update();
+	void Init(Camera* camera_);
+	void Update();
     void Draw();
 
     bool IsActive() const { return isActive_; } // アクティブ状態を取得
@@ -16,7 +16,7 @@ public:
 
 private:
     WorldTransform worldTransform;
-    Camera* viewProjection_ = nullptr;
+    Camera* Camera_ = nullptr;
     Model* model_ = nullptr;
     bool isActive_ = true; // ブロックが有効かどうか
     uint32_t texturehandle_ = 0;

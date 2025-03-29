@@ -1,12 +1,11 @@
 #include "GhostBlock.h"
 
-void GhostBlock::Init(Model* model, Camera* viewProjection, uint32_t texturehandle) {
-    model_ = model;
-    viewProjection_ = viewProjection;
-
+void GhostBlock::Init(Camera* camera_) {
+    Camera_ = camera_;
+	model_ = Model::CreateFromOBJ("cube", true);
     worldTransform.Initialize();
     worldTransform.translation_ = { 5, 2, 3 };
-    texturehandle_ = texturehandle;
+	worldTransform.TransferMatrix();
 }
 
 void GhostBlock::Update() {
@@ -15,7 +14,7 @@ void GhostBlock::Update() {
 
 void GhostBlock::Draw() {
     if (!isActive_) return; // 非アクティブなら描画しない
-    model_->Draw(worldTransform, *viewProjection_, texturehandle_);
+    model_->Draw(worldTransform,*Camera_);
 }
 
 AABB GhostBlock::GetAABB() const {
