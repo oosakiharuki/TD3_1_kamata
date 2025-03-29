@@ -6,6 +6,8 @@ using namespace KamataEngine;
 
 class Block {
 public:
+	Block();
+	~Block();
 	void Init(Camera* camera_);
 	void Update();
 	void Draw();

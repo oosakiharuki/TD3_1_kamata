@@ -5,6 +5,8 @@ using namespace KamataEngine;
 
 class GhostBlock {
 public:
+	GhostBlock();
+	~GhostBlock();
 	void Init(Camera* camera_);
 	void Update();
     void Draw();

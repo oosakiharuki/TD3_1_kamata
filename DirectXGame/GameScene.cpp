@@ -62,8 +62,23 @@ void GameScene::Initialize() {
 		mapLoader_->CreateObjects(&camera_, player_);
 	}
 
+	Vector3 StartPosition;
+	//各ステージのプレイヤー初期位置
+	if (currentStage_ == 1) {
+		// Stage 2への移行時の座標
+		StartPosition = {0, 10, -10};
+	} else if (currentStage_ == 2) {
+		// Stage 2への移行時の座標
+		StartPosition = {-55.070f, 1.649f, -68.019f};
+	} else if (currentStage_ == 3) {
+		// Stage 3への移行時の座標
+		StartPosition = {-37.0f, -18.512f, -51.500f};
+	}
+
+	player_->SetPosition(StartPosition);
+
 	// 障害物情報の読み込み
-	LoadStage("Resources/stage1/stage1.obj");
+	LoadStage("Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_)+ ".obj");
 
 	// EnemyLoaderの生成と初期化
 	enemyLoader_ = new EnemyLoader();
@@ -216,6 +231,10 @@ void GameScene::ChangeStage(int nextStage) {
 	Command.clear();
 
 	currentStage_ = nextStage;
+
+	//前ステージの削除
+	delete stage;
+	stage = nullptr;
 	stage = Model::CreateFromOBJ("stage" + std::to_string(currentStage_), true);
 
 	// **プレイヤーと敵の障害物リストをクリア**

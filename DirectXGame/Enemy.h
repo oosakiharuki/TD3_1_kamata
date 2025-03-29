@@ -59,7 +59,7 @@ public:
 private:
 	WorldTransform worldTransform_; // Fix the error by ensuring the type is defined
 	Camera* camera_ = nullptr;
-	Model* PlayerModel_ = nullptr;
+	Model* model_ = nullptr;
 	Vector3 position = {0, 0, -20};
 	bool onGround_ = true;
 	float velocityY_ = 0.0f;
@@ -68,9 +68,6 @@ private:
 
 	// 障害物リスト
 	std::vector<AABB> obstacleList_;
-
-	//WorldTransform worldTransform;
-	Model* model_ = nullptr;
 
 	Vector3 velocity;
 	//bool IsJump = false;

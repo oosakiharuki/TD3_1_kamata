@@ -1,5 +1,9 @@
 #include "Block.h"
 
+Block::Block() {}
+
+Block::~Block() { delete model_; }
+
 void Block::Init(Camera* camera_) {
 	viewProjection_ = camera_;
 

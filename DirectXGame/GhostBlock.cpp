@@ -1,5 +1,8 @@
 #include "GhostBlock.h"
 
+GhostBlock::GhostBlock() {}
+GhostBlock::~GhostBlock() { delete model_; }
+
 void GhostBlock::Init(Camera* camera_) {
     Camera_ = camera_;
 	model_ = Model::CreateFromOBJ("cube", true);

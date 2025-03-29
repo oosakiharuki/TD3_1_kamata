@@ -7,13 +7,13 @@
 
 Enemy::Enemy() {}
 
-Enemy::~Enemy() { delete PlayerModel_; }
+Enemy::~Enemy() { delete model_; }
 
 void Enemy::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
 	// "cube" モデルを読み込み
-	PlayerModel_ = Model::CreateFromOBJ("EnemyGhost", true);
+	model_ = Model::CreateFromOBJ("EnemyGhost", true);
 	worldTransform_.translation_ = position;
 }
 
@@ -125,7 +125,7 @@ void Enemy::Update() {
 	worldTransform_.UpdateMatrix();
 }
 
-void Enemy::Draw() { PlayerModel_->Draw(worldTransform_, *camera_); }
+void Enemy::Draw() { model_->Draw(worldTransform_, *camera_); }
 
 // AABBを取得するメソッドを定義
 AABB Enemy::GetAABB() const {
