@@ -8,34 +8,37 @@ Minimap::Minimap() {}
 
 Minimap::~Minimap() {
 	// スプライトの解放
-	if (backgroundSprite_)
+	if (backgroundSprite_) {
 		delete backgroundSprite_;
-	if (playerSprite_)
+		backgroundSprite_ = nullptr;
+	}
+
+	if (playerSprite_) {
 		delete playerSprite_;
-	if (borderSprite_)
+		playerSprite_ = nullptr;
+	}
+
+	if (borderSprite_) {
 		delete borderSprite_;
-	if (labelSprite_)
+		borderSprite_ = nullptr;
+	}
+
+	if (labelSprite_) {
 		delete labelSprite_;
+		labelSprite_ = nullptr;
+	}
 
 	// マップチップの解放
 	for (auto& chip : mapChips_) {
-		if (chip)
+		if (chip) {
 			delete chip;
+			chip = nullptr;
+		}
 	}
 	mapChips_.clear();
 
 	// 鍵とドアのスプライト解放
-	for (auto& keySprite : keySprites_) {
-		if (keySprite)
-			delete keySprite;
-	}
-	keySprites_.clear();
-
-	for (auto& doorSprite : doorSprites_) {
-		if (doorSprite)
-			delete doorSprite;
-	}
-	doorSprites_.clear();
+	ClearKeyAndDoorSprites();
 }
 
 void Minimap::Initialize(Player* player, MapLoader* mapLoader, EnemyLoader* enemyLoader, const std::vector<std::vector<AABB>>& obstacles) {
@@ -96,16 +99,8 @@ void Minimap::Initialize(Player* player, MapLoader* mapLoader, EnemyLoader* enem
 }
 
 void Minimap::CreateKeyAndDoorIcons() {
-	// 鍵とドアのスプライトをクリア
-	for (auto& keySprite : keySprites_) {
-		delete keySprite;
-	}
-	keySprites_.clear();
-
-	for (auto& doorSprite : doorSprites_) {
-		delete doorSprite;
-	}
-	doorSprites_.clear();
+	// 既存の鍵とドアスプライトを安全に解放
+	ClearKeyAndDoorSprites();
 
 	// MapLoaderから鍵の情報を取得
 	if (mapLoader_) {
@@ -117,10 +112,16 @@ void Minimap::CreateKeyAndDoorIcons() {
 				Vector2 minimapPos = WorldToMinimap(keyPos);
 
 				if (IsInsideCircle(minimapPos)) {
-					Sprite* keyIcon = Sprite::Create(keyHandle_, minimapPos);
-					keyIcon->SetSize({20, 20});                  // 鍵のアイコンサイズ
-					keyIcon->SetColor({1.0f, 1.0f, 1.0f, 0.9f}); // 白色（透過前提）
-					keySprites_.push_back(keyIcon);
+					// 修正: 鍵アイコンのサイズを調整し、位置を中心に合わせる
+					Sprite* keyIcon = Sprite::Create(keyHandle_, {0, 0});
+					if (keyIcon) { // nullチェックを追加
+						// サイズを小さく設定（16x16）
+						keyIcon->SetSize({16, 16});
+						// 位置を中心に調整
+						keyIcon->SetPosition({minimapPos.x - 8.0f, minimapPos.y - 8.0f});
+						keyIcon->SetColor({1.0f, 1.0f, 1.0f, 0.9f});
+						keySprites_.push_back(keyIcon);
+					}
 				}
 			}
 		}
@@ -133,21 +134,26 @@ void Minimap::CreateKeyAndDoorIcons() {
 				Vector2 minimapPos = WorldToMinimap(doorPos);
 
 				if (IsInsideCircle(minimapPos)) {
-					Sprite* doorIcon = Sprite::Create(doorHandle_, minimapPos);
-					doorIcon->SetSize({24, 24});                  // ドアのアイコンサイズ
-					doorIcon->SetColor({1.0f, 1.0f, 1.0f, 0.9f}); // 白色（透過前提）
-					doorSprites_.push_back(doorIcon);
+					Sprite* doorIcon = Sprite::Create(doorHandle_, {0, 0});
+					if (doorIcon) { // nullチェックを追加
+						// サイズと位置を調整
+						doorIcon->SetSize({20, 20});
+						doorIcon->SetPosition({minimapPos.x - 10.0f, minimapPos.y - 10.0f});
+						doorIcon->SetColor({1.0f, 1.0f, 1.0f, 0.9f});
+						doorSprites_.push_back(doorIcon);
+					}
 				}
 			}
 		}
 	}
 }
-
 void Minimap::CreateMapChipsFromObstacles() {
-	// 既存のマップチップをクリア
+	// 既存のマップチップを安全に解放
 	for (auto& chip : mapChips_) {
-		if (chip)
+		if (chip) {
 			delete chip;
+			chip = nullptr;
+		}
 	}
 	mapChips_.clear();
 
@@ -340,8 +346,11 @@ void Minimap::DrawPlayerMarker() {
 	// プレイヤーアイコンのサイズ設定
 	const float iconSize = 20.0f;
 
-	// プレイヤーの向きに合わせてスプライトを回転
-	float angle = playerRotation_;
+	// 以前はプレイヤーの向きに合わせてスプライトを回転していた
+	// float angle = playerRotation_;
+
+	// 回転を適用しない（固定向き）
+	float angle = 0.0f;
 
 	// プレイヤーアイコンを描画
 	playerSprite_->SetPosition(Vector2(playerMinimapPos_.x - iconSize / 2, playerMinimapPos_.y - iconSize / 2));
@@ -379,4 +388,24 @@ bool Minimap::IsInsideCircle(const Vector2& point) {
 	float distanceSquared = dx * dx + dy * dy;
 
 	return distanceSquared <= radius_ * radius_;
+}
+
+void Minimap::ClearKeyAndDoorSprites() {
+	// 鍵スプライトの解放
+	for (auto& keySprite : keySprites_) {
+		if (keySprite) {
+			delete keySprite;
+			keySprite = nullptr;
+		}
+	}
+	keySprites_.clear();
+
+	// ドアスプライトの解放
+	for (auto& doorSprite : doorSprites_) {
+		if (doorSprite) {
+			delete doorSprite;
+			doorSprite = nullptr;
+		}
+	}
+	doorSprites_.clear();
 }

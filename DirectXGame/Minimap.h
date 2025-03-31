@@ -50,6 +50,8 @@ private:
 	// 点が円の内側にあるかチェック
 	bool IsInsideCircle(const Vector2& point);
 
+	void ClearKeyAndDoorSprites();
+
 	// 各種スプライト
 	Sprite* backgroundSprite_ = nullptr; // 背景用
 	Sprite* playerSprite_ = nullptr;     // プレイヤーマーカー用
