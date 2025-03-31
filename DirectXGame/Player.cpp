@@ -38,7 +38,7 @@ void Player::ClearObstacleList() {
 void Player::Update() {
 #pragma region 入力処理
 	// キーボードとGamePad左スティックの入力を合算して移動処理する
-	float keyboardSpeed = 0.55f;
+	float keyboardSpeed = 0.85f;
 	Vector3 inputVec = {0.0f, 0.0f, 0.0f};
 
 	// キーボード入力 (WASD)

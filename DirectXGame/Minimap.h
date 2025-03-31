@@ -83,5 +83,5 @@ private:
 
 	// プレイヤー情報
 	Vector2 playerMinimapPos_ = {0, 0}; // プレイヤーのミニマップ上の位置
-	float playerRotation_ = 0.0f;       // プレイヤーの向き
+	float playerRotation_ = 0.0f;       // プレイヤーの向き（現在は使用しない）
 };

@@ -108,7 +108,7 @@ private:
 	float coolTime = 0.0f;
 	float cameraPitch = 5.0f;
 	float cameraYaw = 0.0f;
-	const float speed = 0.2f;
+	const float speed = 0.28f;
 	XINPUT_STATE state, preState;
 	AABB playerAABB;
 	AABB enemyAABB;
