@@ -2,7 +2,7 @@
 
 void GhostBlock::Init(Camera* camera_) {
     Camera_ = camera_;
-	model_ = Model::CreateFromOBJ("cube", true);
+	//model_ = Model::CreateFromOBJ("cube", true);
     worldTransform.Initialize();
     worldTransform.translation_ = { 5, 2, 3 };
 	worldTransform.TransferMatrix();
@@ -14,7 +14,7 @@ void GhostBlock::Update() {
 
 void GhostBlock::Draw() {
     if (!isActive_) return; // 非アクティブなら描画しない
-    model_->Draw(worldTransform,*Camera_);
+    //model_->Draw(worldTransform,*Camera_);
 }
 
 AABB GhostBlock::GetAABB() const {

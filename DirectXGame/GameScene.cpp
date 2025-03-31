@@ -26,6 +26,7 @@ void GameScene::Finalize() {
 		delete stage;
 		stage = nullptr;
 	}
+	
 
 	delete block_;
 	delete modelBlock_;
@@ -245,7 +246,7 @@ void GameScene::Draw() {
 		mapLoader_->Draw();
 	}
 
-	// ghostBlock_->Draw();
+	ghostBlock_->Draw();
 
 	skydome_->Draw();
 

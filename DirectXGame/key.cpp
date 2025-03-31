@@ -7,7 +7,8 @@
 
 Key::Key() {}
 
-Key::~Key() { delete model_; }
+Key::~Key() { delete model_;
+}
 
 void Key::Init(Camera* camera) {
 	camera_ = camera;

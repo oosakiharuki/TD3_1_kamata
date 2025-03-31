@@ -11,8 +11,8 @@ CannonEnemy::~CannonEnemy() {
 	for (Bom* bom : bullets_) {
 		delete bom;
 	}
+	bullets_.clear(); 
 }
-
 void CannonEnemy::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
@@ -83,8 +83,7 @@ void CannonEnemy::Update() {
 			AABB playerAABB = player_->GetAABB();
 
 			Vector3 closestPoint{
-			    std::clamp(position.x, playerAABB.min.x, playerAABB.max.x), std::clamp(position.y, playerAABB.min.y, playerAABB.max.y), std::clamp(position.z, playerAABB.min.z, playerAABB.max.z)
-			};
+			    std::clamp(position.x, playerAABB.min.x, playerAABB.max.x), std::clamp(position.y, playerAABB.min.y, playerAABB.max.y), std::clamp(position.z, playerAABB.min.z, playerAABB.max.z)};
 
 			float distance = Length(closestPoint - position);
 
@@ -139,7 +138,6 @@ void CannonEnemy::Update() {
 		}
 		return false;
 	});
-
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
 }
@@ -207,7 +205,7 @@ AABB CannonEnemy::GetAABB() {
 void CannonEnemy::ContralPlayer() {
 	isPlayer = true;
 	worldTransform_.translation_ = {0, -2, 0};
-	worldTransform_.rotation_ = { 0, 0, 0 };
+	worldTransform_.rotation_ = {0, 0, 0};
 	if (player_) {
 		player_->SetState(Player::State::Bomb);
 	}

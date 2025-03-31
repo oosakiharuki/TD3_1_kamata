@@ -11,6 +11,7 @@ using namespace KamataEngine;
 class Skydome {
 
 public:
+
 	void Initialize(Model* model, Camera* viewProjection);
 
 	void Update();
