@@ -122,6 +122,7 @@
     <ClCompile Include="Ground.cpp" />
     <ClCompile Include="key.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Minimap.cpp" />
     <ClCompile Include="Mymath.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="SkyDome.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="Ground.h" />
     <ClInclude Include="key.h" />
+    <ClInclude Include="Minimap.h" />
     <ClInclude Include="Mymath.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="SkyDome.h" />

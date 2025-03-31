@@ -10,6 +10,7 @@
 #include "KamataEngine.h"
 #include "Key.h"
 #include "MapLoader.h"
+#include "Minimap.h" // 追加
 #include "Player.h"
 #include "Skydome.h"
 #include "SpringEnemy.h"
@@ -92,4 +93,7 @@ private:
 	TransitionEffect* transitionEffect_ = nullptr;
 	TransitionState transitionState_ = TransitionState::None;
 	int nextStage_ = 0; // 次のステージ番号
+
+	// ミニマップ
+	Minimap* minimap_ = nullptr;
 };

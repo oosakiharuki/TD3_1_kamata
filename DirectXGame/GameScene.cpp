@@ -1,5 +1,6 @@
 #include "GameScene.h"
 #include "AABB.h"
+#include "Minimap.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -39,6 +40,12 @@ void GameScene::Finalize() {
 	if (transitionEffect_) {
 		delete transitionEffect_;
 		transitionEffect_ = nullptr;
+	}
+
+	// ミニマップの解放
+	if (minimap_) {
+		delete minimap_;
+		minimap_ = nullptr;
 	}
 }
 #pragma endregion 終了処理
@@ -123,6 +130,10 @@ void GameScene::Initialize() {
 	// トランジション効果の初期化
 	transitionEffect_ = new TransitionEffect();
 	transitionEffect_->Initialize();
+
+	// ミニマップの初期化
+	minimap_ = new Minimap();
+	minimap_->Initialize(player_, mapLoader_, enemyLoader_, allObstacles_);
 }
 #pragma endregion 初期化処理
 
@@ -192,6 +203,11 @@ void GameScene::Update() {
 	// 天球の更新
 	skydome_->Update();
 
+	// ミニマップの更新
+	if (minimap_) {
+		minimap_->Update();
+	}
+
 	// ドアが開いたら次のステージへトランジション開始
 	// フェードアウト中でなければトランジション開始
 	if (mapLoader_ && mapLoader_->IsDoorOpened() && transitionState_ == TransitionState::None) {
@@ -246,6 +262,11 @@ void GameScene::Draw() {
 	// トランジション効果の描画
 	if (transitionEffect_) {
 		transitionEffect_->Draw();
+	}
+
+	// ミニマップの描画
+	if (minimap_) {
+		minimap_->Draw();
 	}
 
 	Sprite::PostDraw();
@@ -356,6 +377,14 @@ void GameScene::ChangeStage(int nextStage) {
 
 	// プレイヤーの座標を変更
 	player_->SetPosition(newPosition);
+
+	// ミニマップを再初期化
+	if (minimap_) {
+		delete minimap_;
+		minimap_ = nullptr;
+	}
+	minimap_ = new Minimap();
+	minimap_->Initialize(player_, mapLoader_, enemyLoader_, allObstacles_);
 }
 #pragma endregion ステージ変更処理
 
