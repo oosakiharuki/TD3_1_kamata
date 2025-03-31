@@ -1,8 +1,10 @@
 #include "GhostBlock.h"
 
+GhostBlock::GhostBlock() {}
+
 void GhostBlock::Init(Camera* camera_) {
     Camera_ = camera_;
-	//model_ = Model::CreateFromOBJ("cube", true);
+	model_ = Model::CreateFromOBJ("cube", true);
     worldTransform.Initialize();
     worldTransform.translation_ = { 5, 2, 3 };
 	worldTransform.TransferMatrix();
