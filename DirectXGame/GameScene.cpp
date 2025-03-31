@@ -192,8 +192,8 @@ void GameScene::Draw() {
 		mapLoader_->Draw();
 	}
 
-	block_->Draw();
-	ghostBlock_->Draw();
+
+	//ghostBlock_->Draw();
 
 	skydome_->Draw();
 
