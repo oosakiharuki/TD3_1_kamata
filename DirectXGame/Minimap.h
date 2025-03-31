@@ -26,6 +26,12 @@ private:
 	// 障害物データからマップチップを生成
 	void CreateMapChipsFromObstacles();
 
+	// 鍵とドアのアイコンを生成
+	void CreateKeyAndDoorIcons();
+
+	// 鍵とドアのアイコンを更新
+	void UpdateKeyAndDoorIcons();
+
 	// 円形のミニマップ背景を描画
 	void DrawCircle();
 
@@ -50,6 +56,8 @@ private:
 	Sprite* borderSprite_ = nullptr;     // 枠用
 	Sprite* labelSprite_ = nullptr;      // MAPラベル用
 	std::vector<Sprite*> mapChips_;      // マップチップ用
+	std::vector<Sprite*> keySprites_;    // 鍵アイコン用
+	std::vector<Sprite*> doorSprites_;   // ドアアイコン用
 
 	// テクスチャハンドル
 	uint32_t backgroundHandle_ = 0;
@@ -66,10 +74,10 @@ private:
 
 	// ミニマップの設定
 	Vector2 position_ = {0, 0}; // 左上の位置
-	Vector2 size_ = {180, 180}; // サイズ
-	float radius_ = 90.0f;      // 円の半径
+	Vector2 size_ = {300, 300}; // サイズ（より大きくする）
+	float radius_ = 150.0f;     // 円の半径
 	Vector2 center_ = {0, 0};   // 円の中心位置
-	float scale_ = 0.7f;        // 世界座標からミニマップ座標への変換スケール
+	float scale_ = 0.7f;        // 世界座標からミニマップ座標への変換スケール（大幅に拡大）
 
 	// プレイヤー情報
 	Vector2 playerMinimapPos_ = {0, 0}; // プレイヤーのミニマップ上の位置

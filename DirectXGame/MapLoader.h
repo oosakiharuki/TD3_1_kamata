@@ -61,12 +61,16 @@ public:
 	// ステージ切り替え
 	void ChangeStage(int stageNumber, Camera* camera, Player* player);
 
-	void GLoadStage(std::string objFile);
-
 	// ブロックリストへのアクセス
 	const std::vector<Block*>& GetBlockList() const { return blocks_; }
 
-	// Goalへのアクセス（追加）
+	// 鍵リストへのアクセス（ミニマップ用）
+	const std::vector<Key*>& GetKeyList() const { return keys_; }
+
+	// ドアリストへのアクセス（ミニマップ用）
+	const std::vector<Door*>& GetDoorList() const { return doors_; }
+
+	// Goalへのアクセス
 	Goal* GetGoal() const { return goal_ ? goal_ : nullptr; }
 
 private:

@@ -1,4 +1,5 @@
 #include "Minimap.h"
+#include <algorithm> // std::maxの使用のために必要
 #include <base/TextureManager.h>
 #include <cmath>
 #include <numbers>
@@ -22,6 +23,19 @@ Minimap::~Minimap() {
 			delete chip;
 	}
 	mapChips_.clear();
+
+	// 鍵とドアのスプライト解放
+	for (auto& keySprite : keySprites_) {
+		if (keySprite)
+			delete keySprite;
+	}
+	keySprites_.clear();
+
+	for (auto& doorSprite : doorSprites_) {
+		if (doorSprite)
+			delete doorSprite;
+	}
+	doorSprites_.clear();
 }
 
 void Minimap::Initialize(Player* player, MapLoader* mapLoader, EnemyLoader* enemyLoader, const std::vector<std::vector<AABB>>& obstacles) {
@@ -34,23 +48,23 @@ void Minimap::Initialize(Player* player, MapLoader* mapLoader, EnemyLoader* enem
 	const int windowWidth = WinApp::kWindowWidth;
 	const int windowHeight = WinApp::kWindowHeight;
 
-	// ミニマップのサイズを円形に適した正方形に設定
-	size_ = {180, 180};
+	// ミニマップのサイズを大きくする (300x300)
+	size_ = {300, 300};
 	radius_ = size_.x / 2.0f;
 
 	// ミニマップの位置（右下）
 	position_ = {static_cast<float>(windowWidth) - size_.x - 20, static_cast<float>(windowHeight) - size_.y - 20};
 	center_ = {position_.x + radius_, position_.y + radius_};
 
-	// 拡大スケールの調整
-	scale_ = 0.3f;
+	// 拡大スケールの調整 - より大きなスケールで遠くまで見えるように
+	scale_ = 0.7f; // 大幅に拡大
 
 	// テクスチャのロード
 	backgroundHandle_ = TextureManager::Load("white1x1.png"); // 背景用
 	playerHandle_ = TextureManager::Load("white1x1.png");     // プレイヤー用
 	borderHandle_ = TextureManager::Load("white1x1.png");     // 枠用
 	mapChipHandle_ = TextureManager::Load("white1x1.png");    // マップチップ用
-	
+
 	// スプライトの生成
 	// 背景（暗めのグレー）
 	backgroundSprite_ = Sprite::Create(backgroundHandle_, position_);
@@ -68,12 +82,63 @@ void Minimap::Initialize(Player* player, MapLoader* mapLoader, EnemyLoader* enem
 	playerSprite_->SetColor({1.0f, 1.0f, 1.0f, 1.0f});
 
 	// MAPラベル
-	labelSprite_ = Sprite::Create(labelHandle_, {position_.x + size_.x - 40, position_.y + size_.y - 20});
-	labelSprite_->SetSize({40, 20});
-	labelSprite_->SetColor({1.0f, 1.0f, 1.0f, 1.0f});
+	labelSprite_ = Sprite::Create(backgroundHandle_, {position_.x + size_.x - 60, position_.y + 10});
+	labelSprite_->SetSize({50, 25});
+	labelSprite_->SetColor({0.3f, 0.3f, 0.3f, 0.9f});
 
 	// 障害物データからマップチップを生成
 	CreateMapChipsFromObstacles();
+
+	// 鍵とドアのアイコンを作成
+	CreateKeyAndDoorIcons();
+}
+
+void Minimap::CreateKeyAndDoorIcons() {
+	// 鍵とドアのスプライトをクリア
+	for (auto& keySprite : keySprites_) {
+		delete keySprite;
+	}
+	keySprites_.clear();
+
+	for (auto& doorSprite : doorSprites_) {
+		delete doorSprite;
+	}
+	doorSprites_.clear();
+
+	// MapLoaderから鍵の情報を取得
+	if (mapLoader_) {
+		// 鍵のアイコンを作成
+		const std::vector<Key*>& keys = mapLoader_->GetKeyList();
+		for (const auto& key : keys) {
+			if (key) {
+				Vector3 keyPos = key->GetWorldPosition();
+				Vector2 minimapPos = WorldToMinimap(keyPos);
+
+				if (IsInsideCircle(minimapPos)) {
+					Sprite* keyIcon = Sprite::Create(backgroundHandle_, minimapPos);
+					keyIcon->SetSize({15, 15});                  // 鍵のアイコンサイズを大きく
+					keyIcon->SetColor({1.0f, 1.0f, 0.0f, 0.9f}); // 黄色
+					keySprites_.push_back(keyIcon);
+				}
+			}
+		}
+
+		// ドアのアイコンを作成
+		const std::vector<Door*>& doors = mapLoader_->GetDoorList();
+		for (const auto& door : doors) {
+			if (door) {
+				Vector3 doorPos = door->GetWorldPosition();
+				Vector2 minimapPos = WorldToMinimap(doorPos);
+
+				if (IsInsideCircle(minimapPos)) {
+					Sprite* doorIcon = Sprite::Create(backgroundHandle_, minimapPos);
+					doorIcon->SetSize({18, 18});                  // ドアのアイコンサイズをさらに大きく
+					doorIcon->SetColor({1.0f, 0.0f, 0.0f, 0.9f}); // 赤色
+					doorSprites_.push_back(doorIcon);
+				}
+			}
+		}
+	}
 }
 
 void Minimap::CreateMapChipsFromObstacles() {
@@ -103,11 +168,14 @@ void Minimap::CreateMapChipsFromObstacles() {
 				if (IsInsideCircle(chipPos)) {
 					Sprite* chip = Sprite::Create(mapChipHandle_, chipPos);
 
-					// サイズをスケールに合わせて調整
-					float chipWidth = width * scale_;
-					float chipDepth = depth * scale_;
+					// サイズをスケールに合わせて調整 - 視認性向上のためサイズを大きめに
+					float chipWidth = width * scale_ * 1.5f;
+					float chipDepth = depth * scale_ * 1.5f;
+					// 最小サイズを設定して小さすぎる要素も見えるようにする
+					chipWidth = (chipWidth < 10.0f) ? 10.0f : chipWidth;
+					chipDepth = (chipDepth < 10.0f) ? 10.0f : chipDepth;
 					chip->SetSize({chipWidth, chipDepth});
-					chip->SetColor({0.1f, 0.1f, 0.1f, 0.9f}); // 暗めの色
+					chip->SetColor({0.5f, 0.5f, 0.5f, 0.9f}); // 灰色
 
 					mapChips_.push_back(chip);
 				}
@@ -125,8 +193,8 @@ void Minimap::CreateMapChipsFromObstacles() {
 				Vector2 chipPos = WorldToMinimap(center);
 				if (IsInsideCircle(chipPos)) {
 					Sprite* chip = Sprite::Create(mapChipHandle_, chipPos);
-					chip->SetSize({8, 8});
-					chip->SetColor({0.3f, 0.3f, 0.3f, 0.9f}); // やや明るい色
+					chip->SetSize({15, 15});                  // ブロックのサイズも大きく
+					chip->SetColor({0.5f, 0.5f, 0.5f, 0.9f}); // 灰色
 					mapChips_.push_back(chip);
 				}
 			}
@@ -144,16 +212,72 @@ void Minimap::Update() {
 
 	// プレイヤーの向きを取得（worldTransform_の回転から）
 	playerRotation_ = player_->GetWorld()->rotation_.y;
+
+	// 鍵とドアのアイコンを更新
+	UpdateKeyAndDoorIcons();
+}
+
+void Minimap::UpdateKeyAndDoorIcons() {
+	// 鍵の状態が変わった場合にアイコンを更新
+	bool needUpdate = false;
+
+	// MapLoaderから鍵の情報を取得
+	if (mapLoader_) {
+		const std::vector<Key*>& keys = mapLoader_->GetKeyList();
+
+		// 鍵の数が変わった場合、または取得状態が変わった場合に更新
+		if (keys.size() != keySprites_.size()) {
+			needUpdate = true;
+		} else {
+			for (size_t i = 0; i < keys.size(); i++) {
+				// 鍵が取得された場合、アイコンの色を半透明に
+				if (keys[i] && keys[i]->IsKeyObtained() && i < keySprites_.size()) {
+					keySprites_[i]->SetColor({1.0f, 1.0f, 0.0f, 0.4f}); // 半透明の黄色
+				}
+			}
+		}
+
+		// ドアが開いた場合、アイコンの色を変更
+		const std::vector<Door*>& doors = mapLoader_->GetDoorList();
+		for (size_t i = 0; i < doors.size() && i < doorSprites_.size(); i++) {
+			if (doors[i] && doors[i]->IsDoorOpened()) {
+				doorSprites_[i]->SetColor({0.0f, 1.0f, 0.0f, 0.9f}); // 緑色（開いた状態）
+			}
+		}
+	}
+
+	// 更新が必要な場合は鍵とドアのアイコンを再作成
+	if (needUpdate) {
+		CreateKeyAndDoorIcons();
+	}
 }
 
 void Minimap::Draw() {
 	// 背景の円形部分を描画
 	DrawCircle();
 
-	// マップチップを描画
+	// マップチップを描画 - スケールを考慮したサイズで表示
 	for (auto& chip : mapChips_) {
 		if (chip && IsInsideCircle(chip->GetPosition())) {
+			// マップチップのサイズを若干大きくして見やすくする
+			Vector2 currentSize = chip->GetSize();
+			Vector2 adjustedSize = {currentSize.x * 1.2f, currentSize.y * 1.2f};
+			chip->SetSize(adjustedSize);
 			chip->Draw();
+		}
+	}
+
+	// 鍵のアイコンを描画
+	for (auto& keySprite : keySprites_) {
+		if (keySprite && IsInsideCircle(keySprite->GetPosition())) {
+			keySprite->Draw();
+		}
+	}
+
+	// ドアのアイコンを描画
+	for (auto& doorSprite : doorSprites_) {
+		if (doorSprite && IsInsideCircle(doorSprite->GetPosition())) {
+			doorSprite->Draw();
 		}
 	}
 
@@ -170,31 +294,11 @@ void Minimap::Draw() {
 }
 
 void Minimap::DrawCircle() {
-	// 背景を円形に見せるために、複数の細長い四角形を扇状に並べる
-	const int segments = 36; // 円を近似するための分割数
-	const float angleStep = 2.0f * static_cast<float>(std::numbers::pi) / segments;
-
-	for (int i = 0; i < segments; i++) {
-		float angle1 = i * angleStep;
-		// angle2は使用しないので削除
-
-		// x1, y1, x2, y2は使わないので削除
-
-		// 扇形の四角形近似を描画
-		Vector2 segmentPos = {center_.x - 2, center_.y - 2};
-		Vector2 segmentSize = {4, radius_};
-
-		backgroundSprite_->SetPosition(segmentPos);
-		backgroundSprite_->SetSize(segmentSize);
-		backgroundSprite_->SetRotation(angle1); // 回転させて扇形に
-		backgroundSprite_->Draw();
-	}
-
 	// 背景の円全体を描画（半透明の明るいグレー）
 	backgroundSprite_->SetPosition(position_);
 	backgroundSprite_->SetSize(size_);
 	backgroundSprite_->SetRotation(0);
-	backgroundSprite_->SetColor({0.4f, 0.4f, 0.4f, 0.6f});
+	backgroundSprite_->SetColor({0.3f, 0.3f, 0.3f, 0.8f});
 	backgroundSprite_->Draw();
 }
 
@@ -232,7 +336,7 @@ void Minimap::DrawPlayerMarker() {
 		return;
 
 	// プレイヤーの三角形マーカーを描画
-	const float markerSize = 8.0f;
+	const float markerSize = 15.0f; // さらに大きくして目立たせる
 
 	// 三角形の3つの頂点を計算（プレイヤーの向きに合わせて回転）
 	float angle = playerRotation_; // プレイヤーの向き

@@ -32,6 +32,9 @@ public:
 	// AABBを取得
 	AABB GetAABB() const;
 
+	// ワールド座標を取得（ミニマップ用）
+	Vector3 GetWorldPosition() const { return position_; }
+
 	// 位置を設定（CSVから読み込んだ位置に合わせるため）
 	void SetPosition(const Vector3& position) {
 		position_ = position;
