@@ -127,7 +127,6 @@ void GameScene::Initialize() {
 #pragma endregion 初期化処理
 
 #pragma region 更新処理
-#pragma region 更新処理
 void GameScene::Update() {
 	// 入力状態の取得
 	Input::GetInstance()->GetJoystickState(0, state);
@@ -149,8 +148,9 @@ void GameScene::Update() {
 	// トランジション処理の更新
 	UpdateTransition();
 
-	// トランジション中は他の更新処理をスキップ
-	if (transitionState_ != TransitionState::None) {
+	// ステージ切り替え中のみスキップ（TransitionState::ChangeStageの状態を新たに追加）
+	// フェードイン・フェードアウト中は更新を続ける
+	if (transitionState_ == TransitionState::ChangeStage) {
 		return;
 	}
 
@@ -193,7 +193,8 @@ void GameScene::Update() {
 	skydome_->Update();
 
 	// ドアが開いたら次のステージへトランジション開始
-	if (mapLoader_ && mapLoader_->IsDoorOpened()) {
+	// フェードアウト中でなければトランジション開始
+	if (mapLoader_ && mapLoader_->IsDoorOpened() && transitionState_ == TransitionState::None) {
 		// 次のステージ番号を計算
 		int nextStage = currentStage_ + 1;
 
@@ -201,7 +202,6 @@ void GameScene::Update() {
 		StartTransitionToStage(nextStage);
 	}
 }
-#pragma endregion 更新処理
 #pragma endregion 更新処理
 
 #pragma region 描画処理
@@ -498,7 +498,7 @@ void GameScene::UpdateStageAABB() {
 #pragma endregion 障害物関連処理
 
 #pragma region トランジション関連処理
-// トランジション状態の更新（シンプル化）
+// トランジション状態の更新（フェード中もゲーム更新を継続）
 void GameScene::UpdateTransition() {
 	// トランジション効果が無効なら何もしない
 	if (!transitionEffect_) {
@@ -517,12 +517,15 @@ void GameScene::UpdateTransition() {
 	case TransitionState::FadeOut:
 		// フェードアウト完了チェック
 		if (transitionEffect_->IsCompleted()) {
-			// ステージ切り替え
+			// ステージ切り替え中の状態に移行
+			transitionState_ = TransitionState::ChangeStage;
+			transitionEffect_->ResetCompleted();
+
+			// ステージ切り替え処理
 			ChangeStage(nextStage_);
 
-			// フェードインへ移行
+			// すぐにフェードインへ移行
 			transitionState_ = TransitionState::FadeIn;
-			transitionEffect_->ResetCompleted();
 
 			// フェードインを開始
 			transitionEffect_->Start(TransitionType::FadeIn, 1.0f);
@@ -543,7 +546,7 @@ void GameScene::UpdateTransition() {
 	}
 }
 
-// ステージ遷移トランジションの開始（シンプル化）
+// ステージ遷移トランジションの開始
 void GameScene::StartTransitionToStage(int stageNumber) {
 	// 既にトランジション中なら何もしない
 	if (transitionState_ != TransitionState::None) {

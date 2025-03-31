@@ -38,11 +38,12 @@ private:
 	void LoadStage(std::string objFile);
 	void UpdateStageAABB();
 
-	// トランジションの状態（シンプル化）
+	// トランジションの状態
 	enum class TransitionState {
-		None,    // トランジションなし
-		FadeOut, // フェードアウト中（現ステージ）
-		FadeIn   // フェードイン中（次ステージ）
+		None,        // トランジションなし
+		FadeOut,     // フェードアウト中（現ステージ）
+		ChangeStage, // ステージ切り替え中（更新を一時停止）
+		FadeIn       // フェードイン中（次ステージ）
 	};
 
 	// トランジション処理
