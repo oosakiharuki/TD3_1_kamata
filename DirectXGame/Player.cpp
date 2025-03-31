@@ -21,6 +21,11 @@ void Player::Init(Camera* camera) {
 	worldTransform_.translation_ = position;
 	block_ = new Block;
 	ghostBlock_ = new GhostBlock;
+
+	// オーディオの初期化
+	audio_ = Audio::GetInstance();
+	jumpSoundHandle_ = audio_->LoadWave("./sound/jump.wav");
+	snapSoundHandle_ = audio_->LoadWave("./sound/snap.wav");
 }
 #pragma endregion
 
@@ -162,9 +167,15 @@ void Player::Update() {
 	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && onGround_) {
 		velocityY_ = 0.3f;
 		onGround_ = false;
+
+		// ジャンプ音を再生
+		audio_->playAudio(jumpSoundID_, jumpSoundHandle_, false, 0.7f);
 	} else if (Input::GetInstance()->TriggerKey(DIK_SPACE) && onGround_) {
 		velocityY_ = 0.3f;
 		onGround_ = false;
+
+		// ジャンプ音を再生
+		audio_->playAudio(jumpSoundID_, jumpSoundHandle_, false, 0.7f);
 	}
 
 	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_ && EnemyContral) {
@@ -214,6 +225,9 @@ void Player::Update() {
 			cannonEnemy->ContralPlayer();
 			EnemyContral = true;
 			collisionEnemy = true;
+
+			// 乗り移り音を再生
+			audio_->playAudio(snapSoundID_, snapSoundHandle_, false, 0.6f);
 		}
 	}
 
@@ -241,6 +255,9 @@ void Player::Update() {
 				springEnemy->ContralPlayer();
 				EnemyContral = true;
 				collisionEnemy = true;
+
+				// 乗り移り音を再生
+				audio_->playAudio(snapSoundID_, snapSoundHandle_, false, 0.6f);
 			}
 		}
 
@@ -282,6 +299,9 @@ void Player::Update() {
 				(*it)->ContralPlayer();
 				EnemyContral = true;
 				collisionEnemy = true;
+
+				// 乗り移り音を再生
+				audio_->playAudio(snapSoundID_, snapSoundHandle_, false, 0.5f);
 			}
 		}
 

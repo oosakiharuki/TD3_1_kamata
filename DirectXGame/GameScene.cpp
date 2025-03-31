@@ -137,7 +137,7 @@ void GameScene::Initialize() {
 
 	// ステージ1のBGM読み込みと再生
 	stageBGMHandle_ = audio_->LoadWave("./sound/stage1.wav");
-	audio_->playAudio(stageBGMID_, stageBGMHandle_, true, 0.2f);
+	audio_->playAudio(stageBGMID_, stageBGMHandle_, true, 0.25f);
 }
 #pragma endregion 初期化処理
 
@@ -398,7 +398,7 @@ void GameScene::ChangeStage(int nextStage) {
 	// 新しいステージのBGMを読み込み再生
 	std::string stageBGMPath = "./sound/stage" + std::to_string(currentStage_) + ".wav";
 	stageBGMHandle_ = audio_->LoadWave(stageBGMPath.c_str());
-	audio_->playAudio(stageBGMID_, stageBGMHandle_, true, 0.2f);
+	audio_->playAudio(stageBGMID_, stageBGMHandle_, true, 0.25f);
 }
 
 #pragma endregion ステージ変更処理

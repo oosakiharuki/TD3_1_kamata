@@ -133,4 +133,13 @@ private:
 	bool isVisible = true;            // 現在表示中かどうか
 	const float flashInterval = 0.1f; // 点滅間隔（秒）
 	const float flashDuration = 1.0f; // 点滅継続時間（秒）
+
+
+	 // サウンド関連
+	Audio* audio_ = nullptr;
+	int jumpSoundHandle_ = 0;
+	int jumpSoundID_ = -1;
+	int snapSoundHandle_ = 0;
+	int snapSoundID_ = -1;
+
 };
