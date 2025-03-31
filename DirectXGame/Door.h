@@ -37,6 +37,9 @@ public:
 	// ドアが開いたかどうか
 	bool IsDoorOpened() const { return isDoorOpened_; }
 
+	// ドアのアニメーションが完了したかどうか（新規追加）
+	bool IsAnimationCompleted() const { return isDoorOpened_ && !isAnimating_; }
+
 	// ドアに触れたかどうか
 	bool IsDoorTouched() const { return isDoorTouched_; }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "Block.h"
 #include "Door.h"
-#include "Goal.h" 
+#include "Goal.h"
 #include "KamataEngine.h"
 #include "Key.h"
 #include "Player.h"
@@ -54,6 +54,9 @@ public:
 
 	// ドアが開いたかどうかを確認
 	bool IsDoorOpened() const;
+
+	// ドアが開きアニメーションが完了したかどうかを確認（新規追加）
+	bool IsDoorOpenCompleted() const;
 
 	// ステージ切り替え
 	void ChangeStage(int stageNumber, Camera* camera, Player* player);

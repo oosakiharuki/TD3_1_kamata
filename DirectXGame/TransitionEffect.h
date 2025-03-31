@@ -4,12 +4,11 @@
 
 using namespace KamataEngine;
 
-// トランジション効果の種類
+// トランジション効果の種類をシンプルに
 enum class TransitionType {
-	None,      // トランジションなし
-	Fade,      // フェード
-	DoorOpen,  // ドアが開くような効果
-	CircleWipe // 円形ワイプ
+	None,   // トランジションなし
+	FadeIn, // フェードイン（透明 → 不透明）
+	FadeOut // フェードアウト（不透明 → 透明）
 };
 
 class TransitionEffect {
@@ -42,16 +41,6 @@ private:
 	// トランジション用スプライト生成
 	void CreateSprites();
 
-	// フェードトランジションの描画
-	void DrawFadeTransition();
-
-	// ドア開閉トランジションの描画
-	void DrawDoorTransition();
-
-	// 円形ワイプトランジションの描画
-	void DrawCircleWipeTransition();
-
-private:
 	bool isTransitioning_; // トランジション中フラグ
 	bool isCompleted_;     // 完了フラグ
 	TransitionType type_;  // トランジションの種類
@@ -62,13 +51,4 @@ private:
 	// フェード用
 	Sprite* fadeSprite_;         // フェード用スプライト
 	uint32_t fadeTextureHandle_; // 白テクスチャハンドル
-
-	// ドア用
-	Sprite* leftDoorSprite_;     // 左ドア用スプライト
-	Sprite* rightDoorSprite_;    // 右ドア用スプライト
-	uint32_t doorTextureHandle_; // ドアテクスチャハンドル
-
-	// 円形ワイプ用
-	Sprite* circleSprite_;         // 円形ワイプ用スプライト
-	uint32_t circleTextureHandle_; // 円形テクスチャハンドル
 };

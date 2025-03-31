@@ -216,6 +216,10 @@ bool MapLoader::IsDoorOpened() const {
 	return std::any_of(doors_.begin(), doors_.end(), [](const Door* door) { return door->IsDoorOpened(); });
 }
 
+bool MapLoader::IsDoorOpenCompleted() const {
+	// いずれかのドアが開き、かつアニメーションが完了しているかチェック
+	return std::any_of(doors_.begin(), doors_.end(), [](const Door* door) { return door->IsAnimationCompleted(); });
+}
 void MapLoader::ClearResources() {
 	// 鍵のリソースを解放
 	for (auto* key : keys_) {

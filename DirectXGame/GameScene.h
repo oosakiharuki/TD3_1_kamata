@@ -13,7 +13,7 @@
 #include "Player.h"
 #include "Skydome.h"
 #include "SpringEnemy.h"
-#include "TransitionEffect.h" // 追加
+#include "TransitionEffect.h"
 
 using namespace KamataEngine;
 
@@ -38,15 +38,14 @@ private:
 	void LoadStage(std::string objFile);
 	void UpdateStageAABB();
 
-	// トランジションの状態   // 追加
+	// トランジションの状態（シンプル化）
 	enum class TransitionState {
-		None,       // トランジションなし
-		FadeOut,    // フェードアウト中（現ステージ）
-		FadeIn,     // フェードイン中（次ステージ）
-		WaitForNext // 次のステージ待ち
+		None,    // トランジションなし
+		FadeOut, // フェードアウト中（現ステージ）
+		FadeIn   // フェードイン中（次ステージ）
 	};
 
-	// トランジション処理     // 追加
+	// トランジション処理
 	void UpdateTransition();
 	void StartTransitionToStage(int stageNumber);
 
@@ -86,9 +85,9 @@ private:
 
 	float longPress = 1.0f;
 	const float RestartTimer = 1.0f;
-	XINPUT_STATE state = {}, preState = {}; // 初期化を追加
+	XINPUT_STATE state = {}, preState = {};
 
-	// トランジション関連    // 追加
+	// トランジション関連
 	TransitionEffect* transitionEffect_ = nullptr;
 	TransitionState transitionState_ = TransitionState::None;
 	int nextStage_ = 0; // 次のステージ番号

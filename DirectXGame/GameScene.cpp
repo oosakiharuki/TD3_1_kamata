@@ -127,6 +127,7 @@ void GameScene::Initialize() {
 #pragma endregion 初期化処理
 
 #pragma region 更新処理
+#pragma region 更新処理
 void GameScene::Update() {
 	// 入力状態の取得
 	Input::GetInstance()->GetJoystickState(0, state);
@@ -200,6 +201,7 @@ void GameScene::Update() {
 		StartTransitionToStage(nextStage);
 	}
 }
+#pragma endregion 更新処理
 #pragma endregion 更新処理
 
 #pragma region 描画処理
@@ -496,7 +498,7 @@ void GameScene::UpdateStageAABB() {
 #pragma endregion 障害物関連処理
 
 #pragma region トランジション関連処理
-// トランジション状態の更新
+// トランジション状態の更新（シンプル化）
 void GameScene::UpdateTransition() {
 	// トランジション効果が無効なら何もしない
 	if (!transitionEffect_) {
@@ -521,7 +523,9 @@ void GameScene::UpdateTransition() {
 			// フェードインへ移行
 			transitionState_ = TransitionState::FadeIn;
 			transitionEffect_->ResetCompleted();
-			transitionEffect_->Start(TransitionType::DoorOpen, 1.0f); // ドアが開く演出
+
+			// フェードインを開始
+			transitionEffect_->Start(TransitionType::FadeIn, 1.0f);
 		}
 		break;
 
@@ -539,7 +543,7 @@ void GameScene::UpdateTransition() {
 	}
 }
 
-// ステージ遷移トランジションの開始
+// ステージ遷移トランジションの開始（シンプル化）
 void GameScene::StartTransitionToStage(int stageNumber) {
 	// 既にトランジション中なら何もしない
 	if (transitionState_ != TransitionState::None) {
@@ -552,7 +556,7 @@ void GameScene::StartTransitionToStage(int stageNumber) {
 	// トランジション状態を設定
 	transitionState_ = TransitionState::FadeOut;
 
-	// トランジション効果を開始（ドアが閉じる演出）
-	transitionEffect_->Start(TransitionType::DoorOpen, 1.0f);
+	// フェードアウトを開始
+	transitionEffect_->Start(TransitionType::FadeOut, 1.0f);
 }
 #pragma endregion トランジション関連処理
