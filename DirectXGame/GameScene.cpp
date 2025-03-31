@@ -26,7 +26,6 @@ void GameScene::Finalize() {
 		delete stage;
 		stage = nullptr;
 	}
-	
 
 	delete block_;
 	delete modelBlock_;
@@ -135,6 +134,10 @@ void GameScene::Initialize() {
 	// ミニマップの初期化
 	minimap_ = new Minimap();
 	minimap_->Initialize(player_, mapLoader_, enemyLoader_, allObstacles_);
+
+	// ステージ1のBGM読み込みと再生
+	stageBGMHandle_ = audio_->LoadWave("./sound/stage1.wav");
+	audio_->playAudio(stageBGMID_, stageBGMHandle_, true, 0.2f);
 }
 #pragma endregion 初期化処理
 
@@ -276,6 +279,11 @@ void GameScene::Draw() {
 
 #pragma region ステージ変更処理
 void GameScene::ChangeStage(int nextStage) {
+	// 現在のBGMを停止
+	if (stageBGMID_ != -1) {
+		audio_->StopWave(stageBGMID_);
+		stageBGMID_ = -1; // リセット
+	}
 	allObstacles_.clear();
 	Command.str("");
 	Command.clear();
@@ -386,7 +394,13 @@ void GameScene::ChangeStage(int nextStage) {
 	}
 	minimap_ = new Minimap();
 	minimap_->Initialize(player_, mapLoader_, enemyLoader_, allObstacles_);
+
+	// 新しいステージのBGMを読み込み再生
+	std::string stageBGMPath = "./sound/stage" + std::to_string(currentStage_) + ".wav";
+	stageBGMHandle_ = audio_->LoadWave(stageBGMPath.c_str());
+	audio_->playAudio(stageBGMID_, stageBGMHandle_, true, 0.2f);
 }
+
 #pragma endregion ステージ変更処理
 
 #pragma region 障害物関連処理

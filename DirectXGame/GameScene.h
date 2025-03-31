@@ -96,4 +96,8 @@ private:
 
 	// ミニマップ
 	Minimap* minimap_ = nullptr;
+
+	// BGM関連
+	int stageBGMHandle_ = 0;
+	int stageBGMID_ = -1; // 再生IDを保持するために必要
 };

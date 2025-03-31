@@ -9,17 +9,21 @@ SpringEnemy::~SpringEnemy() { delete model_; }
 void SpringEnemy::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
-	// "cube"モデルを読み込み、後で専用のばねモデルに置き換え可能
+	// モデルを読み込み
 	model_ = Model::CreateFromOBJ("spring", true);
 	worldTransform_.translation_ = position;
 
-	// ばね敵用の特徴的なスケール設定（高さがあり、幅が狭い）
+	// バネ敵用のスケール設定
 	worldTransform_.scale_ = {0.7f, 1.2f, 0.7f};
 	originalScaleY = worldTransform_.scale_.y;
 
 	// 重力と落下を無効化
 	velocityY_ = 0.0f;
 	onGround_ = true;
+
+	// 音声のロード
+	audio_ = Audio::GetInstance();
+	springSoundHandle_ = audio_->LoadWave("./sound/bane.wav");
 }
 
 void SpringEnemy::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
@@ -118,8 +122,10 @@ AABB SpringEnemy::GetAABB() const {
 void SpringEnemy::Compress() {
 	isCompressed = true;
 	compressionTimer = 0.0f;
-}
 
+	// バネの音を再生
+	audio_->playAudio(springSoundID_, springSoundHandle_, false, 0.5f);
+}
 void SpringEnemy::ContralPlayer() {
 	isPlayer = true;
 	worldTransform_.translation_ = {0, -2, 0};
@@ -134,9 +140,15 @@ void SpringEnemy::ReMove(const Vector3& position_) {
 		isStan = true;
 		isPlayer = false;
 		worldTransform_.parent_ = nullptr;
+
+		// バネの音を再生（乗り移り解除時）
+		audio_->playAudio(springSoundID_, springSoundHandle_, false, 0.5f);
+
+		if (player_) {
+			player_->SetState(Player::State::Normal);
+		}
 	}
 }
-
 void SpringEnemy::ClearObstacleList() {
 	obstacleList_.clear(); // ✅ クリア
 }

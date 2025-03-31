@@ -99,6 +99,8 @@ public:
 		}
 	}
 
+	void StopAudio(int AudioHandle) { StopWave(AudioHandle); }
+
 
 	/// <summary>
 	/// 音声停止

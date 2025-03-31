@@ -68,6 +68,11 @@ private:
 	float timerS = 0.0f;
 	const float stanTime = 3.0f;
 
+	 // 音声関連
+	Audio* audio_ = nullptr;
+	int springSoundHandle_ = 0;
+	int springSoundID_ = -1;
+
 	// デバッグ用
 	XINPUT_STATE state, preState;
 };
