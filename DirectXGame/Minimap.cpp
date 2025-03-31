@@ -68,7 +68,7 @@ void Minimap::Initialize(Player* player, MapLoader* mapLoader, EnemyLoader* enem
 	borderHandle_ = TextureManager::Load("white1x1.png");     // 枠用
 	mapChipHandle_ = TextureManager::Load("white1x1.png");    // マップチップ用
 	keyHandle_ = TextureManager::Load("minimap/key.png");             // 鍵用
-	doorHandle_ = TextureManager::Load("minimap/key.png");           // ドア用
+	doorHandle_ = TextureManager::Load("minimap/door.png");           // ドア用
 
 	// スプライトの生成
 	// 背景（暗めのグレー）
