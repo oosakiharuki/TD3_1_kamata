@@ -61,10 +61,12 @@ private:
 
 	// テクスチャハンドル
 	uint32_t backgroundHandle_ = 0;
-	uint32_t playerHandle_ = 0;
+	uint32_t playerHandle_ = 0; // player.png用
 	uint32_t borderHandle_ = 0;
 	uint32_t mapChipHandle_ = 0;
 	uint32_t labelHandle_ = 0;
+	uint32_t keyHandle_ = 0;  // key.png用
+	uint32_t doorHandle_ = 0; // door.png用
 
 	// 参照
 	Player* player_ = nullptr;

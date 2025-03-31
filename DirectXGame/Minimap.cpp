@@ -61,9 +61,11 @@ void Minimap::Initialize(Player* player, MapLoader* mapLoader, EnemyLoader* enem
 
 	// テクスチャのロード
 	backgroundHandle_ = TextureManager::Load("white1x1.png"); // 背景用
-	playerHandle_ = TextureManager::Load("white1x1.png");     // プレイヤー用
+	playerHandle_ = TextureManager::Load("minimap/player.png");       // プレイヤー用
 	borderHandle_ = TextureManager::Load("white1x1.png");     // 枠用
 	mapChipHandle_ = TextureManager::Load("white1x1.png");    // マップチップ用
+	keyHandle_ = TextureManager::Load("minimap/key.png");             // 鍵用
+	doorHandle_ = TextureManager::Load("minimap/key.png");           // ドア用
 
 	// スプライトの生成
 	// 背景（暗めのグレー）
@@ -76,9 +78,9 @@ void Minimap::Initialize(Player* player, MapLoader* mapLoader, EnemyLoader* enem
 	borderSprite_->SetSize(size_);
 	borderSprite_->SetColor({1.0f, 1.0f, 1.0f, 0.7f});
 
-	// プレイヤー（三角形マーカー用のスプライト - 実際の描画はDrawで行う）
+	// プレイヤーアイコン用スプライト
 	playerSprite_ = Sprite::Create(playerHandle_, {0, 0});
-	playerSprite_->SetSize({10, 10});
+	playerSprite_->SetSize({20, 20});
 	playerSprite_->SetColor({1.0f, 1.0f, 1.0f, 1.0f});
 
 	// MAPラベル
@@ -115,9 +117,9 @@ void Minimap::CreateKeyAndDoorIcons() {
 				Vector2 minimapPos = WorldToMinimap(keyPos);
 
 				if (IsInsideCircle(minimapPos)) {
-					Sprite* keyIcon = Sprite::Create(backgroundHandle_, minimapPos);
-					keyIcon->SetSize({15, 15});                  // 鍵のアイコンサイズを大きく
-					keyIcon->SetColor({1.0f, 1.0f, 0.0f, 0.9f}); // 黄色
+					Sprite* keyIcon = Sprite::Create(keyHandle_, minimapPos);
+					keyIcon->SetSize({20, 20});                  // 鍵のアイコンサイズ
+					keyIcon->SetColor({1.0f, 1.0f, 1.0f, 0.9f}); // 白色（透過前提）
 					keySprites_.push_back(keyIcon);
 				}
 			}
@@ -131,9 +133,9 @@ void Minimap::CreateKeyAndDoorIcons() {
 				Vector2 minimapPos = WorldToMinimap(doorPos);
 
 				if (IsInsideCircle(minimapPos)) {
-					Sprite* doorIcon = Sprite::Create(backgroundHandle_, minimapPos);
-					doorIcon->SetSize({18, 18});                  // ドアのアイコンサイズをさらに大きく
-					doorIcon->SetColor({1.0f, 0.0f, 0.0f, 0.9f}); // 赤色
+					Sprite* doorIcon = Sprite::Create(doorHandle_, minimapPos);
+					doorIcon->SetSize({24, 24});                  // ドアのアイコンサイズ
+					doorIcon->SetColor({1.0f, 1.0f, 1.0f, 0.9f}); // 白色（透過前提）
 					doorSprites_.push_back(doorIcon);
 				}
 			}
@@ -232,7 +234,7 @@ void Minimap::UpdateKeyAndDoorIcons() {
 			for (size_t i = 0; i < keys.size(); i++) {
 				// 鍵が取得された場合、アイコンの色を半透明に
 				if (keys[i] && keys[i]->IsKeyObtained() && i < keySprites_.size()) {
-					keySprites_[i]->SetColor({1.0f, 1.0f, 0.0f, 0.4f}); // 半透明の黄色
+					keySprites_[i]->SetColor({1.0f, 1.0f, 1.0f, 0.4f}); // 半透明
 				}
 			}
 		}
@@ -241,7 +243,7 @@ void Minimap::UpdateKeyAndDoorIcons() {
 		const std::vector<Door*>& doors = mapLoader_->GetDoorList();
 		for (size_t i = 0; i < doors.size() && i < doorSprites_.size(); i++) {
 			if (doors[i] && doors[i]->IsDoorOpened()) {
-				doorSprites_[i]->SetColor({0.0f, 1.0f, 0.0f, 0.9f}); // 緑色（開いた状態）
+				doorSprites_[i]->SetColor({0.7f, 0.7f, 0.7f, 0.9f}); // ドアが開いたら少し暗く
 			}
 		}
 	}
@@ -335,31 +337,18 @@ void Minimap::DrawPlayerMarker() {
 	if (!player_ || !IsInsideCircle(playerMinimapPos_))
 		return;
 
-	// プレイヤーの三角形マーカーを描画
-	const float markerSize = 15.0f; // さらに大きくして目立たせる
+	// プレイヤーアイコンのサイズ設定
+	const float iconSize = 20.0f;
 
-	// 三角形の3つの頂点を計算（プレイヤーの向きに合わせて回転）
-	float angle = playerRotation_; // プレイヤーの向き
+	// プレイヤーの向きに合わせてスプライトを回転
+	float angle = playerRotation_;
 
-	// 三角形の頂点座標（相対座標）
-	Vector2 point1 = {markerSize * static_cast<float>(std::sin(angle)), -markerSize * static_cast<float>(std::cos(angle))};
-	Vector2 point2 = {markerSize * static_cast<float>(std::sin(angle + 2.1f)), -markerSize * static_cast<float>(std::cos(angle + 2.1f))};
-	Vector2 point3 = {markerSize * static_cast<float>(std::sin(angle - 2.1f)), -markerSize * static_cast<float>(std::cos(angle - 2.1f))};
-
-	// 三角形の描画（3つの点を結ぶ3つの線分で描画）
-	// 中央に三角形を配置するためにplayerMinimapPos_を足す
-	Vector2 p1 = {playerMinimapPos_.x + point1.x, playerMinimapPos_.y + point1.y};
-	Vector2 p2 = {playerMinimapPos_.x + point2.x, playerMinimapPos_.y + point2.y};
-	Vector2 p3 = {playerMinimapPos_.x + point3.x, playerMinimapPos_.y + point3.y};
-
-	// 線分1: p1->p2
-	DrawLine(p1, p2, {1.0f, 1.0f, 1.0f, 1.0f});
-
-	// 線分2: p2->p3
-	DrawLine(p2, p3, {1.0f, 1.0f, 1.0f, 1.0f});
-
-	// 線分3: p3->p1
-	DrawLine(p3, p1, {1.0f, 1.0f, 1.0f, 1.0f});
+	// プレイヤーアイコンを描画
+	playerSprite_->SetPosition(Vector2(playerMinimapPos_.x - iconSize / 2, playerMinimapPos_.y - iconSize / 2));
+	playerSprite_->SetSize(Vector2(iconSize, iconSize));
+	playerSprite_->SetRotation(angle);
+	playerSprite_->SetColor({1.0f, 1.0f, 1.0f, 1.0f}); // 白色（透過画像前提）
+	playerSprite_->Draw();
 }
 
 void Minimap::DrawLine(const Vector2& start, const Vector2& end, const Vector4& color) {
