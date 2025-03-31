@@ -5,10 +5,13 @@
 #include <iostream>
 #include <vector>
 
+#pragma region コンストラクタとデストラクタ
 GameScene::GameScene() {}
 
 GameScene::~GameScene() { Finalize(); }
+#pragma endregion コンストラクタとデストラクタ
 
+#pragma region 終了処理
 void GameScene::Finalize() {
 	delete player_;
 	delete mapLoader_;
@@ -24,7 +27,9 @@ void GameScene::Finalize() {
 	delete skydome_;
 	delete modelSkydome_;
 }
+#pragma endregion 終了処理
 
+#pragma region 初期化処理
 void GameScene::Initialize() {
 	dxCommon_ = DirectXCommon::GetInstance();
 	input_ = Input::GetInstance();
@@ -99,9 +104,10 @@ void GameScene::Initialize() {
 		player_->SetGoal(mapLoader_->GetGoal());
 	}
 }
+#pragma endregion 初期化処理
 
+#pragma region 更新処理
 void GameScene::Update() {
-
 	Input::GetInstance()->GetJoystickState(0, state);
 	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
 
@@ -145,7 +151,6 @@ void GameScene::Update() {
 	skydome_->Update();
 
 	// 　↓　ゴールしたら1と2ステージループするようになってる、切り替え処理2を消すとステージ3に進む
-
 	if (mapLoader_ && mapLoader_->IsDoorOpened()) {
 		// 次のステージ番号を計算
 		int nextStage = currentStage_ + 1;
@@ -167,7 +172,9 @@ void GameScene::Update() {
 		ChangeStage(nextStage);
 	}
 }
+#pragma endregion 更新処理
 
+#pragma region 描画処理
 void GameScene::Draw() {
 	ID3D12GraphicsCommandList* commandList = dxCommon_->GetCommandList();
 
@@ -192,8 +199,7 @@ void GameScene::Draw() {
 		mapLoader_->Draw();
 	}
 
-
-	//ghostBlock_->Draw();
+	// ghostBlock_->Draw();
 
 	skydome_->Draw();
 
@@ -209,7 +215,9 @@ void GameScene::Draw() {
 
 	Sprite::PostDraw();
 }
+#pragma endregion 描画処理
 
+#pragma region ステージ変更処理
 void GameScene::ChangeStage(int nextStage) {
 	allObstacles_.clear();
 	Command.str("");
@@ -285,7 +293,9 @@ void GameScene::ChangeStage(int nextStage) {
 		player_->SetGoal(mapLoader_->GetGoal());
 	}
 }
+#pragma endregion ステージ変更処理
 
+#pragma region 障害物関連処理
 // AddObstacle、LoadStage、UpdateStageAABBメソッドはそのまま以前の実装を使用
 void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max) {
 	AABB obstacle;
@@ -358,7 +368,6 @@ void GameScene::UpdateStageAABB() {
 		}
 
 		if (cornerNumber > 0) {
-
 			getline(line_stream, word, ' ');
 			float x = (float)std::atof(word.c_str());
 
@@ -373,7 +382,6 @@ void GameScene::UpdateStageAABB() {
 				min = {x, y, z};
 				start = true;
 			} else {
-
 				// 前よりも大きいとき
 				if (max.x <= x) {
 					max.x = x;
@@ -405,7 +413,6 @@ void GameScene::UpdateStageAABB() {
 			if (!reverse) {
 				AddObstacle(allObstacles_, min, max); // 結合した基盤となるobj
 			} else {
-
 				float minX;
 				float maxX;
 				maxX = -(max.x);
@@ -422,3 +429,4 @@ void GameScene::UpdateStageAABB() {
 		}
 	}
 }
+#pragma endregion 障害物関連処理
