@@ -126,6 +126,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="SkyDome.cpp" />
     <ClCompile Include="SpringEnemy.cpp" />
+    <ClCompile Include="TransitionEffect.cpp" />
     <ClCompile Include="WorldTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -224,6 +225,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="SkyDome.h" />
     <ClInclude Include="SpringEnemy.h" />
+    <ClInclude Include="TransitionEffect.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -15,8 +15,16 @@ GameScene::~GameScene() { Finalize(); }
 void GameScene::Finalize() {
 	delete player_;
 	delete mapLoader_;
-	delete enemyLoader_;
-	delete stage;
+
+	if (enemyLoader_) {
+		delete enemyLoader_;
+		enemyLoader_ = nullptr;
+	}
+
+	if (stage) {
+		delete stage;
+		stage = nullptr;
+	}
 
 	delete block_;
 	delete modelBlock_;
@@ -26,6 +34,12 @@ void GameScene::Finalize() {
 
 	delete skydome_;
 	delete modelSkydome_;
+
+	// トランジション効果の解放
+	if (transitionEffect_) {
+		delete transitionEffect_;
+		transitionEffect_ = nullptr;
+	}
 }
 #pragma endregion 終了処理
 
@@ -83,12 +97,14 @@ void GameScene::Initialize() {
 	player_->SetEnemyList(enemyLoader_->GetEnemyList());
 
 	// キャノン敵への参照をプレイヤーに設定
-	if (!enemyLoader_->GetCannonEnemyList().empty()) {
+	if (enemyLoader_ && !enemyLoader_->GetCannonEnemyList().empty()) {
 		player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]); // 一番最初のキャノン敵を設定
 	}
 
 	// バネ敵への参照をプレイヤーに設定
-	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
+	if (enemyLoader_) {
+		player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
+	}
 
 	// プレイヤーにブロックリストを設定（更新: 単一ブロックではなくリスト全体を渡す）
 	const std::vector<Block*>& blocks = mapLoader_->GetBlockList();
@@ -103,11 +119,16 @@ void GameScene::Initialize() {
 	if (mapLoader_ && mapLoader_->GetGoal()) {
 		player_->SetGoal(mapLoader_->GetGoal());
 	}
+
+	// トランジション効果の初期化
+	transitionEffect_ = new TransitionEffect();
+	transitionEffect_->Initialize();
 }
 #pragma endregion 初期化処理
 
 #pragma region 更新処理
 void GameScene::Update() {
+	// 入力状態の取得
 	Input::GetInstance()->GetJoystickState(0, state);
 	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
 
@@ -121,6 +142,15 @@ void GameScene::Update() {
 	if (longPress < 0 && longPress > -0.017f) {
 		Finalize();
 		Initialize();
+		return; // 初期化後は他の処理をスキップ
+	}
+
+	// トランジション処理の更新
+	UpdateTransition();
+
+	// トランジション中は他の更新処理をスキップ
+	if (transitionState_ != TransitionState::None) {
+		return;
 	}
 
 	// MapLoaderが管理するGoalの状態をチェック
@@ -128,6 +158,7 @@ void GameScene::Update() {
 		return; // ゴールクリア状態なら更新処理をスキップ
 	}
 
+	// プレイヤーの更新
 	player_->Update();
 
 	// EnemyLoaderの更新
@@ -140,36 +171,33 @@ void GameScene::Update() {
 		mapLoader_->Update();
 	}
 
-	for (auto& springEnemy : enemyLoader_->GetSpringEnemyList()) {
-		springEnemy->Update();
+	// スプリング敵の更新
+	if (enemyLoader_) {
+		const auto& springEnemies = enemyLoader_->GetSpringEnemyList();
+		for (auto& springEnemy : springEnemies) {
+			if (springEnemy) {
+				springEnemy->Update();
+			}
+		}
 	}
 
+	// ブロックの更新
 	block_->Update();
 	ghostBlock_->Update();
 
+	// UIの更新
 	player_->DrawUI();
+
+	// 天球の更新
 	skydome_->Update();
 
-	// 　↓　ゴールしたら1と2ステージループするようになってる、切り替え処理2を消すとステージ3に進む
+	// ドアが開いたら次のステージへトランジション開始
 	if (mapLoader_ && mapLoader_->IsDoorOpened()) {
 		// 次のステージ番号を計算
 		int nextStage = currentStage_ + 1;
 
-		// 次のステージに応じてプレイヤーの座標を設定
-		Vector3 newPosition;
-		if (nextStage == 2) {
-			// Stage 2への移行時の座標
-			newPosition = {-55.070f, 1.649f, -68.019f};
-		} else if (nextStage == 3) {
-			// Stage 3への移行時の座標
-			newPosition = {-37.0f, -18.512f, -51.500f};
-		}
-
-		// プレイヤーの座標を変更
-		player_->SetPosition(newPosition);
-
-		// ステージを切り替え
-		ChangeStage(nextStage);
+		// トランジション開始
+		StartTransitionToStage(nextStage);
 	}
 }
 #pragma endregion 更新処理
@@ -213,6 +241,11 @@ void GameScene::Draw() {
 		mapLoader_->DrawSprites(commandList);
 	}
 
+	// トランジション効果の描画
+	if (transitionEffect_) {
+		transitionEffect_->Draw();
+	}
+
 	Sprite::PostDraw();
 }
 #pragma endregion 描画処理
@@ -230,7 +263,9 @@ void GameScene::ChangeStage(int nextStage) {
 	player_->ClearObstacleList();
 	if (enemyLoader_) {
 		for (auto& enemy : enemyLoader_->GetEnemyList()) {
-			enemy->ClearObstacleList();
+			if (enemy) {
+				enemy->ClearObstacleList();
+			}
 		}
 	}
 
@@ -247,9 +282,14 @@ void GameScene::ChangeStage(int nextStage) {
 	std::string stageFile = "Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_) + ".obj";
 	LoadStage(stageFile);
 
-	// バネ
-	for (auto& springEnemy : enemyLoader_->GetSpringEnemyList()) {
-		springEnemy->ClearObstacleList();
+	// バネ敵の障害物リストクリア
+	if (enemyLoader_) {
+		const auto& springEnemies = enemyLoader_->GetSpringEnemyList();
+		for (auto& springEnemy : springEnemies) {
+			if (springEnemy) {
+				springEnemy->ClearObstacleList();
+			}
+		}
 	}
 
 	// **プレイヤーに新しい障害物リストを設定**
@@ -260,7 +300,9 @@ void GameScene::ChangeStage(int nextStage) {
 	// **敵の当たり判定も再設定**
 	if (enemyLoader_) {
 		delete enemyLoader_;
+		enemyLoader_ = nullptr;
 	}
+
 	enemyLoader_ = new EnemyLoader();
 
 	std::string enemiesFile = "Resources/enemies" + std::to_string(currentStage_) + ".csv";
@@ -269,19 +311,26 @@ void GameScene::ChangeStage(int nextStage) {
 	}
 
 	// 敵の当たり判定リストを再設定
-	for (auto& enemy : enemyLoader_->GetEnemyList()) {
-		for (const auto& obstacles : allObstacles_) {
-			enemy->SetObstacleList(obstacles);
+	if (enemyLoader_) {
+		for (auto& enemy : enemyLoader_->GetEnemyList()) {
+			if (enemy) {
+				for (const auto& obstacles : allObstacles_) {
+					enemy->SetObstacleList(obstacles);
+				}
+			}
 		}
 	}
 
 	// プレイヤーに敵リストを設定
 	player_->SetEnemyList(enemyLoader_->GetEnemyList());
-	player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
 
-	// キャノン敵への参照をプレイヤーに設定
-	if (!enemyLoader_->GetCannonEnemyList().empty()) {
-		player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]);
+	if (enemyLoader_) {
+		player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
+
+		// キャノン敵への参照をプレイヤーに設定
+		if (!enemyLoader_->GetCannonEnemyList().empty()) {
+			player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]);
+		}
 	}
 
 	// プレイヤーにブロックリストを設定（更新：単一ブロックではなくリスト全体を渡す）
@@ -292,6 +341,19 @@ void GameScene::ChangeStage(int nextStage) {
 	if (mapLoader_ && mapLoader_->GetGoal()) {
 		player_->SetGoal(mapLoader_->GetGoal());
 	}
+
+	// 次のステージに応じてプレイヤーの座標を設定
+	Vector3 newPosition;
+	if (nextStage == 2) {
+		// Stage 2への移行時の座標
+		newPosition = {-55.070f, 1.649f, -68.019f};
+	} else if (nextStage == 3) {
+		// Stage 3への移行時の座標
+		newPosition = {-37.0f, -18.512f, -51.500f};
+	}
+
+	// プレイヤーの座標を変更
+	player_->SetPosition(newPosition);
 }
 #pragma endregion ステージ変更処理
 
@@ -333,9 +395,11 @@ void GameScene::LoadStage(std::string objFile) {
 
 	if (enemyLoader_) {
 		for (auto& enemy : enemyLoader_->GetEnemyList()) {
-			enemy->ClearObstacleList();
-			for (const auto& obstacles : allObstacles_) {
-				enemy->SetObstacleList(obstacles);
+			if (enemy) {
+				enemy->ClearObstacleList();
+				for (const auto& obstacles : allObstacles_) {
+					enemy->SetObstacleList(obstacles);
+				}
 			}
 		}
 	}
@@ -430,3 +494,65 @@ void GameScene::UpdateStageAABB() {
 	}
 }
 #pragma endregion 障害物関連処理
+
+#pragma region トランジション関連処理
+// トランジション状態の更新
+void GameScene::UpdateTransition() {
+	// トランジション効果が無効なら何もしない
+	if (!transitionEffect_) {
+		return;
+	}
+
+	// トランジション効果の更新
+	transitionEffect_->Update();
+
+	// 現在のトランジション状態に応じた処理
+	switch (transitionState_) {
+	case TransitionState::None:
+		// トランジションなし状態では何もしない
+		break;
+
+	case TransitionState::FadeOut:
+		// フェードアウト完了チェック
+		if (transitionEffect_->IsCompleted()) {
+			// ステージ切り替え
+			ChangeStage(nextStage_);
+
+			// フェードインへ移行
+			transitionState_ = TransitionState::FadeIn;
+			transitionEffect_->ResetCompleted();
+			transitionEffect_->Start(TransitionType::DoorOpen, 1.0f); // ドアが開く演出
+		}
+		break;
+
+	case TransitionState::FadeIn:
+		// フェードイン完了チェック
+		if (transitionEffect_->IsCompleted()) {
+			// トランジション完了
+			transitionState_ = TransitionState::None;
+			transitionEffect_->ResetCompleted();
+		}
+		break;
+
+	default:
+		break;
+	}
+}
+
+// ステージ遷移トランジションの開始
+void GameScene::StartTransitionToStage(int stageNumber) {
+	// 既にトランジション中なら何もしない
+	if (transitionState_ != TransitionState::None) {
+		return;
+	}
+
+	// 次のステージ番号を設定
+	nextStage_ = stageNumber;
+
+	// トランジション状態を設定
+	transitionState_ = TransitionState::FadeOut;
+
+	// トランジション効果を開始（ドアが閉じる演出）
+	transitionEffect_->Start(TransitionType::DoorOpen, 1.0f);
+}
+#pragma endregion トランジション関連処理
