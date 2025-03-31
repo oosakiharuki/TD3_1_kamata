@@ -6,10 +6,13 @@
 #include <algorithm>
 #include <iostream>
 
+#pragma region コンストラクタ・デストラクタ
 Player::Player() {}
 
 Player::~Player() { delete PlayerModel_; }
+#pragma endregion
 
+#pragma region 初期化処理
 void Player::Init(Camera* camera) {
 	camera_ = camera;
 	worldTransform_.Initialize();
@@ -19,12 +22,21 @@ void Player::Init(Camera* camera) {
 	block_ = new Block;
 	ghostBlock_ = new GhostBlock;
 }
+#pragma endregion
 
+#pragma region 障害物管理
 void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
 
 void Player::AddObstacle(const AABB& obstacle) { obstacleList_.push_back(obstacle); }
 
+void Player::ClearObstacleList() {
+	obstacleList_.clear(); // 当たり判定用の障害物リストをクリア
+}
+#pragma endregion
+
+#pragma region メインアップデート処理
 void Player::Update() {
+#pragma region 入力処理
 	// キーボードとGamePad左スティックの入力を合算して移動処理する
 	float keyboardSpeed = 0.55f;
 	Vector3 inputVec = {0.0f, 0.0f, 0.0f};
@@ -63,7 +75,9 @@ void Player::Update() {
 		position.x += move.x;
 		position.z += move.z;
 	}
+#pragma endregion
 
+#pragma region 状態切替
 	// 状態切替
 	if (Input::GetInstance()->TriggerKey(DIK_1)) {
 		currentState = State::Normal;
@@ -74,7 +88,9 @@ void Player::Update() {
 	if (Input::GetInstance()->TriggerKey(DIK_3)) {
 		currentState = State::Ghost;
 	}
+#pragma endregion
 
+#pragma region カメラ操作
 	// コントローラとキーボード両方で回さないようにするフラグ
 	bool isKeyBorad = false;
 
@@ -127,7 +143,9 @@ void Player::Update() {
 	worldTransform_.rotation_.y = -(cameraYaw * (3.14159265f / 180.0f));
 
 	Input::GetInstance()->GetJoystickStatePrevious(0, preState);
+#pragma endregion
 
+#pragma region ジャンプ・移動処理
 	// ジャンプ・移動時の各種処理
 	if (!onGround_) {
 		if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_A) && !EnemyContral && !isTransfar) {
@@ -158,7 +176,9 @@ void Player::Update() {
 		EnemyContral = false;
 		onEnemy = true;
 	}
+#pragma endregion
 
+#pragma region 物理演算と衝突処理
 	// 重力と垂直移動
 	float gravity = 0.01f;
 	velocityY_ -= gravity;
@@ -183,7 +203,9 @@ void Player::Update() {
 		}
 		iterations++;
 	} while (collisionOccurred && iterations < maxIterations);
+#pragma endregion
 
+#pragma region 敵との衝突処理
 	// キャノン敵との衝突処理
 	AABB cannonAABB = cannonEnemy->GetAABB();
 	if (IsCollisionAABB(playerAABB, cannonAABB)) {
@@ -209,7 +231,6 @@ void Player::Update() {
 	CheckCollision();
 
 	OnCollisions();
-
 
 	for (SpringEnemy* springEnemy : springEnemies_) {
 		AABB springAABB = springEnemy->GetAABB();
@@ -253,7 +274,7 @@ void Player::Update() {
 					velocityY_ = 0.0f;
 					onGround_ = true;
 				}
-			} else { //　横に当たったらダメージ
+			} else { // 　横に当たったらダメージ
 				isDamage = true;
 			}
 
@@ -271,7 +292,9 @@ void Player::Update() {
 		}
 		++it;
 	}
+#pragma endregion
 
+#pragma region 位置更新
 	// AABBの中心を基に位置を更新
 	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
 	position.y = (playerAABB.min.y + playerAABB.max.y) * 0.5f;
@@ -288,16 +311,20 @@ void Player::Update() {
 	if (EnemyContral) {
 		worldTransform_.translation_.y += 2.0f;
 	}
+#pragma endregion
 
+#pragma region 追加チェック処理
 	// ばね敵との衝突チェック
 	CheckCollisionWithSprings();
 
-	//　攻撃されたら
+	// 　攻撃されたら
 	CheckDamage();
 
-	//ゴールの旗に当たったか
-	CheckCollisionWithGoal(); 
+	// ゴールの旗に当たったか
+	CheckCollisionWithGoal();
+#pragma endregion
 
+#pragma region デバッグ表示
 #ifdef _DEBUG
 	ImGui::Begin("player");
 	ImGui::DragFloat3("translate", &worldTransform_.translation_.x);
@@ -305,13 +332,16 @@ void Player::Update() {
 	ImGui::DragFloat3("aabbMin", &playerAABB.min.x);
 	ImGui::End();
 #endif
+#pragma endregion
 
 	worldTransform_.TransferMatrix();
 	worldTransform_.UpdateMatrix();
 
 	cameraController_.Update(camera_, position);
 }
+#pragma endregion
 
+#pragma region 衝突チェック処理
 void Player::CheckCollision() {
 	// ブロックリストが空の場合は処理を行わない
 	if (blocks_.empty()) {
@@ -367,23 +397,7 @@ void Player::CheckCollision() {
 	}
 }
 
-void Player::DrawUI() {
-
-#ifdef _DEBUG
-
-	ImGui::Begin("Player State");
-
-	const char* stateNames[] = {"Normal", "Bomb", "Ghost"};
-	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
-	ImGui::DragFloat("Hp", &hp);
-
-	ImGui::End();
-
-#endif // _DEBUG
-}
-
 void Player::OnCollisions() {
-
 	for (Bom* bom : cannonEnemy->GetBom()) {
 		AABB bomAABB = bom->GetAABB();
 
@@ -393,32 +407,6 @@ void Player::OnCollisions() {
 		}
 	}
 }
-
-void Player::Draw() {
-	// 点滅中で非表示の場合は描画しない
-	if (isFlashing && !isVisible) {
-		return;
-	}
-
-	// 通常の描画（テクスチャハンドルは使わない）
-	PlayerModel_->Draw(worldTransform_, *camera_);
-}
-
-void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
-
-void Player::SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { springEnemies_ = springEnemies; }
-
-void Player::SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
-
-//// ★ 新しく追加：ドアとの衝突解決処理
-// void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
-//	AABB currentAABB = GetAABB();
-//	ResolveAABBCollision(currentAABB, doorAABB, velocityY_, onGround_);
-//	position.x = (currentAABB.min.x + currentAABB.max.x) * 0.5f;
-//	position.y = (currentAABB.min.y + currentAABB.max.y) * 0.5f;
-//	position.z = (currentAABB.min.z + currentAABB.max.z) * 0.5f;
-//	worldTransform_.translation_ = position;
-// }
 
 void Player::CheckCollisionWithSprings() {
 	for (auto* springEnemy : springEnemies_) {
@@ -438,19 +426,6 @@ void Player::CheckCollisionWithSprings() {
 		}
 	}
 }
-
-
-void Player::SetState(State newState) { currentState = newState; }
-
-void Player::ClearObstacleList() {
-	obstacleList_.clear(); // 当たり判定用の障害物リストをクリア
-}
-
-void Player::SetPosition(const Vector3& newPosition) {
-	position = newPosition;
-	worldTransform_.translation_ = position;
-}
-
 
 void Player::CheckCollisionWithGoal() {
 	// ゴールが設定されていない場合は何もしない
@@ -499,3 +474,57 @@ void Player::CheckDamage() {
 		isDamage = false;
 	}
 }
+#pragma endregion
+
+#pragma region UI描画処理
+void Player::DrawUI() {
+#ifdef _DEBUG
+	ImGui::Begin("Player State");
+
+	const char* stateNames[] = {"Normal", "Bomb", "Ghost"};
+	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
+	ImGui::DragFloat("Hp", &hp);
+
+	ImGui::End();
+#endif // _DEBUG
+}
+#pragma endregion
+
+#pragma region 描画処理
+void Player::Draw() {
+	// 点滅中で非表示の場合は描画しない
+	if (isFlashing && !isVisible) {
+		return;
+	}
+
+	// 通常の描画（テクスチャハンドルは使わない）
+	PlayerModel_->Draw(worldTransform_, *camera_);
+}
+#pragma endregion
+
+#pragma region 外部オブジェクト設定
+void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
+
+void Player::SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { springEnemies_ = springEnemies; }
+
+void Player::SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
+#pragma endregion
+
+#pragma region 状態管理・位置設定
+void Player::SetState(State newState) { currentState = newState; }
+
+void Player::SetPosition(const Vector3& newPosition) {
+	position = newPosition;
+	worldTransform_.translation_ = position;
+}
+#pragma endregion
+
+//// ★ 新しく追加：ドアとの衝突解決処理
+// void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
+//	AABB currentAABB = GetAABB();
+//	ResolveAABBCollision(currentAABB, doorAABB, velocityY_, onGround_);
+//	position.x = (currentAABB.min.x + currentAABB.max.x) * 0.5f;
+//	position.y = (currentAABB.min.y + currentAABB.max.y) * 0.5f;
+//	position.z = (currentAABB.min.z + currentAABB.max.z) * 0.5f;
+//	worldTransform_.translation_ = position;
+// }
