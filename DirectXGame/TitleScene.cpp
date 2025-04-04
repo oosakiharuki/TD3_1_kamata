@@ -120,11 +120,10 @@ void TitleScene::Update() {
 }
 
 void TitleScene::Draw() {
+	// コマンドリストの取得
 	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
-	Sprite::PreDraw(commandList);
-	Sprite::PostDraw();
 
-	// スプライト描画
+	// 背景描画
 	Sprite::PreDraw(commandList);
 
 	// 背景描画
@@ -142,10 +141,15 @@ void TitleScene::Draw() {
 		startPromptSprite_->Draw();
 	}
 
-	// トランジション効果描画
+	Sprite::PostDraw();
+
+	// 3Dモデル描画処理があれば実行
+	Model::PreDraw(commandList);
+	Model::PostDraw();
+
+	// トランジション効果は独自のPreDraw/PostDrawを持つため、
+	// 別途描画する（TransitionEffect.cppを修正済み）
 	if (transitionEffect_) {
 		transitionEffect_->Draw();
 	}
-
-	Sprite::PostDraw();
 }

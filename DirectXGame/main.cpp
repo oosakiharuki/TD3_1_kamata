@@ -62,7 +62,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TitleScene* titleScene = new TitleScene();
 	titleScene->Initialize();
 
-	// ゲームシーンはこの時点では生成しない（必要になったときに生成）
+	// ゲームシーンはnullptrで初期化
 	GameScene* gameScene = nullptr;
 
 	// メインループ
@@ -80,16 +80,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// シーン切り替え処理
 		if (currentScene == Scene::Title && titleScene->IsTransitionToGameScene()) {
 			// タイトルからゲームへ
-			if (gameScene == nullptr) {
-				// ゲームシーンの初期化を遅延して行う
-				gameScene = new GameScene();
-				gameScene->Initialize();
+			if (gameScene != nullptr) {
+				delete gameScene; // 既存のゲームシーンがあれば解放
 			}
+			gameScene = new GameScene();
+			gameScene->Initialize();
 			titleScene->ResetTransitionFlag();
 			currentScene = Scene::Game;
-		} else if (currentScene == Scene::Game && gameScene != nullptr && gameScene->IsTransitionToTitle()) {
+		} else if (currentScene == Scene::Game && gameScene && gameScene->IsTransitionToTitle()) {
 			// ゲームからタイトルへ
-			delete titleScene; // 古いタイトルシーンがあれば削除
+			if (titleScene != nullptr) {
+				delete titleScene; // 既存のタイトルシーンがあれば解放
+			}
 			titleScene = new TitleScene();
 			titleScene->Initialize();
 			gameScene->ResetTransitionFlag();
@@ -98,13 +100,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 現在のシーンを更新
 		try {
-			if (currentScene == Scene::Title) {
+			if (currentScene == Scene::Title && titleScene) {
 				titleScene->Update();
-			} else if (gameScene != nullptr) {
+			} else if (currentScene == Scene::Game && gameScene) {
 				gameScene->Update();
 			}
-		} catch (const std::exception& e) {
-			// 例外をキャッチしてエラーメッセージを表示
+		} catch (std::exception& e) {
 			OutputDebugStringA("シーン更新中に例外が発生しました: ");
 			OutputDebugStringA(e.what());
 			OutputDebugStringA("\n");
@@ -115,47 +116,65 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// ImGui受付終了
 		imguiManager->End();
 
-		// 描画開始
-		dxCommon->PreDraw();
-
-		// 現在のシーンを描画
 		try {
-			if (currentScene == Scene::Title) {
+			// DirectX描画開始
+			if (dxCommon) {
+				dxCommon->PreDraw();
+			}
+
+			// 現在のシーンを描画
+			if (currentScene == Scene::Title && titleScene) {
 				titleScene->Draw();
-			} else if (gameScene != nullptr) {
+			} else if (currentScene == Scene::Game && gameScene) {
 				gameScene->Draw();
 			}
-		} catch (const std::exception& e) {
-			// 例外をキャッチしてエラーメッセージを表示
-			OutputDebugStringA("シーン描画中に例外が発生しました: ");
+
+			// 軸表示の描画
+			axisIndicator->Draw();
+			// プリミティブ描画のリセット
+			primitiveDrawer->Reset();
+			// ImGui描画
+			imguiManager->Draw();
+
+			// DirectX描画終了
+			if (dxCommon) {
+				dxCommon->PostDraw();
+			}
+		} catch (std::exception& e) {
+			OutputDebugStringA("描画中に例外が発生しました: ");
 			OutputDebugStringA(e.what());
 			OutputDebugStringA("\n");
 		}
-
-		// 軸表示の描画
-		axisIndicator->Draw();
-		// プリミティブ描画のリセット
-		primitiveDrawer->Reset();
-		// ImGui描画
-		imguiManager->Draw();
-		// 描画終了
-		dxCommon->PostDraw();
 	}
 
-	// 各シーンを解放
-	delete titleScene;
-	if (gameScene != nullptr) {
+	// 各シーンのクリーンアップ
+	if (titleScene) {
+		delete titleScene;
+		titleScene = nullptr;
+	}
+
+	if (gameScene) {
 		delete gameScene;
+		gameScene = nullptr;
 	}
 
 	// 3Dモデル解放
 	Model::StaticFinalize();
-	audio->Finalize();
+
+	// オーディオ解放
+	if (audio) {
+		audio->Finalize();
+	}
+
 	// ImGui解放
-	imguiManager->Finalize();
+	if (imguiManager) {
+		imguiManager->Finalize();
+	}
 
 	// ゲームウィンドウの破棄
-	win->TerminateGameWindow();
+	if (win) {
+		win->TerminateGameWindow();
+	}
 
 	return 0;
 }

@@ -231,8 +231,8 @@ void GameScene::Update() {
 	block_->Update();
 	ghostBlock_->Update();
 
-	// UIの更新
-	player_->DrawUI();
+	// UIの更新処理をここから削除（Draw関数内に移動）
+	// player_->DrawUI(); ← この行を削除
 
 	// 天球の更新
 	skydome_->Update();
@@ -288,6 +288,11 @@ void GameScene::Draw() {
 	// UIスプライト描画 - ここでゴールクリアテキストも描画
 	Sprite::PreDraw(commandList);
 
+	// UI描画を追加（元々Update内で呼び出していた）
+	if (player_) {
+		player_->DrawUI();
+	}
+
 	// MapLoaderのスプライト描画処理を呼び出す
 	if (mapLoader_) {
 		mapLoader_->DrawSprites(commandList);
@@ -298,17 +303,18 @@ void GameScene::Draw() {
 		goalGuideSprite_->Draw();
 	}
 
-	// トランジション効果の描画
-	if (transitionEffect_) {
-		transitionEffect_->Draw();
-	}
-
 	// ミニマップの描画
 	if (minimap_) {
 		minimap_->Draw();
 	}
 
 	Sprite::PostDraw();
+
+	// トランジション効果は独自のPreDraw/PostDrawを持つため、
+	// 別途描画する（TransitionEffect.cppを修正済み）
+	if (transitionEffect_) {
+		transitionEffect_->Draw();
+	}
 }
 #pragma endregion 描画処理
 

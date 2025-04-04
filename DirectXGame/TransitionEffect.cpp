@@ -14,7 +14,6 @@ TransitionEffect::~TransitionEffect() {
 void TransitionEffect::Initialize() {
 	// テクスチャのロード
 	fadeTextureHandle_ = TextureManager::Load("white1x1.png");
-
 	// トランジション用スプライトの作成
 	CreateSprites();
 }
@@ -25,9 +24,23 @@ void TransitionEffect::CreateSprites() {
 	const int windowHeight = WinApp::kWindowHeight;
 
 	// フェード用スプライト生成
+	if (fadeSprite_ != nullptr) {
+		delete fadeSprite_;
+		fadeSprite_ = nullptr;
+	}
+
+	// 正しく初期化されているか確認
+	if (fadeTextureHandle_ == 0) {
+		// テクスチャハンドルが無効な場合、再度ロード
+		fadeTextureHandle_ = TextureManager::Load("white1x1.png");
+	}
+
+	// スプライト生成
 	fadeSprite_ = Sprite::Create(fadeTextureHandle_, {0, 0});
-	fadeSprite_->SetSize({static_cast<float>(windowWidth), static_cast<float>(windowHeight)});
-	fadeSprite_->SetColor({0, 0, 0, 0}); // 透明に初期化
+	if (fadeSprite_) {
+		fadeSprite_->SetSize({static_cast<float>(windowWidth), static_cast<float>(windowHeight)});
+		fadeSprite_->SetColor({0, 0, 0, 0}); // 透明に初期化
+	}
 }
 
 void TransitionEffect::Start(TransitionType type, float duration) {
@@ -87,9 +100,16 @@ void TransitionEffect::Update() {
 }
 
 void TransitionEffect::Draw() {
+	// 描画が不要な場合は早期リターン
 	if (!isTransitioning_ && !isCompleted_) {
 		return;
 	}
+
+	// 必ずコマンドリストを取得してから描画する
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+
+	// Sprite::PreDrawを呼び出し側に任せず、自分で管理する
+	Sprite::PreDraw(commandList);
 
 	// フェードスプライトの描画
 	if (fadeSprite_) {
@@ -99,4 +119,7 @@ void TransitionEffect::Draw() {
 			fadeSprite_->Draw();
 		}
 	}
+
+	// Sprite::PostDrawも呼び出す
+	Sprite::PostDraw();
 }
