@@ -102,6 +102,8 @@ public:
 	//ダメージをくらったクールタイム
 	void CheckDamage();
 
+	void TakeDamage();
+
 private:
 ////<<<<<<< ステージギミック
 //    //WorldTransform worldTransform;

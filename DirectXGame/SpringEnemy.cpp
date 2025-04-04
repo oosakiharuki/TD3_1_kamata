@@ -37,6 +37,38 @@ void SpringEnemy::SetPosition(const Vector3& pos) {
 void SpringEnemy::Update() {
 	const float deltaTime = 1.0f / 60.0f;
 
+	// --- 攻撃のロジック ---
+	if (cooldownTimer_ > 0.0f) {
+		cooldownTimer_ -= 1.0f / 60.0f; // 毎フレーム減少（60FPS）
+	}
+	else if (attackTimer_ <= 0.0f && player_) {
+		Vector3 playerPos = player_->GetWorldPosition();
+		Vector3 myPos = worldTransform_.translation_;
+
+		float dx = playerPos.x - myPos.x;
+		float dy = playerPos.y - myPos.y;
+		float dz = playerPos.z - myPos.z;
+		float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+		if (distance <= attackRadius_) {
+			isAttacking_ = true;
+			attackTimer_ = attackDuration_;
+			cooldownTimer_ = attackCooldown_; // クールタイム開始！
+
+			player_->TakeDamage();
+		}
+	}
+
+	// --- 回転アニメーション ---
+	if (attackTimer_ > 0.0f) {
+		attackTimer_ -= 1.0f / 60.0f;
+		worldTransform_.rotation_.y += rotationSpeed_;
+	}
+	else {
+		isAttacking_ = false; // 攻撃終了
+		worldTransform_.rotation_.y = 0.0f;
+	}
+
 	// スタン状態管理
 	if (isStan) {
 		timerS += deltaTime;

@@ -41,6 +41,8 @@ public:
 	void ReMove(const Vector3& position_);
 	bool GetPlayerCtrl() { return isPlayer; }
 
+	bool IsAttacking() const { return isAttacking_; } // 状態取得
+
 private:
 	WorldTransform worldTransform_;
 	Camera* camera_ = nullptr;
@@ -69,4 +71,14 @@ private:
 
 	// デバッグ用
 	XINPUT_STATE state, preState;
+
+	float attackRadius_ = 2.0f;
+	bool isAttacking_ = false;
+	float attackTimer_ = 0.0f;
+	const float attackDuration_ = 0.5f;  // 攻撃時間（秒）
+
+	float cooldownTimer_ = 0.0f;
+	const float attackCooldown_ = 2.0f;  // クールタイム（秒）
+
+	float rotationSpeed_ = 10.0f; // 回転速度（度/フレーム）
 };

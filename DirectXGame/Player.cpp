@@ -561,6 +561,10 @@ void Player::CheckCollisionWithSprings() {
 	}
 }
 
+void Player::TakeDamage() {
+	isDamage = true;
+}
+
 void Player::CheckCollisionWithGoal() {
 	AABB goalAABB = goal_->GetAABB();
 
