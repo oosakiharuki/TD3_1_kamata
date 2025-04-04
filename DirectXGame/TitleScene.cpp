@@ -101,6 +101,12 @@ void TitleScene::Update() {
 		if (isTransitioning_ && transitionEffect_->IsCompleted()) {
 			isTransitionToGameScene_ = true;
 			isTransitioning_ = false;
+
+			// ここでBGMを停止
+			if (titleBGMID_ != -1) {
+				audio_->StopWave(titleBGMID_);
+				titleBGMID_ = -1; // IDをリセット
+			}
 		}
 	}
 

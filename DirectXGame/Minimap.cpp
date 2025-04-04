@@ -261,8 +261,21 @@ void Minimap::UpdateKeyAndDoorIcons() {
 }
 
 void Minimap::Draw() {
-	// 背景の円形部分を描画
-	DrawCircle();
+	// Get the command list
+	ID3D12GraphicsCommandList* commandList = DirectXCommon::GetInstance()->GetCommandList();
+
+	// Setup command list for sprite drawing
+	Sprite::PreDraw(commandList);
+
+	// Now perform all drawing operations
+	if (backgroundSprite_) {
+		// 背景の円形部分を描画
+		backgroundSprite_->SetPosition(position_);
+		backgroundSprite_->SetSize(size_);
+		backgroundSprite_->SetRotation(0);
+		backgroundSprite_->SetColor({0.3f, 0.3f, 0.3f, 0.8f});
+		backgroundSprite_->Draw();
+	}
 
 	// マップチップを描画 - スケールを考慮したサイズで表示
 	for (auto& chip : mapChips_) {
@@ -289,26 +302,40 @@ void Minimap::Draw() {
 		}
 	}
 
-	// プレイヤーマーカー（三角形）を描画
-	DrawPlayerMarker();
+	// プレイヤーマーカーを描画
+	if (playerSprite_ && IsInsideCircle(playerMinimapPos_)) {
+		playerSprite_->SetPosition(Vector2(playerMinimapPos_.x - 10.0f, playerMinimapPos_.y - 10.0f));
+		playerSprite_->SetSize(Vector2(20.0f, 20.0f));
+		playerSprite_->SetRotation(0.0f);
+		playerSprite_->SetColor({1.0f, 1.0f, 1.0f, 1.0f});
+		playerSprite_->Draw();
+	}
 
 	// 外枠の円を描画
-	DrawBorder();
+	if (borderSprite_) {
+		DrawBorder();
+	}
 
 	// MAPラベルを描画
 	if (labelSprite_) {
 		labelSprite_->Draw();
 	}
+
+	// Finish sprite drawing
+	Sprite::PostDraw();
 }
 
 void Minimap::DrawCircle() {
-	// 背景の円全体を描画（半透明の明るいグレー）
-	backgroundSprite_->SetPosition(position_);
-	backgroundSprite_->SetSize(size_);
-	backgroundSprite_->SetRotation(0);
-	backgroundSprite_->SetColor({0.3f, 0.3f, 0.3f, 0.8f});
-	backgroundSprite_->Draw();
+	// Only set properties, don't draw
+	if (backgroundSprite_) {
+		backgroundSprite_->SetPosition(position_);
+		backgroundSprite_->SetSize(size_);
+		backgroundSprite_->SetRotation(0);
+		backgroundSprite_->SetColor({0.3f, 0.3f, 0.3f, 0.8f});
+		// Don't call Draw() here!
+	}
 }
+
 
 void Minimap::DrawBorder() {
 	// 円形の外枠を描画

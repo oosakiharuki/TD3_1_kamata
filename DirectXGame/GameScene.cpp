@@ -94,15 +94,25 @@ void GameScene::Initialize() {
 	// 天球の初期化
 	skydome_->Initialize(modelSkydome_, &camera_);
 
+	// 障害物情報の読み込み - 必ず先に行う
+	OutputDebugStringA("初期化: ステージAABBの読み込み開始\n");
+	LoadStage("Resources/stage1/stage1.obj");
+
+	// デバッグ出力
+	int totalObstacles = 0;
+	for (const auto& list : allObstacles_) {
+		totalObstacles += static_cast<int>(list.size());
+	}
+	char buffer[256];
+	sprintf_s(buffer, "初期化: 読み込んだ障害物数: %d\n", totalObstacles);
+	OutputDebugStringA(buffer);
+
 	// MapLoaderの初期化
 	mapLoader_ = new MapLoader();
 	std::string objectsFile = "Resources/objects" + std::to_string(currentStage_) + ".csv";
 	if (mapLoader_->LoadMapData(objectsFile)) {
 		mapLoader_->CreateObjects(&camera_, player_);
 	}
-
-	// 障害物情報の読み込み
-	LoadStage("Resources/stage1/stage1.obj");
 
 	// EnemyLoaderの生成と初期化
 	enemyLoader_ = new EnemyLoader();
@@ -130,9 +140,11 @@ void GameScene::Initialize() {
 	const std::vector<Block*>& blocks = mapLoader_->GetBlockList();
 	player_->SetBlocks(blocks);
 
-	// 障害物リストを Player にセット
+	// 障害物リストを Player にセット - もう一度確実に設定
 	for (const auto& obstacles : allObstacles_) {
-		player_->SetObstacleList(obstacles);
+		if (!obstacles.empty()) {
+			player_->SetObstacleList(obstacles);
+		}
 	}
 
 	// プレイヤーにGoalへの参照を設定
@@ -353,6 +365,10 @@ void GameScene::ChangeStage(int nextStage) {
 		audio_->StopWave(stageBGMID_);
 		stageBGMID_ = -1; // リセット
 	}
+
+	OutputDebugStringA("ChangeStage: ステージ変更処理開始\n");
+
+	// 当たり判定情報をクリア
 	allObstacles_.clear();
 	Command.str("");
 	Command.clear();
@@ -360,8 +376,11 @@ void GameScene::ChangeStage(int nextStage) {
 	currentStage_ = nextStage;
 	stage = Model::CreateFromOBJ("stage" + std::to_string(currentStage_), true);
 
-	// **プレイヤーと敵の障害物リストをクリア**
-	player_->ClearObstacleList();
+	// プレイヤーと敵の障害物リストをクリア
+	if (player_) {
+		player_->ClearObstacleList();
+	}
+
 	if (enemyLoader_) {
 		for (auto& enemy : enemyLoader_->GetEnemyList()) {
 			if (enemy) {
@@ -370,7 +389,38 @@ void GameScene::ChangeStage(int nextStage) {
 		}
 	}
 
-	// 新しいオブジェクトデータをロード
+	// 新しい障害物データをロード - CSVロード前に行う
+	std::string stageFile = "Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_) + ".obj";
+	OutputDebugStringA(("ChangeStage: " + stageFile + " を読み込み中\n").c_str());
+	LoadStage(stageFile);
+
+	// 障害物データの状態を確認
+	int totalObstacles = 0;
+	for (const auto& list : allObstacles_) {
+		totalObstacles += static_cast<int>(list.size());
+	}
+	char buffer[256];
+	sprintf_s(buffer, "ChangeStage: ステージ%dの障害物数: %d\n", currentStage_, totalObstacles);
+	OutputDebugStringA(buffer);
+
+	// 障害物がゼロの場合はダミーの地面を追加
+	if (totalObstacles == 0) {
+		OutputDebugStringA("警告: 障害物が読み込めませんでした。ダミーの地面を追加します。\n");
+		// ダミーの地面を追加
+		Vector3 groundMin = {-1000.0f, -10.0f, -1000.0f};
+		Vector3 groundMax = {1000.0f, -5.0f, 1000.0f};
+
+		if (allObstacles_.empty()) {
+			allObstacles_.emplace_back();
+		}
+
+		AABB ground;
+		ground.min = groundMin;
+		ground.max = groundMax;
+		allObstacles_[0].push_back(ground);
+	}
+
+	// マップオブジェクトをロード
 	if (mapLoader_) {
 		std::string objectsFile = "Resources/objects" + std::to_string(currentStage_) + ".csv";
 		mapLoader_->ChangeStage(currentStage_, &camera_, player_);
@@ -379,86 +429,52 @@ void GameScene::ChangeStage(int nextStage) {
 		}
 	}
 
-	// **新しい障害物データをロード**
-	std::string stageFile = "Resources/stage" + std::to_string(currentStage_) + "/stage" + std::to_string(currentStage_) + ".obj";
-	LoadStage(stageFile);
-
-	// バネ敵の障害物リストクリア
-	if (enemyLoader_) {
-		const auto& springEnemies = enemyLoader_->GetSpringEnemyList();
-		for (auto& springEnemy : springEnemies) {
-			if (springEnemy) {
-				springEnemy->ClearObstacleList();
+	// プレイヤーに新しい障害物リストを設定 - 必ず障害物データロード後に行う
+	if (player_) {
+		for (const auto& obstacles : allObstacles_) {
+			if (!obstacles.empty()) {
+				player_->SetObstacleList(obstacles);
 			}
 		}
 	}
 
-	// **プレイヤーに新しい障害物リストを設定**
-	for (const auto& obstacles : allObstacles_) {
-		player_->SetObstacleList(obstacles);
-	}
-
-	// **敵の当たり判定も再設定**
+	// 敵の当たり判定も再設定
 	if (enemyLoader_) {
 		delete enemyLoader_;
 		enemyLoader_ = nullptr;
 	}
 
 	enemyLoader_ = new EnemyLoader();
-
 	std::string enemiesFile = "Resources/enemies" + std::to_string(currentStage_) + ".csv";
+
 	if (enemyLoader_->LoadEnemyData(enemiesFile)) {
+		// 敵生成時に当たり判定情報を渡す
 		enemyLoader_->CreateEnemies(&camera_, player_, allObstacles_);
 	}
 
-	// 敵の当たり判定リストを再設定
-	if (enemyLoader_) {
-		for (auto& enemy : enemyLoader_->GetEnemyList()) {
-			if (enemy) {
-				for (const auto& obstacles : allObstacles_) {
-					enemy->SetObstacleList(obstacles);
-				}
-			}
-		}
-	}
+	// 敵を正しくセットアップ
+	if (player_) {
+		player_->SetEnemyList(enemyLoader_->GetEnemyList());
 
-	// プレイヤーに敵リストを設定
-	player_->SetEnemyList(enemyLoader_->GetEnemyList());
-
-	if (enemyLoader_) {
-		player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
-
-		// キャノン敵への参照をプレイヤーに設定
 		if (!enemyLoader_->GetCannonEnemyList().empty()) {
 			player_->SetCannon(enemyLoader_->GetCannonEnemyList()[0]);
 		}
+
+		player_->SetSpringEnemies(enemyLoader_->GetSpringEnemyList());
 	}
 
-	// プレイヤーにブロックリストを設定（更新：単一ブロックではなくリスト全体を渡す）
+	// プレイヤーにブロックリストを設定
 	const std::vector<Block*>& blocks = mapLoader_->GetBlockList();
-	player_->SetBlocks(blocks);
+	if (player_) {
+		player_->SetBlocks(blocks);
+	}
 
 	// プレイヤーにGoalへの参照を再設定
 	if (mapLoader_ && mapLoader_->GetGoal()) {
 		player_->SetGoal(mapLoader_->GetGoal());
 	}
 
-	// 次のステージに応じてプレイヤーの座標を設定
-	Vector3 newPosition;
-	if (nextStage == 2) {
-		// Stage 2への移行時の座標
-		newPosition = {-55.070f, 1.649f, -68.019f};
-	} else if (nextStage == 3) {
-		// Stage 3への移行時の座標
-		newPosition = {-37.0f, -18.512f, -51.500f};
-	}
-
-	// プレイヤーの座標を変更
-	player_->SetPosition(newPosition);
-	// スポーン位置も更新
-	player_->SetSpawnPosition(newPosition);
-
-	// ミニマップを再初期化
+	// ミニマップを再初期化 - 障害物データの更新後に行う
 	if (minimap_) {
 		delete minimap_;
 		minimap_ = nullptr;
@@ -466,23 +482,32 @@ void GameScene::ChangeStage(int nextStage) {
 	minimap_ = new Minimap();
 	minimap_->Initialize(player_, mapLoader_, enemyLoader_, allObstacles_);
 
-	// 新しいステージのBGMを読み込み再生
+	// 次のステージに応じてBGMを再生
 	std::string stageBGMPath = "./sound/stage" + std::to_string(currentStage_) + ".wav";
 	stageBGMHandle_ = audio_->LoadWave(stageBGMPath.c_str());
 	audio_->playAudio(stageBGMID_, stageBGMHandle_, true, 0.25f);
+
+	OutputDebugStringA("ChangeStage: ステージ変更処理完了\n");
 }
 
 #pragma endregion ステージ変更処理
 
 #pragma region 障害物関連処理
-// AddObstacle、LoadStage、UpdateStageAABBメソッドはそのまま以前の実装を使用
 void GameScene::AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max) {
+	// 極端に小さいAABBや無効なAABBをフィルタリング
+	const float minSize = 0.001f;
+	if (min.x >= max.x - minSize || min.y >= max.y - minSize || min.z >= max.z - minSize) {
+		return; // 無効なAABBは追加しない
+	}
+
 	AABB obstacle;
 	obstacle.min = min;
 	obstacle.max = max;
-	if (allObstacles.empty() || allObstacles.back().size() >= 500) { // 100個の障害物を追加
+
+	if (allObstacles.empty() || allObstacles.back().size() >= 500) {
 		allObstacles.emplace_back();
 	}
+
 	allObstacles.back().push_back(obstacle);
 }
 
@@ -490,7 +515,27 @@ void GameScene::LoadStage(std::string objFile) {
 	// ステージデータの読み込み
 	std::ifstream file;
 	file.open(objFile);
-	assert(file.is_open());
+
+	if (!file.is_open()) {
+		char buffer[256];
+		sprintf_s(buffer, "エラー: ファイルを開けません: %s\n", objFile.c_str());
+		OutputDebugStringA(buffer);
+
+		// ファイルが開けない場合はダミーの地面を作成
+		allObstacles_.clear();
+		allObstacles_.emplace_back();
+
+		Vector3 groundMin = {-1000.0f, -10.0f, -1000.0f};
+		Vector3 groundMax = {1000.0f, -5.0f, 1000.0f};
+
+		AABB ground;
+		ground.min = groundMin;
+		ground.max = groundMax;
+		allObstacles_[0].push_back(ground);
+
+		OutputDebugStringA("ダミーの地面を作成しました\n");
+		return;
+	}
 
 	// Commandをリセット
 	Command.str("");
@@ -502,21 +547,43 @@ void GameScene::LoadStage(std::string objFile) {
 	// 障害物データをクリア
 	allObstacles_.clear();
 
+	// ステージAABBを更新
 	UpdateStageAABB();
 
-	player_->ClearObstacleList(); // 古い障害物リストを削除
-	// 新しい障害物リスト
-	for (const auto& obstacles : allObstacles_) {
-		player_->SetObstacleList(obstacles);
+	// 障害物データのチェック
+	int totalObstacles = 0;
+	for (const auto& list : allObstacles_) {
+		totalObstacles += static_cast<int>(list.size());
 	}
 
-	if (enemyLoader_) {
-		for (auto& enemy : enemyLoader_->GetEnemyList()) {
-			if (enemy) {
-				enemy->ClearObstacleList();
-				for (const auto& obstacles : allObstacles_) {
-					enemy->SetObstacleList(obstacles);
-				}
+	char buffer[256];
+	sprintf_s(buffer, "LoadStage: %d個の障害物を読み込みました\n", totalObstacles);
+	OutputDebugStringA(buffer);
+
+	// 障害物がゼロならダミーの地面を追加
+	if (totalObstacles == 0) {
+		OutputDebugStringA("警告: 障害物を読み込めませんでした。ダミーの地面を追加します。\n");
+
+		if (allObstacles_.empty()) {
+			allObstacles_.emplace_back();
+		}
+
+		Vector3 groundMin = {-1000.0f, -10.0f, -1000.0f};
+		Vector3 groundMax = {1000.0f, -5.0f, 1000.0f};
+
+		AABB ground;
+		ground.min = groundMin;
+		ground.max = groundMax;
+		allObstacles_[0].push_back(ground);
+	}
+
+	// 新しい当たり判定情報をプレイヤーに設定
+	if (player_) {
+		player_->ClearObstacleList(); // 古い障害物リストを削除
+		// 新しい障害物リストを設定
+		for (const auto& obstacles : allObstacles_) {
+			if (!obstacles.empty()) {
+				player_->SetObstacleList(obstacles);
 			}
 		}
 	}
@@ -529,38 +596,71 @@ void GameScene::UpdateStageAABB() {
 	Vector3 max;
 	Vector3 min;
 
-	// AABB stageAABB;
 	bool start = false;
 	bool reverse = false;
 
-	while (getline(Command, line)) {
-		std::istringstream line_stream(line);
+	// 処理したオブジェクト数をカウント
+	int objectCount = 0;
 
+	while (getline(Command, line)) {
+		if (line.empty())
+			continue;
+
+		std::istringstream line_stream(line);
 		std::string word;
 
-		getline(line_stream, word, ' ');
-
-		if (word.find("v") == 0) {
-			cornerNumber++;
-		} else if (word.find("vn") == 0) {
-			break;
-		} else {
-			continue;
+		if (!getline(line_stream, word, ' ')) {
+			continue; // 空行または読み取り失敗
 		}
 
-		if (cornerNumber > 0) {
-			getline(line_stream, word, ' ');
-			float x = (float)std::atof(word.c_str());
+		// 頂点データのみ処理
+		if (word == "v") {
+			cornerNumber++;
 
-			getline(line_stream, word, ' ');
-			float y = (float)std::atof(word.c_str());
+			float x = 0.0f, y = 0.0f, z = 0.0f;
 
-			getline(line_stream, word, ' ');
-			float z = (float)std::atof(word.c_str());
+			// x座標読み取り
+			if (getline(line_stream, word, ' ')) {
+				try {
+					x = static_cast<float>(std::stof(word));
+				} catch (const std::exception&) {
+					cornerNumber--;
+					continue;
+				}
+			} else {
+				cornerNumber--;
+				continue;
+			}
 
+			// y座標読み取り
+			if (getline(line_stream, word, ' ')) {
+				try {
+					y = static_cast<float>(std::stof(word));
+				} catch (const std::exception&) {
+					cornerNumber--;
+					continue;
+				}
+			} else {
+				cornerNumber--;
+				continue;
+			}
+
+			// z座標読み取り
+			if (getline(line_stream, word, ' ')) {
+				try {
+					z = static_cast<float>(std::stof(word));
+				} catch (const std::exception&) {
+					cornerNumber--;
+					continue;
+				}
+			} else {
+				cornerNumber--;
+				continue;
+			}
+
+			// 頂点を処理
 			if (!start) {
-				max = {x, y, z};
-				min = {x, y, z};
+				max = min = {x, y, z};
 				start = true;
 			} else {
 				// 前よりも大きいとき
@@ -588,26 +688,41 @@ void GameScene::UpdateStageAABB() {
 					min.z = z;
 				}
 			}
+		} else if (word == "vn") {
+			// 法線データが始まったら頂点データの処理は終了
+			break;
+		} else {
+			continue;
 		}
 
-		if (cornerNumber == 8) {
+		// 8頂点でオブジェクト1つ分のAABBを生成
+		if (cornerNumber >= 8) {
 			if (!reverse) {
 				AddObstacle(allObstacles_, min, max); // 結合した基盤となるobj
+				objectCount++;
 			} else {
-				float minX;
-				float maxX;
-				maxX = -(max.x);
-				minX = -(min.x);
-
+				float minX = -max.x;
+				float maxX = -min.x;
 				min.x = minX;
 				max.x = maxX;
-				AddObstacle(allObstacles_, {min.x, min.y, min.z}, {max.x, max.y, max.z}); // それ以外のすべてobj
+				AddObstacle(allObstacles_, min, max); // それ以外のすべてobj
+				objectCount++;
 			}
 
 			cornerNumber = 0;
 			start = false;
 			reverse = true;
 		}
+	}
+
+	// デバッグ出力
+	char buffer[256];
+	sprintf_s(buffer, "UpdateStageAABB: %d個のオブジェクトを処理しました\n", objectCount);
+	OutputDebugStringA(buffer);
+
+	// 障害物がゼロの場合は最低限の地面を追加
+	if (objectCount == 0) {
+		OutputDebugStringA("警告: OBJファイルから障害物が読み込めませんでした。\n");
 	}
 }
 #pragma endregion 障害物関連処理
