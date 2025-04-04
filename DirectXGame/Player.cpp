@@ -9,7 +9,10 @@
 #pragma region コンストラクタ・デストラクタ
 Player::Player() {}
 
-Player::~Player() { delete PlayerModel_; }
+Player::~Player() {
+	delete PlayerModel_;
+	delete uiManager_;
+}
 #pragma endregion
 
 #pragma region 初期化処理
@@ -19,13 +22,20 @@ void Player::Init(Camera* camera) {
 	// "cube" モデルを読み込み
 	PlayerModel_ = Model::CreateFromOBJ("player", true);
 	worldTransform_.translation_ = position;
+	spawnPosition_ = position; // スポーン位置を初期位置に設定
+
 	block_ = new Block;
 	ghostBlock_ = new GhostBlock;
+
+	// UIマネージャーの初期化
+	uiManager_ = new UIManager();
+	uiManager_->Initialize();
 
 	// オーディオの初期化
 	audio_ = Audio::GetInstance();
 	jumpSoundHandle_ = audio_->LoadWave("./sound/jump.wav");
 	snapSoundHandle_ = audio_->LoadWave("./sound/snap.wav");
+	damageSoundHandle_ = audio_->LoadWave("./sound/damage.wav");
 }
 #pragma endregion
 
@@ -293,6 +303,10 @@ void Player::Update() {
 				}
 			} else { // 　横に当たったらダメージ
 				isDamage = true;
+				// 敵ダメージの追加
+				if (!isFlashing) {
+					TakeDamage(enemyDamage_);
+				}
 			}
 
 			if (isTransfar && (playerAABB.min.y >= enemyAABB.max.y) && !EnemyContral) {
@@ -342,6 +356,9 @@ void Player::Update() {
 
 	// ゴールの旗に当たったか
 	CheckCollisionWithGoal();
+
+	// 落下ダメージチェック
+	CheckFallDamage();
 #pragma endregion
 
 #pragma region デバッグ表示
@@ -350,6 +367,7 @@ void Player::Update() {
 	ImGui::DragFloat3("translate", &worldTransform_.translation_.x);
 	ImGui::DragFloat3("aabbMax", &playerAABB.max.x);
 	ImGui::DragFloat3("aabbMin", &playerAABB.min.x);
+	ImGui::DragInt("HP", &hp, 1.0f, 0, maxHP_);
 	ImGui::End();
 #endif
 #pragma endregion
@@ -423,6 +441,10 @@ void Player::OnCollisions() {
 
 		if (IsCollisionAABB(bomAABB, playerAABB) && !cannonEnemy->GetPlayerCtrl()) {
 			isDamage = true;
+			// 弾のダメージ
+			if (!isFlashing) {
+				TakeDamage(enemyDamage_);
+			}
 			bom->OnCollision();
 		}
 	}
@@ -457,6 +479,7 @@ void Player::CheckCollisionWithGoal() {
 
 	if (IsCollisionAABB(playerAABB, goalAABB)) {
 		goal_->OnCollision();
+		isGoalReached_ = true;
 	}
 }
 
@@ -494,19 +517,35 @@ void Player::CheckDamage() {
 		isDamage = false;
 	}
 }
+
+// 落下ダメージをチェック
+void Player::CheckFallDamage() {
+	// Y座標が閾値を下回ったら
+	if (position.y < fallThreshold_) {
+		// ダメージを与え、初期位置に戻す
+		TakeDamage(fallDamage_);
+		ResetToSpawnPosition();
+	}
+}
 #pragma endregion
 
 #pragma region UI描画処理
 void Player::DrawUI() {
 #ifdef _DEBUG
-	ImGui::Begin("Player State");
-
-	const char* stateNames[] = {"Normal", "Bomb", "Ghost"};
-	ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
-	ImGui::DragFloat("Hp", &hp);
-
+	// デバッグ表示
+	ImGui::Begin("player");
+	ImGui::DragFloat3("translate", &worldTransform_.translation_.x);
+	ImGui::DragFloat3("aabbMax", &playerAABB.max.x);
+	ImGui::DragFloat3("aabbMin", &playerAABB.min.x);
+	ImGui::DragInt("HP", &hp); // float* から int* に変更
 	ImGui::End();
-#endif // _DEBUG
+#endif
+
+	// UIマネージャーを使用してHPとコントロールガイドを描画
+	if (uiManager_) {
+		uiManager_->Update();
+		uiManager_->Draw(hp); // float からint に変更
+	}
 }
 #pragma endregion
 
@@ -530,7 +569,40 @@ void Player::SetSpringEnemies(const std::vector<SpringEnemy*>& springEnemies) { 
 void Player::SetCannon(CannonEnemy* cannon) { cannonEnemy = cannon; }
 #pragma endregion
 
-#pragma region 状態管理・位置設定
+#pragma region ダメージ処理と位置設定
+// 新しく追加するメソッド: ダメージを受ける
+void Player::TakeDamage(int amount) {
+	// 無敵時間中はダメージを受けない
+	if (isFlashing) {
+		return;
+	}
+
+	// ダメージ音を再生
+	audio_->playAudio(damageSoundID_, damageSoundHandle_, false, 0.5f);
+
+	// HPを減少
+	hp -= amount;
+	if (hp < 0) {
+		hp = 0;
+	}
+
+	// ダメージエフェクト開始
+	isDamage = true;
+	coolTime = flashDuration;
+	isFlashing = true;
+	flashTimer = 0.0f;
+	isVisible = true;
+}
+
+// 初期位置に戻す
+void Player::ResetToSpawnPosition() {
+	position = spawnPosition_;
+	worldTransform_.translation_ = position;
+
+	// 速度をリセット
+	velocityY_ = 0.0f;
+}
+
 void Player::SetState(State newState) { currentState = newState; }
 
 void Player::SetPosition(const Vector3& newPosition) {
@@ -538,13 +610,3 @@ void Player::SetPosition(const Vector3& newPosition) {
 	worldTransform_.translation_ = position;
 }
 #pragma endregion
-
-//// ★ 新しく追加：ドアとの衝突解決処理
-// void Player::ResolveCollisionWithDoor(const AABB& doorAABB) {
-//	AABB currentAABB = GetAABB();
-//	ResolveAABBCollision(currentAABB, doorAABB, velocityY_, onGround_);
-//	position.x = (currentAABB.min.x + currentAABB.max.x) * 0.5f;
-//	position.y = (currentAABB.min.y + currentAABB.max.y) * 0.5f;
-//	position.z = (currentAABB.min.z + currentAABB.max.z) * 0.5f;
-//	worldTransform_.translation_ = position;
-// }

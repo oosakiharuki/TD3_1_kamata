@@ -1,6 +1,7 @@
 #include "GameScene.h"
 #include "AABB.h"
 #include "Minimap.h"
+#include <base/TextureManager.h>
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -46,6 +47,18 @@ void GameScene::Finalize() {
 	if (minimap_) {
 		delete minimap_;
 		minimap_ = nullptr;
+	}
+
+	// ゴールガイドの解放
+	if (goalGuideSprite_) {
+		delete goalGuideSprite_;
+		goalGuideSprite_ = nullptr;
+	}
+
+	// BGMの停止
+	if (stageBGMID_ != -1) {
+		audio_->StopWave(stageBGMID_);
+		stageBGMID_ = -1;
 	}
 }
 #pragma endregion 終了処理
@@ -131,9 +144,20 @@ void GameScene::Initialize() {
 	transitionEffect_ = new TransitionEffect();
 	transitionEffect_->Initialize();
 
+	// フェードインで開始
+	transitionEffect_->Start(TransitionType::FadeIn, 1.0f);
+	transitionState_ = TransitionState::FadeIn;
+
 	// ミニマップの初期化
 	minimap_ = new Minimap();
 	minimap_->Initialize(player_, mapLoader_, enemyLoader_, allObstacles_);
+
+	// ゴールガイドテクスチャのロード
+	goalGuideHandle_ = TextureManager::Load("ui/goal_guide.png");
+
+	// ゴールガイドスプライトの生成
+	goalGuideSprite_ = Sprite::Create(goalGuideHandle_, {(WinApp::kWindowWidth - 300) / 2.0f, 150.0f});
+	goalGuideSprite_->SetSize({300, 100});
 
 	// ステージ1のBGM読み込みと再生
 	stageBGMHandle_ = audio_->LoadWave("./sound/stage1.wav");
@@ -165,13 +189,19 @@ void GameScene::Update() {
 
 	// ステージ切り替え中のみスキップ（TransitionState::ChangeStageの状態を新たに追加）
 	// フェードイン・フェードアウト中は更新を続ける
-	if (transitionState_ == TransitionState::ChangeStage) {
+	if (transitionState_ == TransitionState::ChangeStage || transitionState_ == TransitionState::ToTitle) {
 		return;
 	}
 
+	// ゴールからタイトルへの遷移チェック
+	CheckReturnToTitle();
+
 	// MapLoaderが管理するGoalの状態をチェック
 	if (mapLoader_ && mapLoader_->GetGoal() && mapLoader_->GetGoal()->IsClear()) {
-		return; // ゴールクリア状態なら更新処理をスキップ
+		// ゴールクリア時にガイドを表示
+		showGoalGuide_ = true;
+	} else {
+		showGoalGuide_ = false;
 	}
 
 	// プレイヤーの更新
@@ -263,6 +293,11 @@ void GameScene::Draw() {
 		mapLoader_->DrawSprites(commandList);
 	}
 
+	// ゴールガイドを表示（ゴールクリア時のみ）
+	if (showGoalGuide_ && goalGuideSprite_) {
+		goalGuideSprite_->Draw();
+	}
+
 	// トランジション効果の描画
 	if (transitionEffect_) {
 		transitionEffect_->Draw();
@@ -276,6 +311,34 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 }
 #pragma endregion 描画処理
+
+#pragma region タイトル遷移処理
+// 追加: ゴールクリア時のタイトル遷移チェック
+void GameScene::CheckReturnToTitle() {
+	// ゴールクリア状態かつSPACEキーまたはXボタンでタイトルへ
+	if (mapLoader_ && mapLoader_->GetGoal() && mapLoader_->GetGoal()->IsClear()) {
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE) || ((state.Gamepad.wButtons & XINPUT_GAMEPAD_X) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_X))) {
+
+			// タイトルへ遷移開始
+			StartTransitionToTitle();
+		}
+	}
+}
+
+// タイトルへ遷移開始
+void GameScene::StartTransitionToTitle() {
+	// 既にトランジション中なら何もしない
+	if (transitionState_ != TransitionState::None && transitionState_ != TransitionState::FadeIn) {
+		return;
+	}
+
+	// トランジション状態を設定
+	transitionState_ = TransitionState::ToTitle;
+
+	// フェードアウトを開始
+	transitionEffect_->Start(TransitionType::FadeOut, 1.0f);
+}
+#pragma endregion タイトル遷移処理
 
 #pragma region ステージ変更処理
 void GameScene::ChangeStage(int nextStage) {
@@ -386,6 +449,8 @@ void GameScene::ChangeStage(int nextStage) {
 
 	// プレイヤーの座標を変更
 	player_->SetPosition(newPosition);
+	// スポーン位置も更新
+	player_->SetSpawnPosition(newPosition);
 
 	// ミニマップを再初期化
 	if (minimap_) {
@@ -528,8 +593,8 @@ void GameScene::UpdateStageAABB() {
 				maxX = -(max.x);
 				minX = -(min.x);
 
-				min.x = maxX;
-				max.x = minX;
+				min.x = minX;
+				max.x = maxX;
 				AddObstacle(allObstacles_, {min.x, min.y, min.z}, {max.x, max.y, max.z}); // それ以外のすべてobj
 			}
 
@@ -581,6 +646,15 @@ void GameScene::UpdateTransition() {
 		if (transitionEffect_->IsCompleted()) {
 			// トランジション完了
 			transitionState_ = TransitionState::None;
+			transitionEffect_->ResetCompleted();
+		}
+		break;
+
+	case TransitionState::ToTitle:
+		// タイトルへのフェードアウト完了チェック
+		if (transitionEffect_->IsCompleted()) {
+			// タイトル遷移フラグを立てる
+			isTransitionToTitle_ = true;
 			transitionEffect_->ResetCompleted();
 		}
 		break;

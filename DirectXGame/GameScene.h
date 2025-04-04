@@ -10,7 +10,7 @@
 #include "KamataEngine.h"
 #include "Key.h"
 #include "MapLoader.h"
-#include "Minimap.h" // 追加
+#include "Minimap.h"
 #include "Player.h"
 #include "Skydome.h"
 #include "SpringEnemy.h"
@@ -34,6 +34,10 @@ public:
 	// ステージを変更する
 	void ChangeStage(int nextStage);
 
+	// タイトルへ戻るフラグ
+	bool IsTransitionToTitle() const { return isTransitionToTitle_; }
+	void ResetTransitionFlag() { isTransitionToTitle_ = false; }
+
 private:
 	void AddObstacle(std::vector<std::vector<AABB>>& allObstacles, const Vector3& min, const Vector3& max);
 	void LoadStage(std::string objFile);
@@ -44,12 +48,15 @@ private:
 		None,        // トランジションなし
 		FadeOut,     // フェードアウト中（現ステージ）
 		ChangeStage, // ステージ切り替え中（更新を一時停止）
-		FadeIn       // フェードイン中（次ステージ）
+		FadeIn,      // フェードイン中（次ステージ）
+		ToTitle      // タイトルへ戻る
 	};
 
 	// トランジション処理
 	void UpdateTransition();
 	void StartTransitionToStage(int stageNumber);
+	void StartTransitionToTitle();
+	void CheckReturnToTitle();
 
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -92,7 +99,8 @@ private:
 	// トランジション関連
 	TransitionEffect* transitionEffect_ = nullptr;
 	TransitionState transitionState_ = TransitionState::None;
-	int nextStage_ = 0; // 次のステージ番号
+	int nextStage_ = 0;                // 次のステージ番号
+	bool isTransitionToTitle_ = false; // タイトルへの遷移フラグ
 
 	// ミニマップ
 	Minimap* minimap_ = nullptr;
@@ -100,4 +108,9 @@ private:
 	// BGM関連
 	int stageBGMHandle_ = 0;
 	int stageBGMID_ = -1; // 再生IDを保持するために必要
+
+	// UI関連
+	Sprite* goalGuideSprite_ = nullptr; // ゴールガイド表示
+	uint32_t goalGuideHandle_ = 0;
+	bool showGoalGuide_ = false;
 };

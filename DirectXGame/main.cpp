@@ -1,6 +1,10 @@
-#include <KamataEngine.h>
 #include "GameScene.h"
+#include "TitleScene.h"
+#include <KamataEngine.h>
 using namespace KamataEngine;
+
+// シーン管理用の列挙型
+enum class Scene { Title, Game };
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -49,10 +53,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	primitiveDrawer = PrimitiveDrawer::GetInstance();
 	primitiveDrawer->Initialize();
-
-	GameScene* gameScene = new GameScene();
-	gameScene->Initialize();
 #pragma endregion
+
+	// シーン管理変数
+	Scene currentScene = Scene::Title;
+
+	// 各シーンの初期化
+	TitleScene* titleScene = new TitleScene();
+	titleScene->Initialize();
+
+	// ゲームシーンはこの時点では生成しない（必要になったときに生成）
+	GameScene* gameScene = nullptr;
 
 	// メインループ
 	while (true) {
@@ -65,8 +76,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		imguiManager->Begin();
 		// 入力関連の毎フレーム処理
 		input->Update();
-		//ゲームシーン更新
-		gameScene->Update();
+
+		// シーン切り替え処理
+		if (currentScene == Scene::Title && titleScene->IsTransitionToGameScene()) {
+			// タイトルからゲームへ
+			if (gameScene == nullptr) {
+				// ゲームシーンの初期化を遅延して行う
+				gameScene = new GameScene();
+				gameScene->Initialize();
+			}
+			titleScene->ResetTransitionFlag();
+			currentScene = Scene::Game;
+		} else if (currentScene == Scene::Game && gameScene != nullptr && gameScene->IsTransitionToTitle()) {
+			// ゲームからタイトルへ
+			delete titleScene; // 古いタイトルシーンがあれば削除
+			titleScene = new TitleScene();
+			titleScene->Initialize();
+			gameScene->ResetTransitionFlag();
+			currentScene = Scene::Title;
+		}
+
+		// 現在のシーンを更新
+		try {
+			if (currentScene == Scene::Title) {
+				titleScene->Update();
+			} else if (gameScene != nullptr) {
+				gameScene->Update();
+			}
+		} catch (const std::exception& e) {
+			// 例外をキャッチしてエラーメッセージを表示
+			OutputDebugStringA("シーン更新中に例外が発生しました: ");
+			OutputDebugStringA(e.what());
+			OutputDebugStringA("\n");
+		}
+
 		// 軸表示の更新
 		axisIndicator->Update();
 		// ImGui受付終了
@@ -74,8 +117,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		// 描画開始
 		dxCommon->PreDraw();
-		//ゲームシーン描画
-		gameScene->Draw();
+
+		// 現在のシーンを描画
+		try {
+			if (currentScene == Scene::Title) {
+				titleScene->Draw();
+			} else if (gameScene != nullptr) {
+				gameScene->Draw();
+			}
+		} catch (const std::exception& e) {
+			// 例外をキャッチしてエラーメッセージを表示
+			OutputDebugStringA("シーン描画中に例外が発生しました: ");
+			OutputDebugStringA(e.what());
+			OutputDebugStringA("\n");
+		}
+
 		// 軸表示の描画
 		axisIndicator->Draw();
 		// プリミティブ描画のリセット
@@ -86,7 +142,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		dxCommon->PostDraw();
 	}
 
-	delete gameScene;
+	// 各シーンを解放
+	delete titleScene;
+	if (gameScene != nullptr) {
+		delete gameScene;
+	}
 
 	// 3Dモデル解放
 	Model::StaticFinalize();
