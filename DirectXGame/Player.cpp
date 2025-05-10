@@ -3,11 +3,39 @@
 #include <iostream>
 #include <algorithm>
 
+///================
 #include <KamataEngine.h>
 
 Player::Player() {}
 
 Player::~Player() { delete PlayerModel_; }
+
+
+void Player::CheckCollision(Block* block) {
+    if (!block->IsActive()) return;
+
+    AABB playerAABB = {
+        worldTransform.translation_ - Vector3(1.0f, 1.0f, 1.0f),
+        worldTransform.translation_ + Vector3(1.0f, 1.0f, 1.0f)
+    };
+
+    AABB blockAABB = block->GetAABB();
+
+    if (IsCollisionAABB(playerAABB, blockAABB)) {
+        switch (currentState) {
+        case State::Normal:
+            worldTransform.translation_ -= velocity; // 速度分だけ戻す
+            break;
+        case State::Bomb:
+            block->SetActive(false);
+            break;
+        case State::Ghost:
+            break;
+        }
+    }
+}
+
+
 
 void Player::Init(Camera* camera, uint32_t texture) {
 	camera_ = camera;
@@ -16,6 +44,15 @@ void Player::Init(Camera* camera, uint32_t texture) {
 	PlayerModel_ = Model::CreateFromOBJ("cube", true);
 	worldTransform_.translation_ = position;
 	textureHandle = texture;
+}
+///ギミック
+void Player::Init(Model* model, Camera* viewProjection, Vector3& pos, Block* block) {
+    model_ = model;
+    viewProjection_ = viewProjection;
+    this->block_ = block;  // ブロックを受け取る
+
+    worldTransform.Initialize();
+    worldTransform.translation_ = pos;
 }
 
 void Player::SetObstacleList(const std::vector<AABB>& obstacles) { obstacleList_.insert(obstacleList_.end(), obstacles.begin(), obstacles.end()); }
@@ -37,6 +74,17 @@ void Player::Update() {
 	if (Input::GetInstance()->PushKey(DIK_D)) {
 		position.x += moveSpeed;
 	}
+
+
+    if (Input::GetInstance()->TriggerKey(DIK_1)) {
+        currentState = State::Normal;
+    }
+    if (Input::GetInstance()->TriggerKey(DIK_2)) {
+        currentState = State::Bomb;
+    }
+    if (Input::GetInstance()->TriggerKey(DIK_3)) {
+        currentState = State::Ghost;
+    }
 
 	float x = 0, z = 0;
 
@@ -104,13 +152,13 @@ void Player::Update() {
 	//position.z += z * speed;
 
 		
-	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_) {
+	if ((state.Gamepad.wButtons & XINPUT_GAMEPAD_B) && !(preState.Gamepad.wButtons & XINPUT_GAMEPAD_B) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
 		controler = Controler::player;
 
-	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_) {
+	} else if (Input::GetInstance()->TriggerKey(DIK_K) && onGround_ && EnemyContral) {
 		velocityY_ = 0.0f;
 		EnemyContral = false;
 		onEnemy = true;
@@ -143,6 +191,33 @@ void Player::Update() {
 		iterations++;
 	} while (collisionOccurred && iterations < maxIterations);
 
+	AABB cannonAABB = cannonEnemy->GetAABB();
+	
+	if (IsCollisionAABB(playerAABB, cannonAABB) && !EnemyContral) {
+		// 衝突時の処理（例：リストから削除）
+		// it = enemyList_.erase(it);
+		ResolveAABBCollision(playerAABB, cannonAABB, velocityY_, onGround_);
+
+		// 頭からしか入れなくする
+		if (isTransfar && (playerAABB.min.y >= cannonAABB.max.y)) {
+			cannonEnemy->ContralPlayer();
+			EnemyContral = true;
+			collisionEnemy = true;
+		}
+	}
+
+	if (EnemyContral && cannonEnemy->GetPlayerCtrl()) {
+		cannonEnemy->SetParent(&worldTransform_);
+
+		if (Input::GetInstance()->TriggerKey(DIK_J)) {
+			cannonEnemy->PlayerFire();//カメラ向きで変えれるようにする
+		}
+
+
+	} else {
+		cannonEnemy->ReMove(worldTransform_.translation_);
+	}
+
 
     // Enemyとの衝突判定
 	for (auto it = enemyList_.begin(); it != enemyList_.end();) {
@@ -168,6 +243,8 @@ void Player::Update() {
 		}
 		++it;
 	}
+
+
 
 	// 衝突解決後のAABB中心をプレイヤー座標に反映
 	position.x = (playerAABB.min.x + playerAABB.max.x) * 0.5f;
@@ -209,9 +286,19 @@ void Player::Update() {
 	worldTransform_.UpdateMatrix();
 
 	cameraController_.Update(camera_, position);
+
 }
 
+void Player::DrawUI() {
+    ImGui::Begin("Player State");
+
+    const char* stateNames[] = { "Normal", "Bomb", "Ghost" };
+    ImGui::Text("Current State: %s", stateNames[static_cast<int>(currentState)]);
+
+    ImGui::End();
+}
 
 void Player::Draw() { PlayerModel_->Draw(worldTransform_, *camera_,  textureHandle); }
 
 void Player::SetEnemyList(const std::vector<Enemy*>& enemies) { enemyList_ = enemies; }
+

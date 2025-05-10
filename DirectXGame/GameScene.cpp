@@ -6,10 +6,17 @@ GameScene::GameScene() {}
 
 GameScene::~GameScene() {
 	delete player_;
+
+	delete modelPlayer_;
+	delete block_;
+	delete modelBlock_;
+///=======
 	delete modelGround_;
 	for (auto enemy : enemyList_) {
 		delete enemy;
 	}
+	delete cannonEenmy;
+
 }
 
 void GameScene::Initialize() {
@@ -18,12 +25,23 @@ void GameScene::Initialize() {
 	audio_ = Audio::GetInstance();
 
 	worldTransform_.Initialize();
+
+	// 背景
 	camera_.Initialize();
 
+  modelPlayer_ = Model::Create();
+  modelBlock_ = Model::Create();
+  
+	block_ = new Block();
+	block_->Init(modelBlock_, &viewProjection_);
+
+  
 	// Player の生成と初期化
 	textureHandle = TextureManager::GetInstance()->Load("uvChecker.png");
 	player_ = new Player();
 	player_->Init(&camera_,textureHandle);
+  Vector3 playerPos(-5, 0, 0);
+	player_->Init(modelPlayer_, &viewProjection_, playerPos, block_);  // ブロックを渡す
 
 	// 障害物リストの作成例
 	AddObstacle(allObstacles_, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});            // 例：壁のAABB
@@ -54,7 +72,13 @@ void GameScene::Initialize() {
 		enemyList_[3]->SetPosition({-40.0f, 0.0f, -10.0f});
 	if (enemyList_.size() > 4)
 		enemyList_[4]->SetPosition({50.0f, 0.0f, -20.0f});
-
+	
+	cannonEenmy = new CannonEnemy();
+	cannonEenmy->Init(&camera_);
+	for (const auto& obstacles : allObstacles_) {
+		cannonEenmy->SetObstacleList(obstacles);
+	}
+	cannonEenmy->SetPlayer(player_);
 
 	player_->SetEnemyList(enemyList_);
 
@@ -63,6 +87,8 @@ void GameScene::Initialize() {
 	for (const auto& obstacles : allObstacles_) {
 		player_->SetObstacleList(obstacles);
 	}
+
+	player_->SetCannon(cannonEenmy);
 
 	// Ground の生成・初期化
 	modelGround_ = new Ground();
@@ -80,6 +106,12 @@ void GameScene::Update() {
 			++it;
 		}
 	}
+
+	player_->DrawUI(); // Playerの状態を表示
+	player_->CheckCollision(block_); // 衝突判定を実行
+	//cannonEenmy->SetPlayerAABB(player_->GetAABB());
+	cannonEenmy->Update();
+
 	/*/
 	for (auto enemy : enemyList_) {
 		enemy->Update();
@@ -97,10 +129,17 @@ void GameScene::Draw() {
 	// モデル描画
 	Model::PreDraw(commandList);
 	player_->Draw();
+
+	block_->Draw();
+///=======
 	modelGround_->Draw();
 	for (auto enemy : enemyList_) {
 		enemy->Draw();
 	}
+
+	cannonEenmy->Draw();
+
+
 	Model::PostDraw();
 
 	// UI描画

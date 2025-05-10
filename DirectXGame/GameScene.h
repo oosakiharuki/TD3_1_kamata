@@ -2,7 +2,13 @@
 #include "Ground.h"
 #include "KamataEngine.h"
 #include "Player.h"
+
+#include "Block.h"
+//=======
 #include "Enemy.h"
+
+#include "CannonEnemy.h"
+
 
 using namespace KamataEngine;
 
@@ -30,4 +36,13 @@ private:
 	std::vector<std::vector<AABB>> allObstacles_;
 
 	uint32_t textureHandle = 0;
+
+
+//<<<<<<< ステージギミック
+	Block* block_ = nullptr;
+	Model* modelBlock_ = nullptr;
+
+//=======
+	CannonEnemy* cannonEenmy = nullptr;
 };
+
