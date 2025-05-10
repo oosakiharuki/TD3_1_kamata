@@ -46,6 +46,8 @@ public:
 	/// マッピングする
 	/// </summary>
 	void Map();
+
+	void UpdateMatrix();
 	/// <summary>
 	/// 行列を転送する
 	/// </summary>
